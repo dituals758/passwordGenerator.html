@@ -4,22 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- SEO оптимизация -->
     <title>Генератор паролей онлайн | Создание надежных паролей бесплатно</title>
     <meta name="description" content="Бесплатный генератор надежных паролей. Создавайте безопасные пароли с настройкой длины и типов символов. Копирование в один клик.">
     <meta name="keywords" content="генератор паролей, создать пароль, безопасный пароль, онлайн генератор паролей, надежный пароль">
     <meta name="author" content="Password Generator">
-    
-    <!-- Open Graph -->
+
     <meta property="og:title" content="Генератор паролей онлайн | Создание надежных паролей">
     <meta property="og:description" content="Бесплатный генератор надежных паролей с настройкой длины и типов символов.">
     <meta property="og:type" content="website">
-    
-    <!-- Канонический URL -->
-    <link rel="canonical" href="https://dituals758.github.io/passwordGenerator.html/">
-    
-    <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔒</text></svg>">
+    <meta property="og:url" content="https://dituals758.github.io/passwordGenerator.html">
+
+    <link rel="canonical" href="https://dituals758.github.io/passwordGenerator.html">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+    <link rel="manifest" href="./manifest.json">
     
     <style>
         :root {
@@ -27,8 +26,8 @@
             --container-bg: #ffffff;
             --text-color: #333333;
             --border-color: #e1e5eb;
-            --primary-color: #4a6cf7;
-            --primary-hover: #3a5ce5;
+            --primary-color: #0078d4;
+            --primary-hover: #00589c;
             --secondary-color: #6c757d;
             --success-color: #28a745;
             --input-bg: #f8f9fa;
@@ -39,8 +38,8 @@
             --container-bg: #1e293b;
             --text-color: #e2e8f0;
             --border-color: #334155;
-            --primary-color: #5b7cfd;
-            --primary-hover: #4a6cf7;
+            --primary-color: #0078d4;
+            --primary-hover: #00589c;
             --secondary-color: #94a3b8;
             --success-color: #34d399;
             --input-bg: #2d3748;
@@ -53,7 +52,7 @@
         }
 
         body {
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             min-height: 100vh;
             background-color: var(--bg-color);
             color: var(--text-color);
@@ -72,6 +71,7 @@
             width: 100%;
             max-width: 500px;
             border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
 
         .header {
@@ -98,6 +98,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: background-color 0.2s;
         }
 
         .theme-toggle:hover {
@@ -123,6 +124,7 @@
             color: var(--text-color);
             font-family: 'Courier New', monospace;
             font-weight: 600;
+            letter-spacing: 1px;
         }
 
         .copy-btn {
@@ -139,6 +141,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.2s;
         }
 
         .copy-btn:hover {
@@ -175,12 +178,12 @@
         }
 
         #length {
+            -webkit-appearance: none;
             flex: 1;
             height: 6px;
             border-radius: 3px;
             background: var(--input-bg);
             outline: none;
-            -webkit-appearance: none;
         }
 
         #length::-webkit-slider-thumb {
@@ -190,6 +193,7 @@
             border-radius: 50%;
             background: var(--primary-color);
             cursor: pointer;
+            border: none;
         }
 
         #length::-moz-range-thumb {
@@ -222,6 +226,7 @@
             border-radius: 8px;
             cursor: pointer;
             user-select: none;
+            transition: background-color 0.2s;
         }
 
         .checkbox-label:hover {
@@ -259,6 +264,7 @@
             display: none;
             z-index: 1000;
             animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         @keyframes slideIn {
@@ -313,21 +319,39 @@
                 max-width: 550px;
             }
         }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>Генератор паролей</h1>
-            <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">
+            <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему" title="Переключить тему">
                 <span id="themeIcon">🌙</span>
             </button>
         </div>
         
         <div class="password-display">
             <div class="password-field">
-                <input type="text" id="password" readonly>
-                <button class="copy-btn" id="copyBtn" aria-label="Копировать пароль">
+                <input type="text" id="password" readonly aria-label="Сгенерированный пароль">
+                <button class="copy-btn" id="copyBtn" aria-label="Копировать пароль" title="Копировать пароль">
                     📋
                 </button>
             </div>
@@ -336,8 +360,8 @@
 
         <div class="control-group">
             <div class="length-control">
-                <label>Длина пароля:</label>
-                <input type="range" id="length" min="8" max="32" value="16">
+                <label for="length">Длина пароля:</label>
+                <input type="range" id="length" min="8" max="32" value="16" aria-label="Длина пароля">
                 <span class="length-value" id="lengthValue">16</span>
             </div>
             
@@ -363,10 +387,14 @@
         
         <div class="seo-text">
             <h2>Безопасный генератор паролей онлайн</h2>
-            <p>Наш генератор паролей позволяет создавать надежные и безопасные пароли для ваших учетных записей. Вы можете настроить длину пароля от 8 до 32 символов и выбрать типы используемых символов: строчные и заглавные буквы, цифры и специальные символы.</p>
+            <p>Генератор паролей позволяет создавать надежные и безопасные пароли для ваших учетных записей. Вы можете настроить длину пароля от 8 до 32 символов и выбрать типы используемых символов: строчные и заглавные буквы, цифры и специальные символы.</p>
             <p>Созданные пароли генерируются с использованием криптографически безопасного алгоритма и сразу копируются в буфер обмена для удобства использования.</p>
         </div>
     </div>
+
+    <footer>
+        <p>passwordGenerator.html ver 1.1.1 © 2025 <a href="https://github.com/dituals758/passwordGenerator.html" target="_blank" rel="noopener">dituals758</a></p>
+    </footer>
 
     <div class="notification" id="notification">Пароль скопирован в буфер обмена!</div>
 
@@ -433,6 +461,7 @@
                 }
                 return password;
             } catch (error) {
+                console.warn('Криптографический API недоступен, используется Math.random()');
                 let password = '';
                 for (let i = 0; i < length; i++) {
                     password += charPool[Math.floor(Math.random() * charPool.length)];
@@ -451,10 +480,16 @@
                 await navigator.clipboard.writeText(password);
                 showNotification('Пароль скопирован в буфер обмена!');
             } catch (err) {
+                console.warn('Clipboard API not available, using fallback');
                 try {
                     elements.password.select();
-                    document.execCommand('copy');
-                    showNotification('Пароль скопирован в буфер обмена!');
+                    elements.password.setSelectionRange(0, 99999);
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        showNotification('Пароль скопирован в буфер обмена!');
+                    } else {
+                        showNotification('Не удалось скопировать пароль', 'error');
+                    }
                 } catch {
                     showNotification('Не удалось скопировать пароль', 'error');
                 }
@@ -471,10 +506,16 @@
                 await navigator.clipboard.writeText(elements.password.value);
                 showNotification('Пароль скопирован в буфер обмена!');
             } catch (err) {
+                console.warn('API буфера обмена недоступен, используется резервный вариант');
                 try {
                     elements.password.select();
-                    document.execCommand('copy');
-                    showNotification('Пароль скопирован в буфер обмена!');
+                    elements.password.setSelectionRange(0, 99999);
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        showNotification('Пароль скопирован в буфер обмена!');
+                    } else {
+                        showNotification('Не удалось скопировать пароль', 'error');
+                    }
                 } catch {
                     showNotification('Не удалось скопировать пароль', 'error');
                 }
@@ -483,12 +524,7 @@
 
         function showNotification(message, type = 'success') {
             elements.notification.textContent = message;
-            elements.notification.className = 'notification';
-            if (type === 'error') {
-                elements.notification.style.background = '#dc3545';
-            } else {
-                elements.notification.style.background = '';
-            }
+            elements.notification.style.background = type === 'error' ? '#dc3545' : 'var(--success-color)';
             elements.notification.style.display = 'block';
             
             setTimeout(() => {
@@ -502,7 +538,11 @@
 
         function initApp() {
             initTheme();
-            generateAndCopy();
+            
+            const initialPassword = generatePassword();
+            if (initialPassword) {
+                elements.password.value = initialPassword;
+            }
             
             elements.length.addEventListener('input', updateLengthValue);
             elements.generateBtn.addEventListener('click', generateAndCopy);
@@ -511,17 +551,30 @@
             
             document.querySelectorAll('.checkbox-label input').forEach(checkbox => {
                 checkbox.addEventListener('change', () => {
-                    if (elements.password.value) {
-                        const password = generatePassword();
-                        if (password) {
-                            elements.password.value = password;
-                        }
+                    const password = generatePassword();
+                    if (password) {
+                        elements.password.value = password;
                     }
                 });
             });
+            
+            elements.length.addEventListener('input', () => {
+                const password = generatePassword();
+                if (password) {
+                    elements.password.value = password;
+                }
+            });
+            
+            updateLengthValue();
         }
 
         document.addEventListener('DOMContentLoaded', initApp);
+
+        if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js');
+        });
+        }
     </script>
 </body>
 </html>
