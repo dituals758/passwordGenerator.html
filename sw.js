@@ -1,4 +1,4 @@
-const CACHE_NAME = 'password-generator-v1.2';
+const CACHE_NAME = 'password-generator-v1.3.0';
 const urlsToCache = [
   './',
   './index.html',
@@ -6,14 +6,16 @@ const urlsToCache = [
   './apple-touch-icon.png',
   './icon-192x192.png',
   './icon-512x512.png',
-  './manifest.json'
+  './manifest.json',
+  './styles.css',
+  './app.js'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Opened cache');
+        console.log('Cache opened');
         return cache.addAll(urlsToCache);
       })
       .catch(error => {
@@ -24,32 +26,24 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Игнорируем запросы к chrome-extension
-  if (event.request.url.startsWith('chrome-extension://')) {
-    return;
-  }
+  if (event.request.url.startsWith('chrome-extension://')) return;
   
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Возвращаем из кэша если есть
-        if (response) {
-          return response;
-        }
+        if (response) return response;
         
-        // Делаем сетевой запрос
         return fetch(event.request).then(response => {
-          // Проверяем валидный ли ответ
           if (!response || response.status !== 200 || response.type !== 'basic') {
             return response;
           }
           
-          // Клонируем ответ
           const responseToCache = response.clone();
           
-          // Кэшируем только HTML и основные ресурсы
           if (event.request.url.includes('passwordGenerator.html') || 
-              event.request.url.includes('manifest.json')) {
+              event.request.url.includes('manifest.json') ||
+              event.request.url.includes('styles.css') ||
+              event.request.url.includes('app.js')) {
             caches.open(CACHE_NAME)
               .then(cache => {
                 cache.put(event.request, responseToCache);
@@ -58,9 +52,8 @@ self.addEventListener('fetch', event => {
           
           return response;
         }).catch(() => {
-          // Оффлайн фолбэк для HTML
           if (event.request.mode === 'navigate') {
-            return caches.match('./passwordGenerator.html');
+            return caches.match('./index.html');
           }
         });
       })
@@ -78,14 +71,10 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    }).then(() => {
-      // Включаем Service Worker сразу
-      return self.clients.claim();
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
-// Обработка push-уведомлений
 self.addEventListener('push', event => {
   const options = {
     body: event.data?.text() || 'Новое обновление генератора паролей!',
@@ -116,12 +105,12 @@ self.addEventListener('notificationclick', event => {
   event.waitUntil(
     clients.matchAll({type: 'window'}).then(clientList => {
       for (const client of clientList) {
-        if (client.url.includes('passwordGenerator.html') && 'focus' in client) {
+        if (client.url.includes('index.html') && 'focus' in client) {
           return client.focus();
         }
       }
       if (clients.openWindow) {
-        return clients.openWindow('./passwordGenerator.html');
+        return clients.openWindow('./index.html');
       }
     })
   );

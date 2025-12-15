@@ -1,15 +1,16 @@
 {
   "name": "Генератор паролей онлайн",
-  "short_name": "Генератор паролей",
-  "description": "Бесплатный генератор надежных паролей с настройкой длины и типов символов",
+  "short_name": "Ген. паролей",
+  "description": "Бесплатный генератор надежных паролей с настройкой длины и типов символов. Оптимизирован для iOS 18 и Windows 11.",
   "lang": "ru",
   "dir": "ltr",
   "start_url": "./index.html",
   "scope": "./index.html",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "theme_color": "#0078d4",
   "background_color": "#f5f7fa",
+  "categories": ["utilities", "security", "productivity"],
   "icons": [
     {
       "src": "./favicon-32x32.png",
@@ -45,7 +46,6 @@
       "label": "Генератор паролей в темной теме"
     }
   ],
-  "categories": ["utilities", "security", "productivity"],
   "prefer_related_applications": false,
   "related_applications": [],
   "protocol_handlers": [],
@@ -58,6 +58,6 @@
   "display_override": ["window-controls-overlay"],
   "handle_links": "preferred",
   "permissions": ["clipboard-write"],
-  "id": "",
+  "id": "/",
   "capture_links": "new-client"
 }
