@@ -1,115 +1,475 @@
+/**
+ * iOS 18 Password Generator - GitHub Pages Edition
+ * Version: 1.3.1
+ */
+
+'use strict';
+
+// GitHub Pages safe configuration
 const CONFIG = {
     charSets: {
-        lowercase: "abcdefghijklmnopqrstuvwxyz",
-        uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ", 
-        numbers: "0123456789",
-        special: "!@#$%^&*"
+        lowercase: 'abcdefghijklmnopqrstuvwxyz',
+        uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        numbers: '0123456789',
+        special: '!@#$%^&*'
     },
-    passwordLength: {
-        min: 8,
-        max: 32,
-        default: 16
-    },
-    strengthLevels: {
-        low: { name: 'Низкая', class: 'strength-low', minTypes: 1, minLength: 8 },
-        medium: { name: 'Средняя', class: 'strength-medium', minTypes: 2, minLength: 12 },
-        high: { name: 'Высокая', class: 'strength-high', minTypes: 3, minLength: 16 },
-        veryHigh: { name: 'Очень высокая', class: 'strength-very-high', minTypes: 4, minLength: 20 }
-    }
+    strengthLevels: [
+        {
+            name: 'Очень низкая',
+            color: 'var(--red)',
+            width: '25%',
+            description: 'Рекомендуем увеличить длину и добавить символы'
+        },
+        {
+            name: 'Низкая',
+            color: 'var(--orange)',
+            width: '35%',
+            description: 'Добавьте больше типов символов для улучшения'
+        },
+        {
+            name: 'Средняя',
+            color: 'var(--yellow)',
+            width: '50%',
+            description: 'Хороший пароль для большинства сервисов'
+        },
+        {
+            name: 'Хорошая',
+            color: 'var(--green)',
+            width: '65%',
+            description: 'Надежная защита для важных аккаунтов'
+        },
+        {
+            name: 'Высокая',
+            color: 'var(--blue)',
+            width: '80%',
+            description: 'Отличный пароль для банковских сервисов'
+        },
+        {
+            name: 'Очень высокая',
+            color: 'var(--purple)',
+            width: '95%',
+            description: 'Максимальная защита для критических данных'
+        }
+    ],
+    minPasswordLength: 8,
+    maxPasswordLength: 32,
+    defaultPasswordLength: 16
 };
 
 class PasswordGenerator {
     constructor() {
-        this.elements = this.initElements();
-        this.state = this.initState();
+        this.currentPassword = '';
+        this.deferredPrompt = null;
+        this.isGenerating = false;
+        this.elements = {};
+        
+        // Check if we're on GitHub Pages
+        this.isGitHubPages = window.location.hostname.includes('github.io');
+        
         this.init();
     }
-
-    initElements() {
-        return {
-            password: document.getElementById('password'),
-            passwordTruncated: document.getElementById('passwordTruncated'),
-            passwordHint: document.getElementById('passwordHint'),
-            length: document.getElementById('length'),
-            lengthValue: document.getElementById('lengthValue'),
-            generateBtn: document.getElementById('generateBtn'),
-            copyBtn: document.getElementById('copyBtn'),
-            notification: document.getElementById('notification'),
-            themeToggle: document.getElementById('themeToggle'),
-            themeIcon: document.getElementById('themeIcon'),
-            strengthText: document.getElementById('strengthText'),
-            pwaInstall: document.getElementById('pwaInstall'),
-            pwaInstallBtn: document.getElementById('pwaInstallBtn'),
-            pwaDismissBtn: document.getElementById('pwaDismissBtn'),
-            specialSymbols: document.getElementById('specialSymbols')
-        };
-    }
-
-    initState() {
-        return {
-            currentPassword: '',
-            pwaDismissed: localStorage.getItem('pwaDismissed') === 'true',
-            deferredPrompt: null
-        };
-    }
-
+    
+    /**
+     * Initialize the application
+     */
     init() {
-        this.initTheme();
-        this.updateSpecialSymbols();
-        this.initPWA();
-        this.initEventListeners();
-        this.generateInitialPassword();
+        this.createAppStructure();
+        this.cacheElements();
+        this.setupTheme();
+        this.setupEventListeners();
+        this.setupSlider();
+        this.setupPWA();
+        this.preventZoom();
+        this.generatePassword();
         
-        window.addEventListener('resize', () => this.checkAndShowTruncation());
+        console.log('Password Generator initialized for GitHub Pages');
+    }
+    
+    /**
+     * Create app structure for GitHub Pages
+     */
+    createAppStructure() {
+        const app = document.getElementById('app');
+        if (!app) return;
         
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('ServiceWorker зарегистрирован:', reg.scope))
-                    .catch(err => console.log('Ошибка регистрации ServiceWorker:', err));
-            });
+        app.innerHTML = `
+            <!-- iOS 18 Navigation -->
+            <nav class="navigation" role="navigation" aria-label="Основная навигация">
+                <div class="nav-content">
+                    <h1 class="nav-title">Генератор паролей</h1>
+                    <div class="nav-actions">
+                        <button class="nav-button" id="themeToggle" aria-label="Переключить тему" aria-pressed="false">
+                            <span class="nav-button-icon" aria-hidden="true">🌙</span>
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="content" role="main">
+                <!-- Password Card -->
+                <section class="card password-card">
+                    <div class="password-display-container">
+                        <div class="password-display" role="textbox" aria-label="Пароль" tabindex="0">
+                            <output id="passwordOutput" class="password-output" aria-live="polite">
+                                Нажмите "Сгенерировать пароль"
+                            </output>
+                            <div class="password-actions">
+                                <button class="action-button" id="refreshButton" aria-label="Сгенерировать новый пароль">
+                                    <span class="action-button-icon" aria-hidden="true">🔄</span>
+                                </button>
+                                <button class="action-button" id="copyButton" aria-label="Копировать пароль">
+                                    <span class="action-button-icon" aria-hidden="true">📋</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Strength Indicator -->
+                    <div class="strength-indicator" aria-live="polite">
+                        <div class="strength-header">
+                            <span class="strength-label">Сложность:</span>
+                            <span id="strengthBadge" class="strength-badge" role="status">Средняя</span>
+                        </div>
+                        <div class="strength-meter">
+                            <div id="strengthFill" class="strength-fill"></div>
+                        </div>
+                        <div id="strengthDescription" class="strength-description">
+                            Хороший пароль для большинства сервисов
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <div class="generate-button-container">
+                        <button class="generate-button" id="generateButton">
+                            <span class="generate-button-icon" aria-hidden="true">🔐</span>
+                            <span class="generate-button-text">Сгенерировать и скопировать</span>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Settings Card -->
+                <section class="card settings-card">
+                    <h2 class="settings-title">Настройки генерации</h2>
+                    
+                    <!-- Length Control -->
+                    <div class="length-control">
+                        <div class="length-header">
+                            <span class="length-label">Длина пароля:</span>
+                            <output id="lengthValue" class="length-value" aria-live="polite">16</output>
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-track" aria-hidden="true">
+                                <div id="sliderFill" class="slider-fill"></div>
+                            </div>
+                            <input type="range" 
+                                   class="slider-input" 
+                                   id="lengthSlider" 
+                                   min="8" 
+                                   max="32" 
+                                   value="16" 
+                                   step="1"
+                                   aria-label="Длина пароля от 8 до 32 символов">
+                        </div>
+                    </div>
+
+                    <!-- Character Options -->
+                    <div class="character-options">
+                        <div class="option-row">
+                            <label class="option-label">
+                                Строчные буквы (a-z)
+                            </label>
+                            <div class="switch-container">
+                                <input type="checkbox" 
+                                       class="switch-input" 
+                                       id="lowercaseSwitch" 
+                                       checked>
+                                <span class="switch-track" aria-hidden="true">
+                                    <span class="switch-thumb"></span>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="option-row">
+                            <label class="option-label">
+                                Заглавные буквы (A-Z)
+                            </label>
+                            <div class="switch-container">
+                                <input type="checkbox" 
+                                       class="switch-input" 
+                                       id="uppercaseSwitch" 
+                                       checked>
+                                <span class="switch-track" aria-hidden="true">
+                                    <span class="switch-thumb"></span>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="option-row">
+                            <label class="option-label">
+                                Цифры (0-9)
+                            </label>
+                            <div class="switch-container">
+                                <input type="checkbox" 
+                                       class="switch-input" 
+                                       id="numbersSwitch" 
+                                       checked>
+                                <span class="switch-track" aria-hidden="true">
+                                    <span class="switch-thumb"></span>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="option-row">
+                            <label class="option-label">
+                                Специальные символы
+                            </label>
+                            <div class="switch-container">
+                                <input type="checkbox" 
+                                       class="switch-input" 
+                                       id="specialSwitch" 
+                                       checked>
+                                <span class="switch-track" aria-hidden="true">
+                                    <span class="switch-thumb"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Special Characters Preview -->
+                    <div class="special-preview" aria-label="Доступные специальные символы">
+                        <div id="specialPreview" class="special-preview-text">
+                            ! @ # $ % ^ & *
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Information Section -->
+                <section class="card info-card">
+                    <div class="info-content">
+                        <p>🔒 <strong>Локальная генерация</strong> - все пароли создаются только на вашем устройстве</p>
+                        <p>⚡ <strong>Криптографически безопасно</strong> - используется Web Crypto API</p>
+                        <p>📱 <strong>Работает оффлайн</strong> - не требует подключения к интернету</p>
+                    </div>
+                </section>
+            </main>
+
+            <!-- Toast Notification -->
+            <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+            <!-- PWA Install Banner -->
+            <div id="pwaBanner" class="pwa-banner" role="dialog" aria-modal="true" hidden>
+                <div class="pwa-content">
+                    <div class="pwa-icon" aria-hidden="true">🔐</div>
+                    <div class="pwa-text">
+                        <h3 class="pwa-title">Установить приложение</h3>
+                        <p class="pwa-description">Добавьте на домашний экран для быстрого доступа</p>
+                    </div>
+                </div>
+                <div class="pwa-actions">
+                    <button id="pwaLaterButton" class="pwa-button secondary">Позже</button>
+                    <button id="pwaInstallButton" class="pwa-button primary">Установить</button>
+                </div>
+            </div>
+        `;
+        
+        // Show the app
+        app.style.display = 'flex';
+    }
+    
+    /**
+     * Cache DOM elements
+     */
+    cacheElements() {
+        this.elements = {
+            // Display elements
+            passwordOutput: document.getElementById('passwordOutput'),
+            strengthBadge: document.getElementById('strengthBadge'),
+            strengthFill: document.getElementById('strengthFill'),
+            strengthDescription: document.getElementById('strengthDescription'),
+            lengthValue: document.getElementById('lengthValue'),
+            specialPreview: document.getElementById('specialPreview'),
+            sliderFill: document.getElementById('sliderFill'),
+            sliderInput: document.getElementById('lengthSlider'),
+            
+            // Input elements
+            lowercaseSwitch: document.getElementById('lowercaseSwitch'),
+            uppercaseSwitch: document.getElementById('uppercaseSwitch'),
+            numbersSwitch: document.getElementById('numbersSwitch'),
+            specialSwitch: document.getElementById('specialSwitch'),
+            
+            // Buttons
+            themeToggle: document.getElementById('themeToggle'),
+            themeIcon: document.querySelector('#themeToggle .nav-button-icon'),
+            refreshButton: document.getElementById('refreshButton'),
+            copyButton: document.getElementById('copyButton'),
+            generateButton: document.getElementById('generateButton'),
+            
+            // Notifications
+            toast: document.getElementById('toast'),
+            
+            // PWA
+            pwaBanner: document.getElementById('pwaBanner'),
+            pwaInstallButton: document.getElementById('pwaInstallButton'),
+            pwaLaterButton: document.getElementById('pwaLaterButton')
+        };
+    }
+    
+    /**
+     * Setup theme management
+     */
+    setupTheme() {
+        // Get saved theme or use system preference
+        const savedTheme = localStorage.getItem('themePreference');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+        
+        document.documentElement.setAttribute('data-theme', initialTheme);
+        this.updateThemeButton(initialTheme);
+        
+        // Theme toggle button
+        this.elements.themeToggle.addEventListener('click', () => this.toggleTheme());
+    }
+    
+    /**
+     * Update theme button icon
+     */
+    updateThemeButton(theme) {
+        if (this.elements.themeIcon) {
+            this.elements.themeIcon.textContent = theme === 'dark' ? '🌙' : '☀️';
         }
+        this.elements.themeToggle.setAttribute('aria-pressed', theme === 'dark');
     }
-
-    initTheme() {
-        const savedTheme = localStorage.getItem('theme') || 
-                          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        this.updateThemeIcon(savedTheme);
-    }
-
+    
+    /**
+     * Toggle between dark and light themes
+     */
     toggleTheme() {
         const currentTheme = document.documentElement.getAttribute('data-theme');
-        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         
-        this.elements.themeIcon.style.transform = 'scale(0.8) rotate(180deg)';
+        // Update theme
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('themePreference', newTheme);
+        this.updateThemeButton(newTheme);
         
-        setTimeout(() => {
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            this.updateThemeIcon(newTheme);
-            this.elements.themeIcon.style.transform = 'scale(1) rotate(0deg)';
-        }, 200);
+        // Show toast
+        this.showToast(`Тема изменена: ${newTheme === 'dark' ? 'Тёмная' : 'Светлая'}`);
     }
-
-    updateThemeIcon(theme) {
-        this.elements.themeIcon.textContent = theme === 'light' ? '🌙' : '☀️';
+    
+    /**
+     * Setup slider functionality
+     */
+    setupSlider() {
+        const updateSlider = () => {
+            const value = parseInt(this.elements.sliderInput.value);
+            const min = parseInt(this.elements.sliderInput.min);
+            const max = parseInt(this.elements.sliderInput.max);
+            
+            const percentage = ((value - min) / (max - min)) * 100;
+            
+            // Update visual elements
+            this.elements.sliderFill.style.width = `${percentage}%`;
+            this.elements.lengthValue.textContent = value;
+            
+            // Generate new password
+            this.generatePassword();
+        };
+        
+        this.elements.sliderInput.addEventListener('input', updateSlider);
+        updateSlider(); // Initial update
     }
-
-    updateSpecialSymbols() {
-        this.elements.specialSymbols.textContent = CONFIG.charSets.special;
+    
+    /**
+     * Setup event listeners
+     */
+    setupEventListeners() {
+        // Generate password
+        this.elements.generateButton.addEventListener('click', () => {
+            if (!this.isGenerating) {
+                this.generateAndCopy();
+            }
+        });
+        
+        // Refresh password
+        this.elements.refreshButton.addEventListener('click', () => {
+            this.generatePassword();
+        });
+        
+        // Copy password
+        this.elements.copyButton.addEventListener('click', () => this.copyPassword());
+        
+        // Character type switches
+        [this.elements.lowercaseSwitch, this.elements.uppercaseSwitch, 
+         this.elements.numbersSwitch, this.elements.specialSwitch].forEach(switchEl => {
+            switchEl.addEventListener('change', () => this.generatePassword());
+        });
     }
-
+    
+    /**
+     * Get character pool based on selected options
+     */
+    getCharPool() {
+        let pool = '';
+        
+        if (this.elements.lowercaseSwitch.checked) pool += CONFIG.charSets.lowercase;
+        if (this.elements.uppercaseSwitch.checked) pool += CONFIG.charSets.uppercase;
+        if (this.elements.numbersSwitch.checked) pool += CONFIG.charSets.numbers;
+        if (this.elements.specialSwitch.checked) pool += CONFIG.charSets.special;
+        
+        return pool;
+    }
+    
+    /**
+     * Calculate password strength
+     */
+    calculateStrength(password, charPool) {
+        if (!password || !charPool) return 0;
+        
+        const poolSize = charPool.length;
+        const length = password.length;
+        
+        // Basic strength calculation
+        const strength = length * Math.log2(poolSize);
+        
+        // Bonus for character variety
+        let varietyBonus = 0;
+        if (/[a-z]/.test(password)) varietyBonus += 10;
+        if (/[A-Z]/.test(password)) varietyBonus += 10;
+        if (/[0-9]/.test(password)) varietyBonus += 10;
+        if (/[^a-zA-Z0-9]/.test(password)) varietyBonus += 10;
+        
+        return strength + varietyBonus;
+    }
+    
+    /**
+     * Get strength level
+     */
+    getStrengthLevel(strength) {
+        if (strength < 30) return CONFIG.strengthLevels[0];
+        if (strength < 45) return CONFIG.strengthLevels[1];
+        if (strength < 60) return CONFIG.strengthLevels[2];
+        if (strength < 75) return CONFIG.strengthLevels[3];
+        if (strength < 90) return CONFIG.strengthLevels[4];
+        return CONFIG.strengthLevels[5];
+    }
+    
+    /**
+     * Generate a secure password
+     */
     generatePassword() {
-        const length = parseInt(this.elements.length.value);
         const charPool = this.getCharPool();
+        const length = parseInt(this.elements.sliderInput.value);
         
         if (!charPool) {
-            this.showNotification('Выберите хотя бы один тип символов!', 'error');
+            this.showToast('Выберите хотя бы один тип символов');
+            this.updateDisplay('Выберите типы символов');
+            this.updateStrength('', '');
             return '';
         }
-
+        
         try {
+            // Use Web Crypto API for secure random generation
             const array = new Uint32Array(length);
             window.crypto.getRandomValues(array);
             
@@ -118,223 +478,256 @@ class PasswordGenerator {
                 password += charPool[array[i] % charPool.length];
             }
             
-            this.state.currentPassword = password;
-            this.updatePasswordStrength(length, this.getSelectedTypesCount());
+            this.currentPassword = password;
+            this.updateDisplay(password);
+            this.updateStrength(password, charPool);
+            
             return password;
         } catch (error) {
-            console.warn('Используется Math.random()');
+            console.error('Web Crypto API error, using fallback:', error);
             return this.generateFallbackPassword(length, charPool);
         }
     }
-
-    getCharPool() {
-        let pool = '';
-        ['lowercase', 'uppercase', 'numbers', 'special'].forEach(type => {
-            if (document.getElementById(type).checked) {
-                pool += CONFIG.charSets[type];
-            }
-        });
-        return pool;
-    }
-
-    getSelectedTypesCount() {
-        return ['lowercase', 'uppercase', 'numbers', 'special']
-            .filter(type => document.getElementById(type).checked).length;
-    }
-
+    
+    /**
+     * Fallback password generation
+     */
     generateFallbackPassword(length, charPool) {
         let password = '';
         for (let i = 0; i < length; i++) {
             password += charPool[Math.floor(Math.random() * charPool.length)];
         }
-        this.state.currentPassword = password;
+        
+        this.currentPassword = password;
+        this.updateDisplay(password);
+        this.updateStrength(password, charPool);
+        
         return password;
     }
-
-    updatePasswordStrength(length, typesCount) {
-        let strengthLevel = this.calculateStrengthLevel(length, typesCount);
-        
-        this.elements.strengthText.style.transform = 'scale(1.1)';
-        
-        setTimeout(() => {
-            this.elements.strengthText.textContent = strengthLevel.name;
-            this.elements.strengthText.style.backgroundColor = `var(--${strengthLevel.class})`;
-            this.elements.strengthText.style.borderColor = `var(--${strengthLevel.class})`;
-            this.elements.strengthText.style.transform = 'scale(1)';
-        }, 150);
+    
+    /**
+     * Update password display
+     */
+    updateDisplay(password) {
+        this.elements.passwordOutput.textContent = password;
     }
-
-    calculateStrengthLevel(length, typesCount) {
-        if (length >= 20 && typesCount >= 4) return CONFIG.strengthLevels.veryHigh;
-        if (length >= 16 && typesCount >= 3) return CONFIG.strengthLevels.high;
-        if (length >= 12 && typesCount >= 2) return CONFIG.strengthLevels.medium;
-        return CONFIG.strengthLevels.low;
-    }
-
-    updatePasswordDisplay(password) {
-        this.elements.password.style.opacity = '0';
-        this.elements.password.style.transform = 'translateY(-5px)';
-        
-        setTimeout(() => {
-            this.elements.password.value = password;
-            this.elements.password.style.opacity = '1';
-            this.elements.password.style.transform = 'translateY(0)';
-            this.checkAndShowTruncation();
-        }, 150);
-    }
-
-    checkAndShowTruncation() {
-        const input = this.elements.password;
-        const isTruncated = input.scrollWidth > input.clientWidth;
-        
-        this.elements.passwordTruncated.style.display = isTruncated ? 'block' : 'none';
-        this.elements.passwordHint.style.display = isTruncated ? 'block' : 'none';
-        input.title = isTruncated ? 'Полный пароль: ' + this.elements.password.value : 'Пароль для использования';
-    }
-
-    async generateAndCopy() {
-        this.elements.generateBtn.style.transform = 'scale(0.95)';
-        
-        const password = this.generatePassword();
+    
+    /**
+     * Update strength indicator
+     */
+    updateStrength(password, charPool) {
         if (!password) {
-            this.elements.generateBtn.style.transform = '';
+            this.elements.strengthBadge.textContent = '—';
+            this.elements.strengthFill.style.width = '0%';
+            this.elements.strengthDescription.textContent = 'Сгенерируйте пароль';
             return;
         }
         
-        this.updatePasswordDisplay(password);
+        const strength = this.calculateStrength(password, charPool);
+        const strengthLevel = this.getStrengthLevel(strength);
         
-        setTimeout(async () => {
-            await this.copyToClipboard(password);
-            
-            setTimeout(() => {
-                this.elements.generateBtn.style.transform = '';
-            }, 100);
-        }, 200);
+        this.elements.strengthBadge.textContent = strengthLevel.name;
+        this.elements.strengthBadge.style.background = strengthLevel.color;
+        this.elements.strengthFill.style.width = strengthLevel.width;
+        this.elements.strengthFill.style.background = strengthLevel.color;
+        this.elements.strengthDescription.textContent = strengthLevel.description;
     }
-
-    async copyToClipboard(text) {
+    
+    /**
+     * Generate and copy password
+     */
+    async generateAndCopy() {
+        if (this.isGenerating) return;
+        
+        this.isGenerating = true;
+        
+        // Button animation
+        this.elements.generateButton.disabled = true;
+        const originalText = this.elements.generateButton.querySelector('.generate-button-text').textContent;
+        this.elements.generateButton.querySelector('.generate-button-text').textContent = 'Генерация...';
+        
+        const password = this.generatePassword();
+        
+        if (!password) {
+            this.resetGenerateButton(originalText);
+            this.isGenerating = false;
+            return;
+        }
+        
+        // Small delay for visual feedback
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        await this.copyPassword();
+        
+        // Reset button
+        this.resetGenerateButton(originalText);
+        this.isGenerating = false;
+    }
+    
+    /**
+     * Reset generate button
+     */
+    resetGenerateButton(originalText) {
+        this.elements.generateButton.disabled = false;
+        this.elements.generateButton.querySelector('.generate-button-text').textContent = originalText;
+    }
+    
+    /**
+     * Copy password to clipboard
+     */
+    async copyPassword() {
+        if (!this.currentPassword) {
+            this.showToast('Сначала сгенерируйте пароль');
+            return false;
+        }
+        
         try {
-            await navigator.clipboard.writeText(text);
-            this.showNotification('Пароль скопирован в буфер обмена!');
+            await navigator.clipboard.writeText(this.currentPassword);
+            this.showToast('Пароль скопирован');
+            this.updateCopyButtonFeedback();
+            return true;
         } catch (err) {
-            this.copyFallback(text);
+            console.error('Clipboard API error:', err);
+            return this.copyFallback();
         }
     }
-
-    copyFallback(text) {
+    
+    /**
+     * Fallback copy method
+     */
+    copyFallback() {
         const textArea = document.createElement('textarea');
-        textArea.value = text;
+        textArea.value = this.currentPassword;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
         document.body.appendChild(textArea);
         textArea.select();
         
         try {
-            document.execCommand('copy');
-            this.showNotification('Пароль скопирован в буфер обмена!');
+            const success = document.execCommand('copy');
+            if (success) {
+                this.showToast('Пароль скопирован');
+                return true;
+            } else {
+                this.showToast('Не удалось скопировать');
+                return false;
+            }
         } catch (err) {
-            this.showNotification('Не удалось скопировать пароль', 'error');
+            this.showToast('Не удалось скопировать');
+            return false;
         } finally {
             document.body.removeChild(textArea);
         }
     }
-
-    showNotification(message, type = 'success') {
-        this.elements.notification.textContent = message;
-        this.elements.notification.className = 'notification dynamic-island';
-        if (type === 'error') this.elements.notification.classList.add('error');
-        
-        this.elements.notification.style.display = 'block';
-        
+    
+    /**
+     * Update copy button feedback
+     */
+    updateCopyButtonFeedback() {
+        const icon = this.elements.copyButton.querySelector('.action-button-icon');
+        icon.textContent = '✓';
         setTimeout(() => {
-            this.elements.notification.classList.add('hiding');
-            setTimeout(() => {
-                this.elements.notification.style.display = 'none';
-                this.elements.notification.classList.remove('hiding', 'error');
-            }, 300);
+            icon.textContent = '📋';
         }, 2000);
     }
-
-    initPWA() {
+    
+    /**
+     * Show toast notification
+     */
+    showToast(message) {
+        this.elements.toast.textContent = message;
+        this.elements.toast.classList.add('show');
+        
+        setTimeout(() => {
+            this.elements.toast.classList.remove('show');
+        }, 2000);
+    }
+    
+    /**
+     * Setup PWA installation
+     */
+    setupPWA() {
+        let pwaDismissed = localStorage.getItem('pwaDismissed') === 'true';
+        
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
-            this.state.deferredPrompt = e;
+            this.deferredPrompt = e;
             
-            if (!this.state.pwaDismissed) {
+            if (!pwaDismissed) {
                 setTimeout(() => {
-                    this.elements.pwaInstall.style.display = 'block';
+                    this.elements.pwaBanner.hidden = false;
+                    this.elements.pwaBanner.classList.add('show');
                 }, 3000);
             }
         });
-
+        
         window.addEventListener('appinstalled', () => {
-            this.elements.pwaInstall.classList.add('hiding');
-            setTimeout(() => {
-                this.elements.pwaInstall.style.display = 'none';
-            }, 300);
+            this.elements.pwaBanner.classList.remove('show');
+            this.showToast('Приложение установлено');
         });
-
-        this.elements.pwaInstallBtn.addEventListener('click', async () => {
-            if (this.state.deferredPrompt) {
-                this.state.deferredPrompt.prompt();
-                const { outcome } = await this.state.deferredPrompt.userChoice;
+        
+        this.elements.pwaInstallButton.addEventListener('click', async () => {
+            if (this.deferredPrompt) {
+                this.deferredPrompt.prompt();
+                const { outcome } = await this.deferredPrompt.userChoice;
                 if (outcome === 'accepted') {
                     console.log('PWA установлено');
                 }
-                this.state.deferredPrompt = null;
+                this.deferredPrompt = null;
             }
-            this.hidePWAInstall();
+            this.elements.pwaBanner.classList.remove('show');
         });
-
-        this.elements.pwaDismissBtn.addEventListener('click', () => {
-            this.state.pwaDismissed = true;
+        
+        this.elements.pwaLaterButton.addEventListener('click', () => {
             localStorage.setItem('pwaDismissed', 'true');
-            this.hidePWAInstall();
+            this.elements.pwaBanner.classList.remove('show');
         });
     }
-
-    hidePWAInstall() {
-        this.elements.pwaInstall.classList.add('hiding');
-        setTimeout(() => {
-            this.elements.pwaInstall.style.display = 'none';
-        }, 300);
-    }
-    initEventListeners() {
-        this.elements.length.addEventListener('input', () => this.handleLengthChange());
-        this.elements.generateBtn.addEventListener('click', () => this.generateAndCopy());
-        this.elements.copyBtn.addEventListener('click', () => this.copyToClipboard(this.state.currentPassword));
-        this.elements.themeToggle.addEventListener('click', () => this.toggleTheme());
-        
-        document.querySelectorAll('.checkbox-label input').forEach(checkbox => {
-            checkbox.addEventListener('change', () => this.handleCheckboxChange());
-        });
-    }
-
-    handleLengthChange() {
-        this.updateLengthValue();
-        const password = this.generatePassword();
-        if (password) this.updatePasswordDisplay(password);
-    }
-
-    handleCheckboxChange() {
-        const password = this.generatePassword();
-        if (password) this.updatePasswordDisplay(password);
-    }
-
-    updateLengthValue() {
-        this.elements.lengthValue.textContent = this.elements.length.value;
-        this.elements.lengthValue.classList.add('updating');
-        
-        setTimeout(() => {
-            this.elements.lengthValue.classList.remove('updating');
-        }, 300);
-    }
-
-    generateInitialPassword() {
-        const password = this.generatePassword();
-        if (password) this.updatePasswordDisplay(password);
-        this.updateLengthValue();
+    
+    /**
+     * Prevent zoom
+     */
+    preventZoom() {
+        document.addEventListener('gesturestart', (e) => e.preventDefault());
+        document.addEventListener('gesturechange', (e) => e.preventDefault());
+        document.addEventListener('gestureend', (e) => e.preventDefault());
     }
 }
 
+// GitHub Pages initialization
 document.addEventListener('DOMContentLoaded', () => {
-    new PasswordGenerator();
+    try {
+        // Initialize app
+        const app = new PasswordGenerator();
+        
+        // Store app reference globally for debugging
+        window.passwordGenerator = app;
+        
+        console.log('Password Generator ready for GitHub Pages');
+        
+    } catch (error) {
+        console.error('Failed to initialize app:', error);
+        
+        // Show error message
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) {
+            overlay.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: white;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
+                    <h3 style="margin-bottom: 10px;">Ошибка загрузки</h3>
+                    <p>Не удалось загрузить приложение. Пожалуйста, обновите страницу.</p>
+                    <button onclick="location.reload()" style="
+                        background: #0a84ff;
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 8px;
+                        font-size: 16px;
+                        margin-top: 20px;
+                        cursor: pointer;
+                    ">Обновить страницу</button>
+                </div>
+            `;
+        }
+    }
 });

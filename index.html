@@ -8,248 +8,225 @@
     <meta name="apple-mobile-web-app-title" content="Генератор паролей">
     <meta name="theme-color" content="#000000">
     <meta name="color-scheme" content="dark light">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-Frame-Options" content="DENY">
     
-    <title>Генератор паролей - Безопасные пароли для iOS 18</title>
+    <!-- GitHub Pages-friendly CSP -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data: blob:;">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    
+    <title>Генератор паролей - Безопасные пароли</title>
     <meta name="description" content="Надежный генератор паролей. Создавайте криптографически безопасные пароли локально на устройстве. Полностью бесплатно.">
     <meta name="keywords" content="генератор паролей, безопасные пароли, PWA, оффлайн">
+    <meta name="author" content="Password Generator Team">
+    <meta name="robots" content="index, follow">
     
-    <link rel="manifest" href="./manifest.json" crossorigin="use-credentials">
+    <!-- GitHub Pages manifest path -->
+    <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="./assets/icons/icon-180.png">
     <link rel="icon" type="image/png" href="./assets/icons/icon-32.png">
-    <link rel="stylesheet" href="./style.css">
     
-    <!-- Preload critical resources -->
-    <link rel="preload" href="./style.css" as="style">
-    <link rel="preload" href="./app.js" as="script">
+    <!-- Inline critical CSS for GitHub Pages performance -->
+    <style>
+        /* Critical CSS will be loaded here */
+        :root {
+            --system-background: #000000;
+            --label-primary: #ffffff;
+            --blue: #0a84ff;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--system-background);
+            color: var(--label-primary);
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--system-background);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: var(--blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-    <!-- iOS 18 Navigation -->
-    <nav class="navigation" role="navigation" aria-label="Основная навигация">
-        <div class="nav-content">
-            <h1 class="nav-title" id="pageTitle">Генератор паролей</h1>
-            <div class="nav-actions">
-                <button class="nav-button" id="themeToggle" aria-label="Переключить тему" aria-pressed="false">
-                    <span class="nav-button-icon" aria-hidden="true">🌙</span>
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="content" id="mainContent" role="main">
-        <!-- Password Card -->
-        <section class="card password-card" aria-labelledby="passwordTitle">
-            <h2 id="passwordTitle" class="visually-hidden">Сгенерированный пароль</h2>
-            
-            <div class="password-display-container">
-                <div class="password-display" role="textbox" aria-label="Пароль" tabindex="0">
-                    <output id="passwordOutput" class="password-output" for="generateButton" aria-live="polite">
-                        Нажмите "Сгенерировать пароль"
-                    </output>
-                    <div class="password-actions">
-                        <button class="action-button" id="refreshButton" aria-label="Сгенерировать новый пароль">
-                            <span class="action-button-icon" aria-hidden="true">🔄</span>
-                        </button>
-                        <button class="action-button" id="copyButton" aria-label="Копировать пароль в буфер обмена">
-                            <span class="action-button-icon" aria-hidden="true">📋</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Strength Indicator -->
-            <div class="strength-indicator" aria-live="polite">
-                <div class="strength-header">
-                    <span class="strength-label">Сложность пароля:</span>
-                    <span id="strengthBadge" class="strength-badge" role="status">Средняя</span>
-                </div>
-                <div class="strength-meter">
-                    <div id="strengthFill" class="strength-fill" aria-hidden="true"></div>
-                </div>
-                <div id="strengthDescription" class="strength-description">
-                    Хороший пароль для большинства сервисов
-                </div>
-            </div>
-
-            <!-- Generate Button -->
-            <div class="generate-section">
-                <button class="generate-button" id="generateButton" aria-describedby="passwordOutput">
-                    <span class="generate-button-icon" aria-hidden="true">🔐</span>
-                    <span class="generate-button-text">Сгенерировать и скопировать</span>
-                </button>
-            </div>
-        </section>
-
-        <!-- Settings Card -->
-        <section class="card settings-card" aria-labelledby="settingsTitle">
-            <h2 id="settingsTitle" class="settings-title">Настройки генерации</h2>
-            
-            <!-- Length Control -->
-            <div class="length-control">
-                <div class="length-header">
-                    <label for="lengthSlider" class="length-label">Длина пароля:</label>
-                    <output id="lengthValue" class="length-value" for="lengthSlider" aria-live="polite">16</output>
-                </div>
-                <div class="slider-container">
-                    <div class="slider-track" aria-hidden="true">
-                        <div id="sliderFill" class="slider-fill"></div>
-                    </div>
-                    <input type="range" 
-                           class="slider-input" 
-                           id="lengthSlider" 
-                           name="passwordLength"
-                           min="8" 
-                           max="32" 
-                           value="16" 
-                           step="1"
-                           aria-label="Выберите длину пароля от 8 до 32 символов"
-                           aria-valuemin="8"
-                           aria-valuemax="32"
-                           aria-valuenow="16"
-                           aria-valuetext="16 символов">
-                </div>
-            </div>
-
-            <!-- Character Options -->
-            <fieldset class="character-options" aria-labelledby="charOptionsTitle">
-                <legend id="charOptionsTitle" class="visually-hidden">Типы используемых символов</legend>
-                
-                <div class="option-row">
-                    <label for="lowercaseSwitch" class="option-label">
-                        Строчные буквы (a-z)
-                    </label>
-                    <div class="switch-container">
-                        <input type="checkbox" 
-                               class="switch-input" 
-                               id="lowercaseSwitch" 
-                               name="lowercase" 
-                               checked
-                               aria-checked="true">
-                        <span class="switch-track" aria-hidden="true">
-                            <span class="switch-thumb"></span>
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="option-row">
-                    <label for="uppercaseSwitch" class="option-label">
-                        Заглавные буквы (A-Z)
-                    </label>
-                    <div class="switch-container">
-                        <input type="checkbox" 
-                               class="switch-input" 
-                               id="uppercaseSwitch" 
-                               name="uppercase" 
-                               checked
-                               aria-checked="true">
-                        <span class="switch-track" aria-hidden="true">
-                            <span class="switch-thumb"></span>
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="option-row">
-                    <label for="numbersSwitch" class="option-label">
-                        Цифры (0-9)
-                    </label>
-                    <div class="switch-container">
-                        <input type="checkbox" 
-                               class="switch-input" 
-                               id="numbersSwitch" 
-                               name="numbers" 
-                               checked
-                               aria-checked="true">
-                        <span class="switch-track" aria-hidden="true">
-                            <span class="switch-thumb"></span>
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="option-row">
-                    <label for="specialSwitch" class="option-label">
-                        Специальные символы
-                    </label>
-                    <div class="switch-container">
-                        <input type="checkbox" 
-                               class="switch-input" 
-                               id="specialSwitch" 
-                               name="special" 
-                               checked
-                               aria-checked="true">
-                        <span class="switch-track" aria-hidden="true">
-                            <span class="switch-thumb"></span>
-                        </span>
-                    </div>
-                </div>
-            </fieldset>
-
-            <!-- Special Characters Preview -->
-            <div class="special-preview" aria-label="Доступные специальные символы">
-                <div id="specialPreview" class="special-preview-text">
-                    ! @ # $ % ^ & *
-                </div>
-            </div>
-        </section>
-
-        <!-- Information Section -->
-        <section class="card info-card" aria-labelledby="infoTitle">
-            <h2 id="infoTitle" class="visually-hidden">Информация о безопасности</h2>
-            <div class="info-content">
-                <p>🔒 <strong>Локальная генерация</strong> - все пароли создаются только на вашем устройстве</p>
-                <p>⚡ <strong>Криптографически безопасно</strong> - используется Web Crypto API</p>
-                <p>📱 <strong>Работает оффлайн</strong> - не требует подключения к интернету</p>
-                <p>🔄 <strong>Автоматическое копирование</strong> - пароль сразу копируется в буфер</p>
-            </div>
-        </section>
-    </main>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true"></div>
-
-    <!-- PWA Install Banner -->
-    <div id="pwaBanner" class="pwa-banner" role="dialog" aria-labelledby="pwaTitle" aria-modal="true" hidden>
-        <div class="pwa-content">
-            <div class="pwa-icon" aria-hidden="true">🔐</div>
-            <div class="pwa-text">
-                <h3 id="pwaTitle" class="pwa-title">Установить приложение</h3>
-                <p class="pwa-description">Добавьте на домашний экран для быстрого доступа</p>
-            </div>
-        </div>
-        <div class="pwa-actions">
-            <button id="pwaLaterButton" class="pwa-button secondary" aria-label="Отложить установку">
-                Позже
-            </button>
-            <button id="pwaInstallButton" class="pwa-button primary" aria-label="Установить приложение">
-                Установить
-            </button>
-        </div>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay" role="status" aria-label="Загрузка" hidden>
+    <!-- Loading State for GitHub Pages -->
+    <div id="loadingOverlay" class="loading-overlay">
         <div class="loading-spinner" aria-hidden="true"></div>
         <span class="loading-text">Загрузка...</span>
     </div>
 
-    <!-- Script -->
-    <script src="./app.js" defer></script>
-    
-    <!-- Service Worker Registration -->
+    <!-- Main Content will be loaded by JavaScript -->
+    <div id="app" style="display: none;"></div>
+
+    <!-- Inline JavaScript for GitHub Pages (no external dependencies) -->
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(function(registration) {
-                        console.log('ServiceWorker зарегистрирован:', registration.scope);
-                    })
-                    .catch(function(error) {
-                        console.log('Ошибка регистрации ServiceWorker:', error);
-                    });
-            });
-        }
+        // GitHub Pages safe initialization
+        (function() {
+            'use strict';
+            
+            // Configuration for GitHub Pages
+            const GITHUB_PAGES_CONFIG = {
+                basePath: window.location.pathname.includes('github.io') ? 
+                         window.location.pathname.split('/').slice(0, -1).join('/') + '/' : './',
+                assetsPath: 'assets/'
+            };
+            
+            // Fix paths for GitHub Pages
+            function fixGitHubPagesPaths() {
+                const base = GITHUB_PAGES_CONFIG.basePath;
+                
+                // Fix manifest path
+                const manifest = document.querySelector('link[rel="manifest"]');
+                if (manifest) {
+                    manifest.href = base + 'manifest.json';
+                }
+                
+                // Fix icon paths
+                document.querySelectorAll('link[rel*="icon"]').forEach(link => {
+                    if (link.href.includes('./')) {
+                        link.href = base + link.href.replace('./', '');
+                    }
+                });
+                
+                // Fix asset paths in CSS (will be handled by JS)
+                return base;
+            }
+            
+            // Load main stylesheet
+            function loadStyles() {
+                return new Promise((resolve) => {
+                    const base = GITHUB_PAGES_CONFIG.basePath;
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = base + 'style.css';
+                    link.onload = resolve;
+                    link.onerror = resolve; // Continue even if CSS fails
+                    document.head.appendChild(link);
+                });
+            }
+            
+            // Load main application
+            function loadApplication() {
+                return new Promise((resolve) => {
+                    const base = GITHUB_PAGES_CONFIG.basePath;
+                    const script = document.createElement('script');
+                    script.src = base + 'app.js';
+                    script.defer = true;
+                    script.onload = resolve;
+                    script.onerror = () => {
+                        console.error('Failed to load app.js');
+                        showError('Не удалось загрузить приложение');
+                        resolve();
+                    };
+                    document.body.appendChild(script);
+                });
+            }
+            
+            // Show error message
+            function showError(message) {
+                const overlay = document.getElementById('loadingOverlay');
+                if (overlay) {
+                    overlay.innerHTML = `
+                        <div style="text-align: center; padding: 20px;">
+                            <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
+                            <h3 style="margin-bottom: 10px;">Ошибка загрузки</h3>
+                            <p>${message}</p>
+                            <button onclick="location.reload()" style="
+                                background: var(--blue);
+                                color: white;
+                                border: none;
+                                padding: 12px 24px;
+                                border-radius: 8px;
+                                font-size: 16px;
+                                margin-top: 20px;
+                                cursor: pointer;
+                            ">Повторить</button>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Register Service Worker
+            function registerServiceWorker() {
+                if ('serviceWorker' in navigator && location.protocol === 'https:') {
+                    navigator.serviceWorker.register(GITHUB_PAGES_CONFIG.basePath + 'sw.js')
+                        .then(registration => {
+                            console.log('ServiceWorker зарегистрирован для GitHub Pages');
+                        })
+                        .catch(error => {
+                            console.log('ServiceWorker регистрация пропущена:', error);
+                        });
+                }
+            }
+            
+            // Main initialization
+            async function initialize() {
+                try {
+                    // Fix paths for GitHub Pages
+                    GITHUB_PAGES_CONFIG.basePath = fixGitHubPagesPaths();
+                    
+                    // Load resources
+                    await Promise.all([
+                        loadStyles(),
+                        loadApplication()
+                    ]);
+                    
+                    // Register service worker (if applicable)
+                    registerServiceWorker();
+                    
+                    // Hide loading overlay after app is loaded
+                    setTimeout(() => {
+                        const overlay = document.getElementById('loadingOverlay');
+                        if (overlay) {
+                            overlay.style.opacity = '0';
+                            overlay.style.transition = 'opacity 0.3s ease';
+                            setTimeout(() => {
+                                overlay.style.display = 'none';
+                            }, 300);
+                        }
+                    }, 500);
+                    
+                } catch (error) {
+                    console.error('Initialization error:', error);
+                    showError('Ошибка инициализации приложения');
+                }
+            }
+            
+            // Start initialization when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initialize);
+            } else {
+                initialize();
+            }
+            
+            // Expose config for app.js
+            window.GITHUB_PAGES_CONFIG = GITHUB_PAGES_CONFIG;
+            
+        })();
     </script>
 </body>
 </html>

@@ -1,13 +1,10 @@
 {
   "name": "Генератор паролей",
-  "short_name": "Ген.Парол.",
-  "description": "Безопасный генератор паролей. Локальная генерация, криптографическая безопасность.",
-  "lang": "ru",
-  "dir": "ltr",
-  "start_url": "./index.html",
+  "short_name": "Пароли",
+  "description": "Безопасный генератор паролей для iOS 18",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "window-controls-overlay"],
   "orientation": "portrait",
   "theme_color": "#000000",
   "background_color": "#000000",
@@ -38,46 +35,19 @@
       "purpose": "any maskable"
     }
   ],
-  "screenshots": [
-    {
-      "src": "./assets/screenshots/light.png",
-      "sizes": "1170x2532",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Генератор паролей - светлая тема"
-    },
-    {
-      "src": "./assets/screenshots/dark.png",
-      "sizes": "1170x2532",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Генератор паролей - темная тема"
-    }
-  ],
   "shortcuts": [
     {
       "name": "Новый пароль",
       "short_name": "Генератор",
       "description": "Сгенерировать новый пароль",
-      "url": "./index.html?generate",
+      "url": "./",
       "icons": [
         {
-          "src": "./assets/icons/icon-180.png",
-          "sizes": "180x180",
+          "src": "./assets/icons/icon-96.png",
+          "sizes": "96x96",
           "type": "image/png"
         }
       ]
     }
-  ],
-  "handle_links": "preferred",
-  "launch_handler": {
-    "client_mode": "focus-existing"
-  },
-  "permissions": ["clipboard-write"],
-  "id": "/password-generator",
-  "edge_side_panel": {
-    "preferred_width": 360
-  },
-  "protocol_handlers": [],
-  "prefer_related_applications": false
+  ]
 }
