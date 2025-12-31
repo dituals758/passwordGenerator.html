@@ -59,14 +59,6 @@ class PasswordGenerator {
                             <div id="passwordOutput" class="password-output">
                                 Нажмите "Сгенерировать пароль"
                             </div>
-                            // <div class="password-actions">
-                            //     <button class="action-button" id="refreshButton">
-                            //         <span>🔄</span>
-                            //     </button>
-                            //     <button class="action-button" id="copyButton">
-                            //         <span>📋</span>
-                            //     </button>
-                            // </div>
                         </div>
                     </div>
                     
