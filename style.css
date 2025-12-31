@@ -1,4 +1,5 @@
 :root {
+    /* iOS Color System */
     --system-background: #000000;
     --system-background-secondary: #1c1c1e;
     --system-background-tertiary: #2c2c2e;
@@ -12,38 +13,49 @@
     --separator: #38383a;
     --separator-secondary: #464648;
     
+    /* iOS Colors */
     --blue: #0a84ff;
-    --blue-dark: #409cff;
-    --blue-light: #5ac8fa;
-    
     --green: #30d158;
-    --green-dark: #30db5b;
-    --green-light: #7cf95f;
-    
     --orange: #ff9f0a;
     --yellow: #ffd60a;
     --red: #ff453a;
     --pink: #ff375f;
     --purple: #bf5af2;
+    --indigo: #5e5ce6;
+    
+    /* Light Theme */
+    --blue-light: #007aff;
+    --green-light: #34c759;
     
     /* Safe Areas */
-    --safe-area-inset-top: env(safe-area-inset-top, 0px);
-    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-inset-top: env(safe-area-inset-top, 44px);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 34px);
     --safe-area-inset-left: env(safe-area-inset-left, 0px);
     --safe-area-inset-right: env(safe-area-inset-right, 0px);
     
     /* Typography */
     --font-system: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
-    --font-mono: "SF Mono", "Menlo", "Monaco", "Cascadia Code", monospace;
+    --font-mono: "SF Mono", "Menlo", "Monaco", "Cascadia Code", "Consolas", monospace;
     
-    /* Layout */
+    /* iOS Sizing */
     --corner-radius-large: 16px;
     --corner-radius-medium: 14px;
     --corner-radius-small: 10px;
     --corner-radius-xsmall: 8px;
+    
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 20px;
+    --spacing-xl: 24px;
+    
+    /* Transitions */
+    --transition-fast: 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-base: 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* Light Theme */
+/* Light Theme - iOS Style */
 [data-theme="light"] {
     --system-background: #ffffff;
     --system-background-secondary: #f2f2f7;
@@ -59,18 +71,13 @@
     --separator-secondary: #d8d8dc;
     
     --blue: #007aff;
-    --blue-dark: #0056cc;
-    --blue-light: #5ac8fa;
-    
     --green: #34c759;
-    --green-dark: #248a3d;
-    --green-light: #7cf95f;
-    
     --orange: #ff9500;
     --yellow: #ffcc00;
     --red: #ff3b30;
     --pink: #ff2d55;
     --purple: #af52de;
+    --indigo: #5856d6;
 }
 
 /* Base Styles */
@@ -92,12 +99,14 @@ html, body {
     font-family: var(--font-system);
     font-size: 17px;
     line-height: 1.47059;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     touch-action: manipulation;
+    overscroll-behavior: none;
 }
 
 body {
-    display: flex;
-    flex-direction: column;
     position: fixed;
     top: 0;
     left: 0;
@@ -105,30 +114,29 @@ body {
     bottom: 0;
     padding-top: var(--safe-area-inset-top);
     padding-bottom: var(--safe-area-inset-bottom);
-    padding-left: var(--safe-area-inset-left);
-    padding-right: var(--safe-area-inset-right);
 }
 
 /* App Container */
 #app {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
     width: 100%;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
-/* Navigation */
+/* iOS Navigation Bar */
 .navigation {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: var(--system-background);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--separator);
-    padding: 12px 16px;
+    height: 44px;
     min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--spacing-md);
+    background: var(--system-background);
+    border-bottom: 0.5px solid var(--separator);
+    position: relative;
+    z-index: 100;
 }
 
 .nav-content {
@@ -136,13 +144,16 @@ body {
     align-items: center;
     justify-content: space-between;
     width: 100%;
+    max-width: 600px;
 }
 
 .nav-title {
     font-size: 17px;
     font-weight: 600;
     color: var(--label-primary);
-    letter-spacing: -0.41px;
+    text-align: center;
+    flex: 1;
+    padding: 0 var(--spacing-md);
 }
 
 .nav-button {
@@ -155,63 +166,57 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 22px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color var(--transition-fast);
+    padding: 0;
+    position: relative;
+    z-index: 1;
 }
 
 .nav-button:active {
     background-color: var(--system-background-tertiary);
 }
 
-/* Main Content */
+/* Main Content - iOS Scroll View */
 .content {
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 16px;
+    scroll-behavior: smooth;
+    padding: var(--spacing-md);
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--spacing-md);
 }
 
 .content::-webkit-scrollbar {
     display: none;
 }
 
-/* Card */
+/* iOS Card */
 .card {
     background: var(--system-background-secondary);
     border-radius: var(--corner-radius-large);
-    border: 1px solid var(--separator);
+    border: 0.5px solid var(--separator);
     overflow: hidden;
-    animation: fadeIn 0.5s ease both;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Password Display */
+/* Password Display - iOS Style */
 .password-display-container {
-    padding: 20px;
+    padding: var(--spacing-lg);
 }
 
 .password-display {
     background: var(--system-background);
     border-radius: var(--corner-radius-medium);
-    border: 1px solid var(--separator);
-    min-height: 84px;
+    border: 0.5px solid var(--separator);
+    min-height: 80px;
     display: flex;
     align-items: center;
-    padding: 16px 60px 16px 16px;
+    padding: var(--spacing-md);
+    padding-right: 72px;
     position: relative;
 }
 
@@ -224,15 +229,17 @@ body {
     line-height: 1.4;
     letter-spacing: 0.5px;
     flex: 1;
+    -webkit-user-select: text;
+    user-select: text;
 }
 
 .password-actions {
     position: absolute;
-    right: 16px;
+    right: var(--spacing-md);
     top: 50%;
     transform: translateY(-50%);
     display: flex;
-    gap: 8px;
+    gap: var(--spacing-xs);
 }
 
 .action-button {
@@ -240,25 +247,27 @@ body {
     height: 36px;
     border-radius: var(--corner-radius-small);
     background: var(--system-background-tertiary);
-    border: 1px solid var(--separator);
+    border: 0.5px solid var(--separator);
     color: var(--label-primary);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 18px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast);
+    padding: 0;
 }
 
 .action-button:active {
     transform: scale(0.95);
-    background-color: var(--system-background-quaternary);
+    background: var(--system-background-quaternary);
 }
 
 /* Strength Indicator */
 .strength-indicator {
-    padding: 16px 20px;
-    border-top: 1px solid var(--separator);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-top: 0.5px solid var(--separator);
+    background: rgba(0, 0, 0, 0.02);
 }
 
 .strength-header {
@@ -270,7 +279,7 @@ body {
 
 .strength-label {
     font-size: 15px;
-    font-weight: 590;
+    font-weight: 500;
     color: var(--label-secondary);
 }
 
@@ -278,7 +287,7 @@ body {
     padding: 4px 10px;
     border-radius: 12px;
     font-size: 14px;
-    font-weight: 590;
+    font-weight: 600;
     background: var(--green);
     color: #000000;
     min-width: 80px;
@@ -286,19 +295,19 @@ body {
 }
 
 .strength-meter {
-    height: 6px;
+    height: 4px;
     background: var(--system-background-tertiary);
-    border-radius: 3px;
+    border-radius: 2px;
     overflow: hidden;
     margin-bottom: 8px;
 }
 
 .strength-fill {
     height: 100%;
-    border-radius: 3px;
+    border-radius: 2px;
     width: 50%;
     background: var(--green);
-    transition: all 0.3s ease;
+    transition: width var(--transition-base);
 }
 
 .strength-description {
@@ -307,9 +316,9 @@ body {
     text-align: center;
 }
 
-/* Generate Button */
+/* Generate Button - iOS Style */
 .generate-button-container {
-    padding: 0 20px 20px;
+    padding: 0 var(--spacing-lg) var(--spacing-lg);
 }
 
 .generate-button {
@@ -324,54 +333,53 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: var(--spacing-xs);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color var(--transition-fast);
+    padding: 0;
 }
 
 .generate-button:active {
-    background-color: var(--blue-dark);
-    transform: scale(0.98);
+    background-color: var(--blue-light);
 }
 
 .generate-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    transform: none;
 }
 
-/* Settings */
+/* Settings Card */
 .settings-card {
-    padding: 20px;
+    padding: var(--spacing-lg);
 }
 
 .settings-title {
     font-size: 22px;
     font-weight: 700;
     color: var(--label-primary);
-    margin-bottom: 20px;
+    margin-bottom: var(--spacing-lg);
     letter-spacing: -0.28px;
 }
 
-/* Length Control */
+/* Length Control - iOS Style */
 .length-control {
-    padding: 16px;
+    padding: var(--spacing-md);
     background: var(--system-background);
     border-radius: var(--corner-radius-medium);
-    border: 1px solid var(--separator);
-    margin-bottom: 20px;
+    border: 0.5px solid var(--separator);
+    margin-bottom: var(--spacing-lg);
 }
 
 .length-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: var(--spacing-md);
 }
 
 .length-label {
     font-size: 17px;
-    font-weight: 590;
+    font-weight: 500;
     color: var(--label-primary);
 }
 
@@ -382,7 +390,7 @@ body {
     font-variant-numeric: tabular-nums;
 }
 
-/* Slider */
+/* Slider - iOS Style */
 .slider-container {
     position: relative;
     height: 32px;
@@ -393,9 +401,9 @@ body {
     top: 50%;
     left: 0;
     right: 0;
-    height: 6px;
+    height: 4px;
     background: var(--system-background-tertiary);
-    border-radius: 3px;
+    border-radius: 2px;
     transform: translateY(-50%);
     overflow: hidden;
 }
@@ -406,9 +414,9 @@ body {
     left: 0;
     height: 100%;
     background: var(--blue);
-    border-radius: 3px;
+    border-radius: 2px;
     width: 50%;
-    transition: width 0.1s ease;
+    transition: width var(--transition-fast);
 }
 
 .slider-input {
@@ -420,22 +428,27 @@ body {
     opacity: 0;
     cursor: pointer;
     z-index: 2;
+    margin: 0;
+    -webkit-appearance: none;
 }
 
-/* Character Options */
+/* Character Options - iOS List Style */
 .character-options {
     background: var(--system-background);
     border-radius: var(--corner-radius-medium);
-    border: 1px solid var(--separator);
-    margin-bottom: 20px;
+    border: 0.5px solid var(--separator);
+    margin-bottom: var(--spacing-lg);
+    overflow: hidden;
 }
 
 .option-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px;
-    border-bottom: 1px solid var(--separator);
+    padding: var(--spacing-md);
+    border-bottom: 0.5px solid var(--separator);
+    min-height: 44px;
+    cursor: pointer;
 }
 
 .option-row:last-child {
@@ -445,11 +458,11 @@ body {
 .option-label {
     font-size: 17px;
     color: var(--label-primary);
-    cursor: pointer;
     flex: 1;
+    padding-right: var(--spacing-md);
 }
 
-/* Switch */
+/* iOS Switch */
 .switch-container {
     position: relative;
     width: 51px;
@@ -472,7 +485,7 @@ body {
     bottom: 0;
     background: var(--system-background-quaternary);
     border-radius: 31px;
-    transition: all 0.3s ease;
+    transition: all var(--transition-base);
     cursor: pointer;
 }
 
@@ -484,8 +497,8 @@ body {
     bottom: 2px;
     background: var(--system-background);
     border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform var(--transition-base);
     pointer-events: none;
 }
 
@@ -497,27 +510,68 @@ body {
     transform: translateX(20px);
 }
 
-/* Toast */
+/* Special Characters Preview */
+.special-preview {
+    padding: var(--spacing-md);
+    background: var(--system-background-tertiary);
+    border-radius: var(--corner-radius-medium);
+    text-align: center;
+}
+
+.special-preview-text {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    color: var(--label-primary);
+    letter-spacing: 2px;
+}
+
+/* Info Card */
+.info-card {
+    padding: var(--spacing-lg);
+}
+
+.info-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.info-content p {
+    font-size: 15px;
+    color: var(--label-secondary);
+    line-height: 1.5;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+}
+
+.info-content p strong {
+    color: var(--label-primary);
+    font-weight: 600;
+}
+
+/* iOS Toast */
 .toast {
     position: fixed;
     top: calc(var(--safe-area-inset-top) + 60px);
     left: 50%;
     transform: translateX(-50%) translateY(-20px);
     background: var(--system-background-secondary);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     color: var(--label-primary);
     padding: 12px 20px;
     border-radius: var(--corner-radius-medium);
     font-size: 15px;
-    font-weight: 590;
+    font-weight: 500;
     z-index: 10000;
-    border: 1px solid var(--separator-secondary);
+    border: 0.5px solid var(--separator-secondary);
     opacity: 0;
     pointer-events: none;
     max-width: calc(100% - 32px);
     text-align: center;
-    transition: all 0.5s ease;
+    transition: all var(--transition-base);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .toast.show {
@@ -525,7 +579,7 @@ body {
     opacity: 1;
 }
 
-/* PWA Banner */
+/* PWA Banner - iOS Style */
 .pwa-banner {
     position: fixed;
     bottom: 0;
@@ -534,12 +588,12 @@ body {
     background: var(--system-background-secondary);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid var(--separator);
-    padding: 16px;
+    border-top: 0.5px solid var(--separator);
+    padding: var(--spacing-md);
     transform: translateY(100%);
-    transition: transform 0.5s ease;
+    transition: transform var(--transition-base);
     z-index: 1000;
-    padding-bottom: calc(16px + var(--safe-area-inset-bottom));
+    padding-bottom: calc(var(--spacing-md) + var(--safe-area-inset-bottom));
 }
 
 .pwa-banner.show {
@@ -549,8 +603,8 @@ body {
 .pwa-content {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 16px;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
 }
 
 .pwa-icon {
@@ -585,7 +639,7 @@ body {
 
 .pwa-actions {
     display: flex;
-    gap: 12px;
+    gap: var(--spacing-sm);
 }
 
 .pwa-button {
@@ -594,9 +648,9 @@ body {
     border-radius: var(--corner-radius-medium);
     border: none;
     font-size: 17px;
-    font-weight: 590;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color var(--transition-fast);
 }
 
 .pwa-button.primary {
@@ -605,7 +659,7 @@ body {
 }
 
 .pwa-button.primary:active {
-    background: var(--blue-dark);
+    background: var(--blue-light);
 }
 
 .pwa-button.secondary {
@@ -617,24 +671,58 @@ body {
     background: var(--system-background-quaternary);
 }
 
+/* Touch Feedback */
+@media (hover: none) and (pointer: coarse) {
+    .nav-button:active,
+    .action-button:active,
+    .generate-button:active,
+    .pwa-button:active {
+        opacity: 0.7;
+    }
+    
+    .option-row:active {
+        background-color: var(--system-background-tertiary);
+    }
+}
+
 /* Landscape */
 @media (orientation: landscape) {
     .content {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 16px;
+        grid-template-rows: auto auto;
+        gap: var(--spacing-md);
         align-items: start;
     }
     
     .password-card {
         grid-column: 1 / -1;
+        grid-row: 1;
+    }
+    
+    .settings-card {
+        grid-column: 1;
+        grid-row: 2;
+    }
+    
+    .info-card {
+        grid-column: 2;
+        grid-row: 2;
+    }
+}
+
+/* iPhone Safe Areas */
+@supports (padding: max(0px)) {
+    .content {
+        padding-left: max(var(--spacing-md), env(safe-area-inset-left));
+        padding-right: max(var(--spacing-md), env(safe-area-inset-right));
     }
 }
 
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
     * {
-        animation: none !important;
-        transition: none !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
     }
 }

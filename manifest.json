@@ -1,7 +1,7 @@
 {
   "name": "Генератор паролей",
   "short_name": "Пароли",
-  "description": "Безопасный генератор паролей для iOS 18",
+  "description": "Безопасный генератор паролей",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
