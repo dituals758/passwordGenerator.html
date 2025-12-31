@@ -2,7 +2,8 @@
 <html lang="ru" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+    <!-- ВАЖНО: Правильный viewport для тач-устройств -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Генератор паролей">
@@ -33,13 +34,16 @@
             --blue: #0a84ff;
             --red: #ff453a;
             --green: #30d158;
-            --transition-duration: 0.3s;
+            --transition-duration: 0.2s;
         }
         
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            touch-action: manipulation;
         }
         
         html, body {
@@ -53,6 +57,16 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            -webkit-user-select: none;
+            user-select: none;
+            overscroll-behavior: none;
+        }
+        
+        body {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
         }
         
         .loading-overlay {
@@ -71,13 +85,13 @@
         }
         
         .loading-spinner {
-            width: 48px;
-            height: 48px;
+            width: 44px;
+            height: 44px;
             border: 3px solid rgba(255,255,255,0.1);
             border-top-color: var(--blue);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
         
         .loading-text {
@@ -88,58 +102,6 @@
         
         @keyframes spin {
             to { transform: rotate(360deg); }
-        }
-        
-        .error-container {
-            text-align: center;
-            padding: 40px 20px;
-            max-width: 400px;
-        }
-        
-        .error-icon {
-            font-size: 64px;
-            margin-bottom: 24px;
-            animation: pulse 2s infinite;
-        }
-        
-        .error-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: var(--label-primary);
-        }
-        
-        .error-message {
-            font-size: 16px;
-            color: rgba(255,255,255,0.7);
-            margin-bottom: 24px;
-            line-height: 1.5;
-        }
-        
-        .retry-button {
-            background: var(--blue);
-            color: white;
-            border: none;
-            padding: 14px 28px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .retry-button:hover,
-        .retry-button:active {
-            background: #0077ED;
-            transform: translateY(-1px);
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
         }
         
         #app {
@@ -158,13 +120,27 @@
             opacity: 1;
             display: block;
         }
+        
+        /* Touch fixes */
+        button, input, .option-row {
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
+            touch-action: manipulation;
+        }
+        
+        /* Prevent text selection */
+        .noselect {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
     </style>
 </head>
-<body>
+<body class="noselect">
     <!-- Loading State for GitHub Pages -->
     <div id="loadingOverlay" class="loading-overlay">
         <div class="loading-spinner" aria-hidden="true"></div>
-        <span class="loading-text">Загрузка приложения...</span>
+        <span class="loading-text">Загрузка...</span>
     </div>
 
     <!-- Main Content will be loaded by JavaScript -->
@@ -172,23 +148,21 @@
 
     <!-- Inline JavaScript for GitHub Pages -->
     <script>
-        // GitHub Pages safe initialization
+        // Enhanced touch detection and initialization
         (function() {
             'use strict';
+            
+            console.log('Touch device:', 'ontouchstart' in window);
+            console.log('iOS:', /iPad|iPhone|iPod/.test(navigator.userAgent));
+            
+            // Force touch events
+            document.body.addEventListener('touchstart', function() {}, {passive: true});
             
             const GITHUB_PAGES_CONFIG = {
                 basePath: window.location.hostname.includes('github.io') 
                     ? window.location.pathname.split('/').slice(0, -1).join('/') + '/' 
                     : './',
-                version: '1.3.3'
-            };
-            
-            const AppState = {
-                isLoading: true,
-                hasError: false,
-                errorMessage: '',
-                assetsLoaded: 0,
-                totalAssets: 2
+                version: '1.4.0'
             };
             
             function fixGitHubPagesPaths() {
@@ -208,31 +182,14 @@
                 return base;
             }
             
-            function updateLoadingProgress() {
-                const progress = (AppState.assetsLoaded / AppState.totalAssets) * 100;
-                const loadingText = document.querySelector('.loading-text');
-                if (loadingText) {
-                    loadingText.textContent = `Загрузка... ${Math.round(progress)}%`;
-                }
-            }
-            
             function loadStyles() {
                 return new Promise((resolve) => {
                     const base = GITHUB_PAGES_CONFIG.basePath;
                     const link = document.createElement('link');
                     link.rel = 'stylesheet';
                     link.href = base + 'style.css?v=' + GITHUB_PAGES_CONFIG.version;
-                    link.onload = () => {
-                        AppState.assetsLoaded++;
-                        updateLoadingProgress();
-                        resolve();
-                    };
-                    link.onerror = () => {
-                        console.warn('Не удалось загрузить стили');
-                        AppState.assetsLoaded++;
-                        updateLoadingProgress();
-                        resolve();
-                    };
+                    link.onload = resolve;
+                    link.onerror = resolve;
                     document.head.appendChild(link);
                 });
             }
@@ -243,74 +200,38 @@
                     const script = document.createElement('script');
                     script.src = base + 'app.js?v=' + GITHUB_PAGES_CONFIG.version;
                     script.defer = true;
-                    script.onload = () => {
-                        AppState.assetsLoaded++;
-                        updateLoadingProgress();
-                        resolve();
-                    };
+                    script.onload = resolve;
                     script.onerror = () => {
-                        AppState.hasError = true;
-                        AppState.errorMessage = 'Не удалось загрузить основное приложение';
-                        AppState.assetsLoaded++;
-                        updateLoadingProgress();
+                        console.error('Failed to load app.js');
+                        document.getElementById('loadingOverlay').innerHTML = `
+                            <div style="text-align: center; padding: 20px;">
+                                <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
+                                <h3>Ошибка загрузки</h3>
+                                <p>Обновите страницу</p>
+                                <button onclick="location.reload()" style="
+                                    background: #0a84ff;
+                                    color: white;
+                                    border: none;
+                                    padding: 12px 24px;
+                                    border-radius: 8px;
+                                    margin-top: 20px;
+                                ">Обновить</button>
+                            </div>
+                        `;
                         resolve();
                     };
                     document.body.appendChild(script);
                 });
             }
             
-            function showError(message) {
-                AppState.hasError = true;
-                AppState.errorMessage = message;
-                
+            function hideLoadingOverlay() {
                 const overlay = document.getElementById('loadingOverlay');
                 if (overlay) {
-                    overlay.innerHTML = `
-                        <div class="error-container">
-                            <div class="error-icon">⚠️</div>
-                            <h3 class="error-title">Ошибка загрузки</h3>
-                            <p class="error-message">${message}</p>
-                            <button class="retry-button" onclick="location.reload()">
-                                <span>🔄</span>
-                                <span>Повторить</span>
-                            </button>
-                        </div>
-                    `;
-                    overlay.style.opacity = '1';
+                    overlay.style.opacity = '0';
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                    }, 300);
                 }
-            }
-            
-            function registerServiceWorker() {
-                if ('serviceWorker' in navigator) {
-                    const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-                    const isHttps = location.protocol === 'https:';
-                    
-                    if (isHttps || isLocalhost) {
-                        const swPath = GITHUB_PAGES_CONFIG.basePath + 'sw.js?v=' + GITHUB_PAGES_CONFIG.version;
-                        navigator.serviceWorker.register(swPath)
-                            .then(registration => {
-                                console.log('ServiceWorker зарегистрирован:', registration.scope);
-                            })
-                            .catch(error => {
-                                console.log('ServiceWorker не зарегистрирован:', error);
-                            });
-                    }
-                }
-            }
-            
-            function hideLoadingOverlay() {
-                return new Promise((resolve) => {
-                    const overlay = document.getElementById('loadingOverlay');
-                    if (overlay) {
-                        overlay.style.opacity = '0';
-                        setTimeout(() => {
-                            overlay.style.display = 'none';
-                            resolve();
-                        }, 300);
-                    } else {
-                        resolve();
-                    }
-                });
             }
             
             function showApplication() {
@@ -319,13 +240,13 @@
                     app.style.display = 'block';
                     setTimeout(() => {
                         app.classList.add('loaded');
-                    }, 100);
+                    }, 50);
                 }
             }
             
             async function initialize() {
                 try {
-                    console.log(`Инициализация Генератора паролей v${GITHUB_PAGES_CONFIG.version}`);
+                    console.log('Initializing Password Generator v' + GITHUB_PAGES_CONFIG.version);
                     
                     GITHUB_PAGES_CONFIG.basePath = fixGitHubPagesPaths();
                     
@@ -334,31 +255,59 @@
                         loadApplication()
                     ]);
                     
-                    if (AppState.hasError) {
-                        showError(AppState.errorMessage);
-                        return;
-                    }
-                    
-                    registerServiceWorker();
-                    await hideLoadingOverlay();
+                    hideLoadingOverlay();
                     showApplication();
                     
-                    console.log('Приложение успешно инициализировано');
+                    console.log('App initialized successfully');
                     
                 } catch (error) {
                     console.error('Initialization error:', error);
-                    showError('Ошибка инициализации приложения');
+                    document.getElementById('loadingOverlay').innerHTML = `
+                        <div style="text-align: center; padding: 20px;">
+                            <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
+                            <h3>Ошибка</h3>
+                            <p>${error.message}</p>
+                            <button onclick="location.reload()" style="
+                                background: #0a84ff;
+                                color: white;
+                                border: none;
+                                padding: 12px 24px;
+                                border-radius: 8px;
+                                margin-top: 20px;
+                            ">Обновить</button>
+                        </div>
+                    `;
                 }
             }
             
+            // Start immediately - don't wait for DOMContentLoaded
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', initialize);
             } else {
-                setTimeout(initialize, 0);
+                // DOM already loaded
+                setTimeout(initialize, 100);
             }
             
-            window.GITHUB_PAGES_CONFIG = GITHUB_PAGES_CONFIG;
-            window.AppState = AppState;
+            // Prevent zoom on mobile
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(e) {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+            
+            // Disable double-tap zoom
+            document.addEventListener('dblclick', function(e) {
+                e.preventDefault();
+            }, { passive: false });
             
         })();
     </script>

@@ -1,5 +1,6 @@
+/* iOS Touch Password Generator */
 :root {
-    /* iOS Color System */
+    /* iOS Colors */
     --system-background: #000000;
     --system-background-secondary: #1c1c1e;
     --system-background-tertiary: #2c2c2e;
@@ -13,74 +14,40 @@
     --separator: #38383a;
     --separator-secondary: #464648;
     
-    /* iOS Colors */
     --blue: #0a84ff;
     --green: #30d158;
     --orange: #ff9f0a;
     --yellow: #ffd60a;
     --red: #ff453a;
-    --pink: #ff375f;
-    --purple: #bf5af2;
-    --indigo: #5e5ce6;
     
     /* Light Theme */
-    --blue-light: #007aff;
-    --green-light: #34c759;
+    [data-theme="light"] {
+        --system-background: #ffffff;
+        --system-background-secondary: #f2f2f7;
+        --system-background-tertiary: #e5e5ea;
+        --system-background-quaternary: #d1d1d6;
+        
+        --label-primary: #000000;
+        --label-secondary: #3c3c43;
+        --label-tertiary: #8e8e93;
+        --label-quaternary: #aeaeb2;
+        
+        --separator: #c6c6c8;
+        --separator-secondary: #d8d8dc;
+        
+        --blue: #007aff;
+        --green: #34c759;
+        --orange: #ff9500;
+        --yellow: #ffcc00;
+        --red: #ff3b30;
+    }
     
-    /* Safe Areas */
-    --safe-area-inset-top: env(safe-area-inset-top, 44px);
-    --safe-area-inset-bottom: env(safe-area-inset-bottom, 34px);
-    --safe-area-inset-left: env(safe-area-inset-left, 0px);
-    --safe-area-inset-right: env(safe-area-inset-right, 0px);
-    
-    /* Typography */
-    --font-system: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
-    --font-mono: "SF Mono", "Menlo", "Monaco", "Cascadia Code", "Consolas", monospace;
-    
-    /* iOS Sizing */
-    --corner-radius-large: 16px;
-    --corner-radius-medium: 14px;
-    --corner-radius-small: 10px;
-    --corner-radius-xsmall: 8px;
-    
-    /* Spacing */
-    --spacing-xs: 4px;
-    --spacing-sm: 8px;
-    --spacing-md: 16px;
-    --spacing-lg: 20px;
-    --spacing-xl: 24px;
-    
-    /* Transitions */
-    --transition-fast: 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --transition-base: 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    /* Touch sizes */
+    --touch-min-height: 44px;
+    --touch-min-width: 44px;
 }
 
-/* Light Theme - iOS Style */
-[data-theme="light"] {
-    --system-background: #ffffff;
-    --system-background-secondary: #f2f2f7;
-    --system-background-tertiary: #e5e5ea;
-    --system-background-quaternary: #d1d1d6;
-    
-    --label-primary: #000000;
-    --label-secondary: #3c3c43;
-    --label-tertiary: #8e8e93;
-    --label-quaternary: #aeaeb2;
-    
-    --separator: #c6c6c8;
-    --separator-secondary: #d8d8dc;
-    
-    --blue: #007aff;
-    --green: #34c759;
-    --orange: #ff9500;
-    --yellow: #ffcc00;
-    --red: #ff3b30;
-    --pink: #ff2d55;
-    --purple: #af52de;
-    --indigo: #5856d6;
-}
-
-/* Base Styles */
+/* Reset */
 * {
     margin: 0;
     padding: 0;
@@ -88,6 +55,7 @@
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     user-select: none;
+    touch-action: manipulation;
 }
 
 html, body {
@@ -96,43 +64,37 @@ html, body {
     overflow: hidden;
     background: var(--system-background);
     color: var(--label-primary);
-    font-family: var(--font-system);
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 17px;
     line-height: 1.47059;
-    font-weight: 400;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    touch-action: manipulation;
     overscroll-behavior: none;
+    position: fixed;
 }
 
 body {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding-top: var(--safe-area-inset-top);
-    padding-bottom: var(--safe-area-inset-bottom);
+    display: flex;
+    flex-direction: column;
 }
 
 /* App Container */
 #app {
-    width: 100%;
-    height: 100%;
+    flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    width: 100%;
+    height: 100%;
 }
 
-/* iOS Navigation Bar */
+/* iOS Navigation */
 .navigation {
     height: 44px;
     min-height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 var(--spacing-md);
+    padding: 0 16px;
     background: var(--system-background);
     border-bottom: 0.5px solid var(--separator);
     position: relative;
@@ -153,13 +115,11 @@ body {
     color: var(--label-primary);
     text-align: center;
     flex: 1;
-    padding: 0 var(--spacing-md);
 }
 
 .nav-button {
-    width: 32px;
-    height: 32px;
-    border-radius: var(--corner-radius-xsmall);
+    width: 44px;
+    height: 44px;
     background: transparent;
     border: none;
     color: var(--label-primary);
@@ -167,61 +127,54 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 22px;
-    cursor: pointer;
-    transition: background-color var(--transition-fast);
     padding: 0;
-    position: relative;
-    z-index: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.nav-button:active {
-    background-color: var(--system-background-tertiary);
-}
-
-/* Main Content - iOS Scroll View */
+/* Main Content - Scrollable */
 .content {
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-    padding: var(--spacing-md);
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: 16px;
 }
 
 .content::-webkit-scrollbar {
     display: none;
 }
 
-/* iOS Card */
+/* Card */
 .card {
     background: var(--system-background-secondary);
-    border-radius: var(--corner-radius-large);
+    border-radius: 16px;
     border: 0.5px solid var(--separator);
     overflow: hidden;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* Password Display - iOS Style */
+/* Password Display */
 .password-display-container {
-    padding: var(--spacing-lg);
+    padding: 20px;
 }
 
 .password-display {
     background: var(--system-background);
-    border-radius: var(--corner-radius-medium);
+    border-radius: 14px;
     border: 0.5px solid var(--separator);
     min-height: 80px;
     display: flex;
     align-items: center;
-    padding: var(--spacing-md);
+    padding: 16px;
     padding-right: 72px;
     position: relative;
 }
 
 .password-output {
-    font-family: var(--font-mono);
+    font-family: 'SF Mono', Menlo, monospace;
     font-size: 20px;
     font-weight: 600;
     color: var(--label-primary);
@@ -235,37 +188,56 @@ body {
 
 .password-actions {
     position: absolute;
-    right: var(--spacing-md);
+    right: 16px;
     top: 50%;
     transform: translateY(-50%);
     display: flex;
-    gap: var(--spacing-xs);
+    gap: 8px;
 }
 
-.action-button {
-    width: 36px;
-    height: 36px;
-    border-radius: var(--corner-radius-small);
-    background: var(--system-background-tertiary);
-    border: 0.5px solid var(--separator);
-    color: var(--label-primary);
+/* TOUCH BUTTONS - Исправлено */
+.action-button,
+.generate-button,
+.pwa-button,
+.nav-button {
+    min-height: var(--touch-min-height);
+    min-width: var(--touch-min-width);
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    font-size: 17px;
+    font-weight: 500;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
     cursor: pointer;
-    transition: all var(--transition-fast);
-    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    position: relative;
+    transition: transform 0.1s ease, opacity 0.1s ease;
+    user-select: none;
 }
 
-.action-button:active {
+.action-button:active,
+.generate-button:active,
+.pwa-button:active,
+.nav-button:active {
     transform: scale(0.95);
-    background: var(--system-background-quaternary);
+    opacity: 0.8;
+}
+
+.action-button {
+    width: 44px;
+    height: 44px;
+    background: var(--system-background-tertiary);
+    border: 0.5px solid var(--separator);
+    color: var(--label-primary);
+    font-size: 20px;
 }
 
 /* Strength Indicator */
 .strength-indicator {
-    padding: var(--spacing-md) var(--spacing-lg);
+    padding: 16px 20px;
     border-top: 0.5px solid var(--separator);
     background: rgba(0, 0, 0, 0.02);
 }
@@ -284,7 +256,7 @@ body {
 }
 
 .strength-badge {
-    padding: 4px 10px;
+    padding: 4px 12px;
     border-radius: 12px;
     font-size: 14px;
     font-weight: 600;
@@ -307,7 +279,7 @@ body {
     border-radius: 2px;
     width: 50%;
     background: var(--green);
-    transition: width var(--transition-base);
+    transition: width 0.3s ease;
 }
 
 .strength-description {
@@ -316,31 +288,19 @@ body {
     text-align: center;
 }
 
-/* Generate Button - iOS Style */
+/* Generate Button */
 .generate-button-container {
-    padding: 0 var(--spacing-lg) var(--spacing-lg);
+    padding: 0 20px 20px;
 }
 
 .generate-button {
     width: 100%;
     height: 50px;
     background: var(--blue);
-    color: #ffffff;
-    border: none;
-    border-radius: var(--corner-radius-medium);
-    font-size: 17px;
+    color: white;
+    border-radius: 10px;
     font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-xs);
-    cursor: pointer;
-    transition: background-color var(--transition-fast);
-    padding: 0;
-}
-
-.generate-button:active {
-    background-color: var(--blue-light);
+    gap: 8px;
 }
 
 .generate-button:disabled {
@@ -348,33 +308,37 @@ body {
     cursor: not-allowed;
 }
 
-/* Settings Card */
+.generate-button:disabled:active {
+    transform: none;
+    opacity: 0.5;
+}
+
+/* Settings */
 .settings-card {
-    padding: var(--spacing-lg);
+    padding: 20px;
 }
 
 .settings-title {
     font-size: 22px;
     font-weight: 700;
     color: var(--label-primary);
-    margin-bottom: var(--spacing-lg);
-    letter-spacing: -0.28px;
+    margin-bottom: 20px;
 }
 
-/* Length Control - iOS Style */
+/* Length Control */
 .length-control {
-    padding: var(--spacing-md);
+    padding: 16px;
     background: var(--system-background);
-    border-radius: var(--corner-radius-medium);
+    border-radius: 14px;
     border: 0.5px solid var(--separator);
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: 20px;
 }
 
 .length-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacing-md);
+    margin-bottom: 16px;
 }
 
 .length-label {
@@ -387,13 +351,13 @@ body {
     font-size: 24px;
     font-weight: 700;
     color: var(--blue);
-    font-variant-numeric: tabular-nums;
 }
 
-/* Slider - iOS Style */
+/* TOUCH SLIDER - Исправлено */
 .slider-container {
     position: relative;
-    height: 32px;
+    height: 44px;
+    touch-action: none;
 }
 
 .slider-track {
@@ -416,58 +380,93 @@ body {
     background: var(--blue);
     border-radius: 2px;
     width: 50%;
-    transition: width var(--transition-fast);
+    transition: width 0.1s ease;
 }
 
+/* Важно: input[type="range"] для тач-устройств */
 .slider-input {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    opacity: 0;
+    opacity: 1 !important; /* Делаем видимым для тач */
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
     cursor: pointer;
     z-index: 2;
     margin: 0;
-    -webkit-appearance: none;
+    padding: 0;
 }
 
-/* Character Options - iOS List Style */
+.slider-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 28px;
+    height: 28px;
+    background: var(--blue);
+    border-radius: 50%;
+    border: 2px solid var(--system-background);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    cursor: pointer;
+}
+
+.slider-input::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+    background: var(--blue);
+    border-radius: 50%;
+    border: 2px solid var(--system-background);
+    cursor: pointer;
+}
+
+/* Character Options - TOUCH FIXED */
 .character-options {
     background: var(--system-background);
-    border-radius: var(--corner-radius-medium);
+    border-radius: 14px;
     border: 0.5px solid var(--separator);
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: 20px;
     overflow: hidden;
 }
 
+/* ВАЖНО: Делаем всю строку кликабельной */
 .option-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--spacing-md);
+    padding: 16px;
     border-bottom: 0.5px solid var(--separator);
-    min-height: 44px;
+    min-height: 56px; /* Минимальная высота для тач */
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    position: relative;
 }
 
 .option-row:last-child {
     border-bottom: none;
 }
 
+.option-row:active {
+    background-color: var(--system-background-tertiary);
+}
+
 .option-label {
     font-size: 17px;
     color: var(--label-primary);
     flex: 1;
-    padding-right: var(--spacing-md);
+    padding-right: 16px;
+    pointer-events: none; /* Чтобы клик проходил на row */
 }
 
-/* iOS Switch */
+/* iOS Switch - TOUCH FIXED */
 .switch-container {
     position: relative;
     width: 51px;
     height: 31px;
     flex-shrink: 0;
+    pointer-events: none; /* Управляется через .option-row */
 }
 
 .switch-input {
@@ -485,8 +484,7 @@ body {
     bottom: 0;
     background: var(--system-background-quaternary);
     border-radius: 31px;
-    transition: all var(--transition-base);
-    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .switch-thumb {
@@ -497,9 +495,8 @@ body {
     bottom: 2px;
     background: var(--system-background);
     border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: transform var(--transition-base);
-    pointer-events: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
 }
 
 .switch-input:checked + .switch-track {
@@ -510,16 +507,16 @@ body {
     transform: translateX(20px);
 }
 
-/* Special Characters Preview */
+/* Special Preview */
 .special-preview {
-    padding: var(--spacing-md);
+    padding: 16px;
     background: var(--system-background-tertiary);
-    border-radius: var(--corner-radius-medium);
+    border-radius: 14px;
     text-align: center;
 }
 
 .special-preview-text {
-    font-family: var(--font-mono);
+    font-family: 'SF Mono', Menlo, monospace;
     font-size: 18px;
     color: var(--label-primary);
     letter-spacing: 2px;
@@ -527,13 +524,13 @@ body {
 
 /* Info Card */
 .info-card {
-    padding: var(--spacing-lg);
+    padding: 20px;
 }
 
 .info-content {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: 16px;
 }
 
 .info-content p {
@@ -542,7 +539,7 @@ body {
     line-height: 1.5;
     display: flex;
     align-items: flex-start;
-    gap: var(--spacing-sm);
+    gap: 8px;
 }
 
 .info-content p strong {
@@ -550,10 +547,10 @@ body {
     font-weight: 600;
 }
 
-/* iOS Toast */
+/* Toast */
 .toast {
     position: fixed;
-    top: calc(var(--safe-area-inset-top) + 60px);
+    top: 100px;
     left: 50%;
     transform: translateX(-50%) translateY(-20px);
     background: var(--system-background-secondary);
@@ -561,7 +558,7 @@ body {
     -webkit-backdrop-filter: blur(20px);
     color: var(--label-primary);
     padding: 12px 20px;
-    border-radius: var(--corner-radius-medium);
+    border-radius: 10px;
     font-size: 15px;
     font-weight: 500;
     z-index: 10000;
@@ -570,8 +567,8 @@ body {
     pointer-events: none;
     max-width: calc(100% - 32px);
     text-align: center;
-    transition: all var(--transition-base);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
 }
 
 .toast.show {
@@ -579,7 +576,7 @@ body {
     opacity: 1;
 }
 
-/* PWA Banner - iOS Style */
+/* PWA Banner */
 .pwa-banner {
     position: fixed;
     bottom: 0;
@@ -589,11 +586,11 @@ body {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-top: 0.5px solid var(--separator);
-    padding: var(--spacing-md);
+    padding: 16px;
     transform: translateY(100%);
-    transition: transform var(--transition-base);
+    transition: transform 0.3s ease;
     z-index: 1000;
-    padding-bottom: calc(var(--spacing-md) + var(--safe-area-inset-bottom));
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
 }
 
 .pwa-banner.show {
@@ -603,19 +600,19 @@ body {
 .pwa-content {
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-md);
+    gap: 16px;
+    margin-bottom: 16px;
 }
 
 .pwa-icon {
     width: 44px;
     height: 44px;
     background: var(--blue);
-    border-radius: var(--corner-radius-small);
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #ffffff;
+    color: white;
     font-size: 22px;
     flex-shrink: 0;
 }
@@ -639,27 +636,19 @@ body {
 
 .pwa-actions {
     display: flex;
-    gap: var(--spacing-sm);
+    gap: 12px;
 }
 
 .pwa-button {
     flex: 1;
     height: 44px;
-    border-radius: var(--corner-radius-medium);
-    border: none;
-    font-size: 17px;
+    border-radius: 10px;
     font-weight: 500;
-    cursor: pointer;
-    transition: background-color var(--transition-fast);
 }
 
 .pwa-button.primary {
     background: var(--blue);
-    color: #ffffff;
-}
-
-.pwa-button.primary:active {
-    background: var(--blue-light);
+    color: white;
 }
 
 .pwa-button.secondary {
@@ -667,21 +656,31 @@ body {
     color: var(--label-primary);
 }
 
-.pwa-button.secondary:active {
-    background: var(--system-background-quaternary);
-}
-
-/* Touch Feedback */
+/* Touch Device Optimizations */
 @media (hover: none) and (pointer: coarse) {
-    .nav-button:active,
-    .action-button:active,
-    .generate-button:active,
-    .pwa-button:active {
-        opacity: 0.7;
+    /* Увеличиваем зоны клика для тач */
+    .action-button,
+    .nav-button {
+        min-width: 44px;
+        min-height: 44px;
     }
     
+    .option-row {
+        min-height: 56px;
+    }
+    
+    /* Улучшаем видимость активного состояния */
     .option-row:active {
-        background-color: var(--system-background-tertiary);
+        background-color: var(--system-background-tertiary) !important;
+    }
+    
+    button:active {
+        opacity: 0.7 !important;
+    }
+    
+    /* Убираем hover эффекты на тач-устройствах */
+    button:hover {
+        opacity: 1;
     }
 }
 
@@ -691,31 +690,32 @@ body {
         display: grid;
         grid-template-columns: 1fr 1fr;
         grid-template-rows: auto auto;
-        gap: var(--spacing-md);
-        align-items: start;
+        gap: 16px;
     }
     
     .password-card {
         grid-column: 1 / -1;
-        grid-row: 1;
     }
     
     .settings-card {
         grid-column: 1;
-        grid-row: 2;
     }
     
     .info-card {
         grid-column: 2;
-        grid-row: 2;
     }
 }
 
-/* iPhone Safe Areas */
+/* iPhone Notch Support */
 @supports (padding: max(0px)) {
     .content {
-        padding-left: max(var(--spacing-md), env(safe-area-inset-left));
-        padding-right: max(var(--spacing-md), env(safe-area-inset-right));
+        padding-left: max(16px, env(safe-area-inset-left));
+        padding-right: max(16px, env(safe-area-inset-right));
+    }
+    
+    .navigation {
+        padding-top: env(safe-area-inset-top, 0px);
+        height: calc(44px + env(safe-area-inset-top, 0px));
     }
 }
 

@@ -1,5 +1,5 @@
 // Service Worker для Генератора паролей
-const CACHE_NAME = 'password-generator-v1.3.3';
+const CACHE_NAME = 'password-generator-v1.4.0';
 
 const STATIC_ASSETS = [
   './',

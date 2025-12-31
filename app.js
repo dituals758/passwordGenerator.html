@@ -1,3 +1,9 @@
+/**
+ * iOS Touch Password Generator
+ * Version: 1.4.0
+ * Fully touch-compatible
+ */
+
 'use strict';
 
 const CONFIG = {
@@ -8,12 +14,12 @@ const CONFIG = {
         special: '!@#$%^&*'
     },
     strengthLevels: [
-        { name: 'Очень низкая', color: '#ff453a', width: '25%', description: 'Рекомендуем увеличить длину и добавить символы' },
-        { name: 'Низкая', color: '#ff9f0a', width: '35%', description: 'Добавьте больше типов символов для улучшения' },
-        { name: 'Средняя', color: '#ffd60a', width: '50%', description: 'Хороший пароль для большинства сервисов' },
-        { name: 'Хорошая', color: '#30d158', width: '65%', description: 'Надежная защита для важных аккаунтов' },
-        { name: 'Высокая', color: '#0a84ff', width: '80%', description: 'Отличный пароль для банковских сервисов' },
-        { name: 'Очень высокая', color: '#bf5af2', width: '95%', description: 'Максимальная защита для критических данных' }
+        { name: 'Очень низкая', color: '#ff453a', width: '25%', description: 'Рекомендуем увеличить длину' },
+        { name: 'Низкая', color: '#ff9f0a', width: '35%', description: 'Добавьте больше типов символов' },
+        { name: 'Средняя', color: '#ffd60a', width: '50%', description: 'Хороший пароль для сервисов' },
+        { name: 'Хорошая', color: '#30d158', width: '65%', description: 'Надежная защита для аккаунтов' },
+        { name: 'Высокая', color: '#0a84ff', width: '80%', description: 'Отличный пароль для банков' },
+        { name: 'Очень высокая', color: '#bf5af2', width: '95%', description: 'Максимальная защита данных' }
     ],
     minPasswordLength: 8,
     maxPasswordLength: 32,
@@ -26,6 +32,9 @@ class PasswordGenerator {
         this.isGenerating = false;
         this.deferredPrompt = null;
         this.elements = {};
+        this.isTouchDevice = 'ontouchstart' in window;
+        
+        console.log('Touch device detected:', this.isTouchDevice);
         
         this.init();
     }
@@ -33,9 +42,10 @@ class PasswordGenerator {
     init() {
         this.createAppStructure();
         this.cacheElements();
-        this.bindEvents();
-        this.generatePassword();
+        this.setupTouchEvents();
         this.setupTheme();
+        this.setupPWA();
+        this.generatePassword();
     }
     
     createAppStructure() {
@@ -46,7 +56,7 @@ class PasswordGenerator {
             <nav class="navigation">
                 <div class="nav-content">
                     <h1 class="nav-title">Генератор паролей</h1>
-                    <button class="nav-button" id="themeToggle" aria-label="Переключить тему">
+                    <button class="nav-button" id="themeToggle">
                         <span>🌙</span>
                     </button>
                 </div>
@@ -101,8 +111,8 @@ class PasswordGenerator {
                     </div>
                     
                     <div class="character-options">
-                        <div class="option-row">
-                            <label class="option-label" for="lowercaseSwitch">
+                        <div class="option-row" data-switch="lowercaseSwitch">
+                            <label class="option-label">
                                 Строчные буквы (a-z)
                             </label>
                             <div class="switch-container">
@@ -113,8 +123,8 @@ class PasswordGenerator {
                             </div>
                         </div>
                         
-                        <div class="option-row">
-                            <label class="option-label" for="uppercaseSwitch">
+                        <div class="option-row" data-switch="uppercaseSwitch">
+                            <label class="option-label">
                                 Заглавные буквы (A-Z)
                             </label>
                             <div class="switch-container">
@@ -125,8 +135,8 @@ class PasswordGenerator {
                             </div>
                         </div>
                         
-                        <div class="option-row">
-                            <label class="option-label" for="numbersSwitch">
+                        <div class="option-row" data-switch="numbersSwitch">
+                            <label class="option-label">
                                 Цифры (0-9)
                             </label>
                             <div class="switch-container">
@@ -137,8 +147,8 @@ class PasswordGenerator {
                             </div>
                         </div>
                         
-                        <div class="option-row">
-                            <label class="option-label" for="specialSwitch">
+                        <div class="option-row" data-switch="specialSwitch">
+                            <label class="option-label">
                                 Специальные символы
                             </label>
                             <div class="switch-container">
@@ -186,96 +196,124 @@ class PasswordGenerator {
     
     cacheElements() {
         this.elements = {
-            // Password display
             passwordOutput: document.getElementById('passwordOutput'),
             strengthBadge: document.getElementById('strengthBadge'),
             strengthFill: document.getElementById('strengthFill'),
             strengthDescription: document.getElementById('strengthDescription'),
-            
-            // Controls
             lengthValue: document.getElementById('lengthValue'),
             lengthSlider: document.getElementById('lengthSlider'),
             sliderFill: document.getElementById('sliderFill'),
-            
-            // Switches
             lowercaseSwitch: document.getElementById('lowercaseSwitch'),
             uppercaseSwitch: document.getElementById('uppercaseSwitch'),
             numbersSwitch: document.getElementById('numbersSwitch'),
             specialSwitch: document.getElementById('specialSwitch'),
-            
-            // Buttons
             themeToggle: document.getElementById('themeToggle'),
             refreshButton: document.getElementById('refreshButton'),
             copyButton: document.getElementById('copyButton'),
             generateButton: document.getElementById('generateButton'),
-            
-            // Toast
             toast: document.getElementById('toast'),
-            
-            // PWA
             pwaBanner: document.getElementById('pwaBanner'),
             pwaInstallButton: document.getElementById('pwaInstallButton'),
             pwaLaterButton: document.getElementById('pwaLaterButton')
         };
-        
-        // Initialize switch labels click handlers
-        this.setupSwitchClickHandlers();
     }
     
-    setupSwitchClickHandlers() {
-        // Make entire row clickable for switches
+    setupTouchEvents() {
+        console.log('Setting up touch events...');
+        
+        // Theme toggle
+        this.elements.themeToggle.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.toggleTheme();
+        });
+        
+        // Password actions
+        this.elements.refreshButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.generatePassword();
+        });
+        
+        this.elements.copyButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.copyPassword();
+        });
+        
+        this.elements.generateButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.generateAndCopy();
+        });
+        
+        // Length slider
+        this.elements.lengthSlider.addEventListener('input', () => {
+            this.updateSlider();
+            this.generatePassword();
+        });
+        
+        // Switch handlers - ВАЖНО: Обработка клика на всю строку
         document.querySelectorAll('.option-row').forEach(row => {
+            row.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const switchId = row.getAttribute('data-switch');
+                const switchElement = document.getElementById(switchId);
+                if (switchElement) {
+                    switchElement.checked = !switchElement.checked;
+                    this.generatePassword();
+                    
+                    // Визуальная обратная связь
+                    row.style.backgroundColor = 'var(--system-background-tertiary)';
+                    setTimeout(() => {
+                        row.style.backgroundColor = '';
+                    }, 150);
+                }
+            });
+            
+            // Для десктопов тоже
             row.addEventListener('click', (e) => {
-                if (e.target.closest('.switch-container')) return;
-                const switchInput = row.querySelector('.switch-input');
-                if (switchInput) {
-                    switchInput.checked = !switchInput.checked;
-                    switchInput.dispatchEvent(new Event('change'));
+                e.preventDefault();
+                const switchId = row.getAttribute('data-switch');
+                const switchElement = document.getElementById(switchId);
+                if (switchElement) {
+                    switchElement.checked = !switchElement.checked;
+                    this.generatePassword();
                 }
             });
         });
-    }
-    
-    bindEvents() {
-        // Theme toggle
-        this.elements.themeToggle.addEventListener('click', () => this.toggleTheme());
         
-        // Password actions
-        this.elements.refreshButton.addEventListener('click', () => this.generatePassword());
-        this.elements.copyButton.addEventListener('click', () => this.copyPassword());
-        this.elements.generateButton.addEventListener('click', () => this.generateAndCopy());
-        
-        // Length slider
-        this.elements.lengthSlider.addEventListener('input', () => this.updateSlider());
-        this.elements.lengthSlider.addEventListener('change', () => this.generatePassword());
-        
-        // Character switches
+        // Также привязываемся к самим инпутам на случай прямого клика
         [this.elements.lowercaseSwitch, this.elements.uppercaseSwitch, 
          this.elements.numbersSwitch, this.elements.specialSwitch].forEach(switchEl => {
             switchEl.addEventListener('change', () => this.generatePassword());
         });
         
-        // Touch feedback for buttons
-        this.setupTouchFeedback();
-        
-        // PWA
-        this.setupPWA();
-    }
-    
-    setupTouchFeedback() {
-        // Add active state for better touch feedback
-        const buttons = document.querySelectorAll('button');
-        buttons.forEach(button => {
+        // Touch feedback for all buttons
+        document.querySelectorAll('button').forEach(button => {
             button.addEventListener('touchstart', () => {
-                button.style.opacity = '0.7';
+                button.style.transform = 'scale(0.95)';
+                button.style.opacity = '0.8';
             });
             
             button.addEventListener('touchend', () => {
-                setTimeout(() => {
-                    button.style.opacity = '1';
-                }, 150);
+                button.style.transform = '';
+                button.style.opacity = '';
             });
         });
+        
+        // Prevent context menu on touch hold
+        document.addEventListener('contextmenu', (e) => {
+            if (this.isTouchDevice) {
+                e.preventDefault();
+            }
+        });
+    }
+    
+    updateSlider() {
+        const value = this.elements.lengthSlider.value;
+        const min = this.elements.lengthSlider.min;
+        const max = this.elements.lengthSlider.max;
+        const percentage = ((value - min) / (max - min)) * 100;
+        
+        this.elements.sliderFill.style.width = `${percentage}%`;
+        this.elements.lengthValue.textContent = value;
     }
     
     setupTheme() {
@@ -303,16 +341,6 @@ class PasswordGenerator {
         this.showToast(`Тема: ${newTheme === 'dark' ? 'Тёмная' : 'Светлая'}`);
     }
     
-    updateSlider() {
-        const value = this.elements.lengthSlider.value;
-        const min = this.elements.lengthSlider.min;
-        const max = this.elements.lengthSlider.max;
-        const percentage = ((value - min) / (max - min)) * 100;
-        
-        this.elements.sliderFill.style.width = `${percentage}%`;
-        this.elements.lengthValue.textContent = value;
-    }
-    
     getCharPool() {
         let pool = '';
         if (this.elements.lowercaseSwitch.checked) pool += CONFIG.charSets.lowercase;
@@ -329,7 +357,6 @@ class PasswordGenerator {
         const length = password.length;
         const entropy = length * Math.log2(poolSize);
         
-        // Variety bonus
         let varietyBonus = 0;
         if (/[a-z]/.test(password)) varietyBonus += 10;
         if (/[A-Z]/.test(password)) varietyBonus += 10;
@@ -360,7 +387,6 @@ class PasswordGenerator {
         }
         
         try {
-            // Use Web Crypto API
             const array = new Uint32Array(length);
             window.crypto.getRandomValues(array);
             
@@ -418,8 +444,9 @@ class PasswordGenerator {
         this.isGenerating = true;
         this.elements.generateButton.disabled = true;
         
-        const originalText = this.elements.generateButton.querySelector('span:last-child').textContent;
-        this.elements.generateButton.querySelector('span:last-child').textContent = 'Генерация...';
+        const buttonText = this.elements.generateButton.querySelector('span:last-child');
+        const originalText = buttonText.textContent;
+        buttonText.textContent = 'Генерация...';
         
         const password = this.generatePassword();
         
@@ -429,11 +456,12 @@ class PasswordGenerator {
             return;
         }
         
+        // Задержка для визуальной обратной связи
         await new Promise(resolve => setTimeout(resolve, 300));
         
         await this.copyPassword();
         
-        this.elements.generateButton.querySelector('span:last-child').textContent = 'Скопировано!';
+        buttonText.textContent = 'Скопировано!';
         setTimeout(() => {
             this.resetGenerateButton(originalText);
         }, 1500);
@@ -443,7 +471,8 @@ class PasswordGenerator {
     
     resetGenerateButton(originalText) {
         this.elements.generateButton.disabled = false;
-        this.elements.generateButton.querySelector('span:last-child').textContent = originalText;
+        const buttonText = this.elements.generateButton.querySelector('span:last-child');
+        buttonText.textContent = originalText;
     }
     
     async copyPassword() {
@@ -456,7 +485,7 @@ class PasswordGenerator {
             await navigator.clipboard.writeText(this.currentPassword);
             this.showToast('Пароль скопирован');
             
-            // Visual feedback on copy button
+            // Визуальная обратная связь
             const icon = this.elements.copyButton.querySelector('span');
             icon.textContent = '✓';
             setTimeout(() => {
@@ -465,6 +494,7 @@ class PasswordGenerator {
             
             return true;
         } catch (err) {
+            console.warn('Clipboard API failed:', err);
             return this.copyFallback();
         }
     }
@@ -486,7 +516,7 @@ class PasswordGenerator {
                 return true;
             }
         } catch (err) {
-            console.error('Copy failed:', err);
+            console.error('Fallback copy failed:', err);
         }
         
         this.showToast('Не удалось скопировать');
@@ -526,7 +556,8 @@ class PasswordGenerator {
             localStorage.setItem('pwa-dismissed', 'true');
         });
         
-        this.elements.pwaInstallButton.addEventListener('click', async () => {
+        this.elements.pwaInstallButton.addEventListener('touchstart', async (e) => {
+            e.preventDefault();
             if (this.deferredPrompt) {
                 this.deferredPrompt.prompt();
                 const { outcome } = await this.deferredPrompt.userChoice;
@@ -539,18 +570,22 @@ class PasswordGenerator {
             localStorage.setItem('pwa-dismissed', 'true');
         });
         
-        this.elements.pwaLaterButton.addEventListener('click', () => {
+        this.elements.pwaLaterButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
             this.elements.pwaBanner.classList.remove('show');
             localStorage.setItem('pwa-dismissed', 'true');
         });
     }
 }
 
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        new PasswordGenerator();
-    });
-} else {
+// Initialize immediately
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing app...');
     new PasswordGenerator();
+});
+
+// Also try to initialize if DOM is already loaded
+if (document.readyState !== 'loading') {
+    console.log('DOM already ready, initializing now...');
+    setTimeout(() => new PasswordGenerator(), 100);
 }
