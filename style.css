@@ -1,53 +1,62 @@
-/* iOS Touch Password Generator */
 :root {
-    /* iOS Colors */
+    --system-background: #ffffff;
+    --system-background-secondary: #f2f2f7;
+    --system-background-tertiary: #e5e5ea;
+    
+    --label-primary: #000000;
+    --label-secondary: #3c3c43;
+    --label-tertiary: #8e8e93;
+    
+    --separator: #c6c6c8;
+    --separator-opaque: rgba(198, 198, 200, 0.5);
+    
+    --blue: #007aff;
+    --blue-hover: #0056cc;
+    --green: #34c759;
+    --orange: #ff9500;
+    --yellow: #ffcc00;
+    --red: #ff3b30;
+    --purple: #af52de;
+    
+    --strength-very-weak: #ff3b30;
+    --strength-weak: #ff9500;
+    --strength-medium: #ffcc00;
+    --strength-good: #34c759;
+    --strength-strong: #007aff;
+    --strength-very-strong: #5856d6;
+    
+    --touch-min: 44px;
+    --border-radius: 14px;
+    --border-radius-large: 20px;
+    
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+[data-theme="dark"] {
     --system-background: #000000;
     --system-background-secondary: #1c1c1e;
     --system-background-tertiary: #2c2c2e;
-    --system-background-quaternary: #3a3a3c;
     
     --label-primary: #ffffff;
     --label-secondary: #ebebf5;
     --label-tertiary: #98989d;
-    --label-quaternary: #6c6c70;
     
     --separator: #38383a;
-    --separator-secondary: #464648;
+    --separator-opaque: rgba(56, 56, 58, 0.5);
     
     --blue: #0a84ff;
+    --blue-hover: #409cff;
     --green: #30d158;
-    --orange: #ff9f0a;
-    --yellow: #ffd60a;
     --red: #ff453a;
-    
-    /* Light Theme */
-    [data-theme="light"] {
-        --system-background: #ffffff;
-        --system-background-secondary: #f2f2f7;
-        --system-background-tertiary: #e5e5ea;
-        --system-background-quaternary: #d1d1d6;
-        
-        --label-primary: #000000;
-        --label-secondary: #3c3c43;
-        --label-tertiary: #8e8e93;
-        --label-quaternary: #aeaeb2;
-        
-        --separator: #c6c6c8;
-        --separator-secondary: #d8d8dc;
-        
-        --blue: #007aff;
-        --green: #34c759;
-        --orange: #ff9500;
-        --yellow: #ffcc00;
-        --red: #ff3b30;
-    }
-    
-    /* Touch sizes */
-    --touch-min-height: 44px;
-    --touch-min-width: 44px;
 }
 
-/* Reset */
 * {
     margin: 0;
     padding: 0;
@@ -58,123 +67,113 @@
     touch-action: manipulation;
 }
 
-html, body {
+html {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background: var(--system-background);
-    color: var(--label-primary);
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 17px;
-    line-height: 1.47059;
-    -webkit-font-smoothing: antialiased;
-    overscroll-behavior: none;
-    position: fixed;
 }
 
 body {
+    width: 100%;
+    height: 100%;
+    background: var(--system-background);
+    color: var(--label-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 17px;
+    line-height: 1.47059;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: none;
     display: flex;
     flex-direction: column;
+    padding-top: var(--safe-area-top);
+    padding-bottom: var(--safe-area-bottom);
 }
 
-/* App Container */
 #app {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    max-width: 600px;
+    margin: 0 auto;
     width: 100%;
     height: 100%;
 }
 
-/* iOS Navigation */
-.navigation {
-    height: 44px;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 16px;
+.ios-header {
+    padding: var(--spacing-sm) var(--spacing-md);
     background: var(--system-background);
     border-bottom: 0.5px solid var(--separator);
-    position: relative;
+    position: sticky;
+    top: 0;
     z-index: 100;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    flex-shrink: 0;
 }
 
-.nav-content {
+.header-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 100%;
-    max-width: 600px;
+    gap: var(--spacing-md);
 }
 
-.nav-title {
-    font-size: 17px;
-    font-weight: 600;
+.app-title {
+    font-size: 20px;
+    font-weight: 700;
     color: var(--label-primary);
-    text-align: center;
     flex: 1;
 }
 
-.nav-button {
-    width: 44px;
-    height: 44px;
-    background: transparent;
-    border: none;
-    color: var(--label-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    padding: 0;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-}
-
-/* Main Content - Scrollable */
-.content {
+.ios-content {
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 16px;
+    padding: var(--spacing-md);
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--spacing-lg);
+    min-height: 0;
 }
 
-.content::-webkit-scrollbar {
+.ios-content::-webkit-scrollbar {
     display: none;
 }
 
-/* Card */
-.card {
+.ios-card {
     background: var(--system-background-secondary);
-    border-radius: 16px;
-    border: 0.5px solid var(--separator);
+    border-radius: var(--border-radius-large);
+    border: 0.5px solid var(--separator-opaque);
     overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
 }
 
-/* Password Display */
-.password-display-container {
-    padding: 20px;
+.password-section {
+    padding: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    flex-shrink: 0;
 }
 
-.password-display {
+.password-display-wrapper {
     background: var(--system-background);
-    border-radius: 14px;
+    border-radius: var(--border-radius);
     border: 0.5px solid var(--separator);
+    padding: var(--spacing-md);
     min-height: 80px;
     display: flex;
     align-items: center;
-    padding: 16px;
-    padding-right: 72px;
-    position: relative;
+}
+
+.password-field {
+    width: 100%;
 }
 
 .password-output {
-    font-family: 'SF Mono', Menlo, monospace;
+    font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
     font-size: 20px;
     font-weight: 600;
     color: var(--label-primary);
@@ -184,69 +183,105 @@ body {
     flex: 1;
     -webkit-user-select: text;
     user-select: text;
-}
-
-.password-actions {
-    position: absolute;
-    right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    gap: 8px;
-}
-
-/* TOUCH BUTTONS - Исправлено */
-.action-button,
-.generate-button,
-.pwa-button,
-.nav-button {
-    min-height: var(--touch-min-height);
-    min-width: var(--touch-min-width);
-    padding: 0;
+    padding: var(--spacing-sm);
+    background: transparent;
     border: none;
-    border-radius: 8px;
+    outline: none;
+    min-height: 44px;
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.password-output:active {
+    opacity: 0.7;
+}
+
+.ios-button {
+    min-height: var(--touch-min);
+    min-width: var(--touch-min);
+    padding: 0 var(--spacing-md);
+    border: none;
+    border-radius: var(--border-radius);
     font-size: 17px;
     font-weight: 500;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    background: var(--system-background-tertiary);
+    color: var(--label-primary);
+    gap: var(--spacing-sm);
+    outline: none;
     position: relative;
-    transition: transform 0.1s ease, opacity 0.1s ease;
-    user-select: none;
 }
 
-.action-button:active,
-.generate-button:active,
-.pwa-button:active,
-.nav-button:active {
-    transform: scale(0.95);
+.ios-button:active {
+    transform: scale(0.97);
     opacity: 0.8;
 }
 
-.action-button {
-    width: 44px;
-    height: 44px;
-    background: var(--system-background-tertiary);
+.ios-button.primary {
+    background: var(--blue);
+    color: white;
+}
+
+.ios-button.primary:active {
+    background: var(--blue-hover);
+}
+
+.ios-button.secondary {
+    background: transparent;
     border: 0.5px solid var(--separator);
-    color: var(--label-primary);
+}
+
+.ios-button.large {
+    height: 56px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.ios-button.small {
+    min-height: 36px;
+    min-width: 36px;
+    padding: 0;
     font-size: 20px;
 }
 
-/* Strength Indicator */
+.ios-button.icon-button {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    background: transparent;
+    border: 0.5px solid var(--separator);
+}
+
+.ios-button.icon-button:active {
+    background: var(--system-background-tertiary);
+}
+
+.button-icon {
+    font-size: 20px;
+}
+
+.button-text {
+    flex: 1;
+    text-align: center;
+}
+
 .strength-indicator {
-    padding: 16px 20px;
-    border-top: 0.5px solid var(--separator);
-    background: rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
 }
 
 .strength-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
 }
 
 .strength-label {
@@ -256,11 +291,11 @@ body {
 }
 
 .strength-badge {
-    padding: 4px 12px;
+    padding: var(--spacing-xs) var(--spacing-md);
     border-radius: 12px;
     font-size: 14px;
     font-weight: 600;
-    background: var(--green);
+    background: var(--strength-medium);
     color: #000000;
     min-width: 80px;
     text-align: center;
@@ -271,92 +306,63 @@ body {
     background: var(--system-background-tertiary);
     border-radius: 2px;
     overflow: hidden;
-    margin-bottom: 8px;
 }
 
 .strength-fill {
     height: 100%;
     border-radius: 2px;
-    width: 50%;
-    background: var(--green);
-    transition: width 0.3s ease;
+    width: 0%;
+    background: var(--strength-medium);
+    transition: width 0.3s ease, background-color 0.3s ease;
 }
 
 .strength-description {
     font-size: 13px;
     color: var(--label-tertiary);
     text-align: center;
+    min-height: 18px;
 }
 
-/* Generate Button */
-.generate-button-container {
-    padding: 0 20px 20px;
+.settings-section {
+    padding: var(--spacing-lg);
+    flex-shrink: 0;
 }
 
-.generate-button {
-    width: 100%;
-    height: 50px;
-    background: var(--blue);
-    color: white;
-    border-radius: 10px;
-    font-weight: 600;
-    gap: 8px;
-}
-
-.generate-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.generate-button:disabled:active {
-    transform: none;
-    opacity: 0.5;
-}
-
-/* Settings */
-.settings-card {
-    padding: 20px;
-}
-
-.settings-title {
-    font-size: 22px;
+.section-title {
+    font-size: 20px;
     font-weight: 700;
     color: var(--label-primary);
-    margin-bottom: 20px;
+    margin-bottom: var(--spacing-lg);
 }
 
-/* Length Control */
-.length-control {
-    padding: 16px;
-    background: var(--system-background);
-    border-radius: 14px;
-    border: 0.5px solid var(--separator);
-    margin-bottom: 20px;
+.setting-item {
+    margin-bottom: var(--spacing-xl);
 }
 
-.length-header {
+.setting-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: var(--spacing-md);
 }
 
-.length-label {
+.setting-label {
     font-size: 17px;
     font-weight: 500;
     color: var(--label-primary);
 }
 
-.length-value {
+.setting-value {
     font-size: 24px;
     font-weight: 700;
     color: var(--blue);
+    min-width: 40px;
+    text-align: right;
 }
 
-/* TOUCH SLIDER - Исправлено */
-.slider-container {
+.ios-slider {
     position: relative;
-    height: 44px;
+    height: var(--touch-min);
     touch-action: none;
 }
 
@@ -383,14 +389,13 @@ body {
     transition: width 0.1s ease;
 }
 
-/* Важно: input[type="range"] для тач-устройств */
 .slider-input {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    opacity: 1 !important; /* Делаем видимым для тач */
+    opacity: 1;
     -webkit-appearance: none;
     appearance: none;
     background: transparent;
@@ -408,7 +413,7 @@ body {
     background: var(--blue);
     border-radius: 50%;
     border: 2px solid var(--system-background);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     cursor: pointer;
 }
 
@@ -421,308 +426,274 @@ body {
     cursor: pointer;
 }
 
-/* Character Options - TOUCH FIXED */
-.character-options {
-    background: var(--system-background);
-    border-radius: 14px;
-    border: 0.5px solid var(--separator);
-    margin-bottom: 20px;
-    overflow: hidden;
+.checkboxes-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
 }
 
-/* ВАЖНО: Делаем всю строку кликабельной */
-.option-row {
+.checkbox-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 16px;
-    border-bottom: 0.5px solid var(--separator);
-    min-height: 56px; /* Минимальная высота для тач */
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--system-background);
+    border-radius: var(--border-radius);
+    border: 0.5px solid var(--separator);
     cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
+    transition: all 0.2s ease;
+    min-height: var(--touch-min);
+}
+
+.checkbox-item:active {
+    background: var(--system-background-tertiary);
+    transform: scale(0.98);
+}
+
+.ios-checkbox {
     position: relative;
-}
-
-.option-row:last-child {
-    border-bottom: none;
-}
-
-.option-row:active {
-    background-color: var(--system-background-tertiary);
-}
-
-.option-label {
-    font-size: 17px;
-    color: var(--label-primary);
-    flex: 1;
-    padding-right: 16px;
-    pointer-events: none; /* Чтобы клик проходил на row */
-}
-
-/* iOS Switch - TOUCH FIXED */
-.switch-container {
-    position: relative;
-    width: 51px;
-    height: 31px;
+    width: 24px;
+    height: 24px;
     flex-shrink: 0;
-    pointer-events: none; /* Управляется через .option-row */
 }
 
-.switch-input {
+.ios-checkbox input {
     position: absolute;
     opacity: 0;
     width: 0;
     height: 0;
 }
 
-.switch-track {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--system-background-quaternary);
-    border-radius: 31px;
-    transition: all 0.3s ease;
-}
-
-.switch-thumb {
-    position: absolute;
-    height: 27px;
-    width: 27px;
-    left: 2px;
-    bottom: 2px;
-    background: var(--system-background);
-    border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    transition: transform 0.3s ease;
-}
-
-.switch-input:checked + .switch-track {
-    background: var(--green);
-}
-
-.switch-input:checked + .switch-track .switch-thumb {
-    transform: translateX(20px);
-}
-
-/* Special Preview */
-.special-preview {
-    padding: 16px;
-    background: var(--system-background-tertiary);
-    border-radius: 14px;
-    text-align: center;
-}
-
-.special-preview-text {
-    font-family: 'SF Mono', Menlo, monospace;
-    font-size: 18px;
-    color: var(--label-primary);
-    letter-spacing: 2px;
-}
-
-/* Info Card */
-.info-card {
-    padding: 20px;
-}
-
-.info-content {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.info-content p {
-    font-size: 15px;
-    color: var(--label-secondary);
-    line-height: 1.5;
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-}
-
-.info-content p strong {
-    color: var(--label-primary);
-    font-weight: 600;
-}
-
-/* Toast */
-.toast {
-    position: fixed;
-    top: 100px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-20px);
-    background: var(--system-background-secondary);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    color: var(--label-primary);
-    padding: 12px 20px;
-    border-radius: 10px;
-    font-size: 15px;
-    font-weight: 500;
-    z-index: 10000;
-    border: 0.5px solid var(--separator-secondary);
-    opacity: 0;
-    pointer-events: none;
-    max-width: calc(100% - 32px);
-    text-align: center;
-    transition: all 0.3s ease;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-}
-
-.toast.show {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
-}
-
-/* PWA Banner */
-.pwa-banner {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--system-background-secondary);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 0.5px solid var(--separator);
-    padding: 16px;
-    transform: translateY(100%);
-    transition: transform 0.3s ease;
-    z-index: 1000;
-    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-}
-
-.pwa-banner.show {
-    transform: translateY(0);
-}
-
-.pwa-content {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 16px;
-}
-
-.pwa-icon {
-    width: 44px;
-    height: 44px;
-    background: var(--blue);
-    border-radius: 8px;
+.checkbox-ui {
+    width: 100%;
+    height: 100%;
+    border: 2px solid var(--separator);
+    border-radius: 6px;
+    background: transparent;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.ios-checkbox input:checked + .checkbox-ui {
+    background: var(--blue);
+    border-color: var(--blue);
+}
+
+.ios-checkbox input:checked + .checkbox-ui::after {
+    content: "✓";
     color: white;
-    font-size: 22px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.checkbox-label {
+    font-size: 16px;
+    color: var(--label-primary);
+    flex: 1;
+    cursor: pointer;
+}
+
+.info-section {
+    padding: var(--spacing-lg);
     flex-shrink: 0;
 }
 
-.pwa-text {
+.features-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+}
+
+.feature-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.feature-text {
     flex: 1;
 }
 
-.pwa-title {
+.feature-text strong {
+    display: block;
     font-size: 17px;
     font-weight: 600;
     color: var(--label-primary);
     margin-bottom: 2px;
 }
 
-.pwa-description {
+.feature-text p {
     font-size: 15px;
     color: var(--label-tertiary);
     line-height: 1.4;
 }
 
-.pwa-actions {
-    display: flex;
-    gap: 12px;
-}
-
-.pwa-button {
-    flex: 1;
-    height: 44px;
-    border-radius: 10px;
-    font-weight: 500;
-}
-
-.pwa-button.primary {
-    background: var(--blue);
+.ios-toast {
+    position: fixed;
+    bottom: calc(var(--spacing-xl) + var(--safe-area-bottom));
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     color: white;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--border-radius-large);
+    font-size: 15px;
+    font-weight: 500;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    max-width: calc(100% - var(--spacing-xl));
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-.pwa-button.secondary {
-    background: var(--system-background-tertiary);
+.ios-toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.ios-pwa-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--system-background-secondary);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-top: 0.5px solid var(--separator-opaque);
+    padding: var(--spacing-lg);
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 2000;
+    padding-bottom: calc(var(--spacing-lg) + var(--safe-area-bottom));
+}
+
+.ios-pwa-banner.show {
+    transform: translateY(0);
+}
+
+.pwa-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.pwa-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.pwa-text h3 {
+    font-size: 18px;
+    font-weight: 700;
     color: var(--label-primary);
+    margin-bottom: 2px;
 }
 
-/* Touch Device Optimizations */
-@media (hover: none) and (pointer: coarse) {
-    /* Увеличиваем зоны клика для тач */
-    .action-button,
-    .nav-button {
-        min-width: 44px;
-        min-height: 44px;
-    }
-    
-    .option-row {
-        min-height: 56px;
-    }
-    
-    /* Улучшаем видимость активного состояния */
-    .option-row:active {
-        background-color: var(--system-background-tertiary) !important;
-    }
-    
-    button:active {
-        opacity: 0.7 !important;
-    }
-    
-    /* Убираем hover эффекты на тач-устройствах */
-    button:hover {
-        opacity: 1;
-    }
+.pwa-text p {
+    font-size: 15px;
+    color: var(--label-tertiary);
 }
 
-/* Landscape */
-@media (orientation: landscape) {
-    .content {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto auto;
-        gap: 16px;
+.pwa-buttons {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+@media (max-width: 480px) {
+    .checkboxes-grid {
+        grid-template-columns: 1fr;
     }
     
-    .password-card {
-        grid-column: 1 / -1;
+    .ios-content {
+        padding: var(--spacing-sm);
     }
     
-    .settings-card {
-        grid-column: 1;
+    .password-output {
+        font-size: 18px;
     }
     
-    .info-card {
-        grid-column: 2;
+    .strength-badge {
+        min-width: 70px;
+        font-size: 13px;
     }
 }
 
-/* iPhone Notch Support */
-@supports (padding: max(0px)) {
-    .content {
-        padding-left: max(16px, env(safe-area-inset-left));
-        padding-right: max(16px, env(safe-area-inset-right));
+@media (min-width: 768px) {
+    .ios-content {
+        padding: var(--spacing-lg);
     }
     
-    .navigation {
-        padding-top: env(safe-area-inset-top, 0px);
-        height: calc(44px + env(safe-area-inset-top, 0px));
+    #app {
+        padding: var(--spacing-md);
     }
 }
 
-/* Reduced Motion */
+@media (orientation: landscape) and (max-height: 500px) {
+    .ios-header {
+        padding: var(--spacing-xs) var(--spacing-md);
+    }
+    
+    .ios-content {
+        flex-direction: row;
+        flex-wrap: wrap;
+        overflow-y: auto;
+    }
+    
+    .password-section,
+    .settings-section,
+    .info-section {
+        flex: 1;
+        min-width: 300px;
+    }
+    
+    .password-section {
+        min-height: 400px;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     * {
         transition-duration: 0.01ms !important;
         animation-duration: 0.01ms !important;
+    }
+}
+
+button:focus-visible,
+input:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+}
+
+@supports (-webkit-touch-callout: none) {
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    
+    .password-output {
+        font-family: 'SF Mono', -apple-system, sans-serif;
+    }
+    
+    .ios-content {
+        -webkit-overflow-scrolling: touch;
     }
 }
