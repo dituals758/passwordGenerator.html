@@ -2,6 +2,7 @@
     --system-background: #ffffff;
     --system-background-secondary: #f2f2f7;
     --system-background-tertiary: #e5e5ea;
+    --system-background-elevated: #ffffff;
     
     --label-primary: #000000;
     --label-secondary: #3c3c43;
@@ -9,6 +10,7 @@
     
     --separator: #c6c6c8;
     --separator-opaque: rgba(198, 198, 200, 0.5);
+    --separator-elevated: rgba(60, 60, 67, 0.1);
     
     --blue: #007aff;
     --blue-hover: #0056cc;
@@ -25,9 +27,14 @@
     --strength-strong: #007aff;
     --strength-very-strong: #5856d6;
     
+    --toggle-on: #34c759;
+    --toggle-off: #e5e5ea;
+    --toggle-thumb: #ffffff;
+    
     --touch-min: 44px;
     --border-radius: 14px;
     --border-radius-large: 20px;
+    --border-radius-max: 999px;
     
     --spacing-xs: 4px;
     --spacing-sm: 8px;
@@ -37,12 +44,18 @@
     
     --safe-area-top: env(safe-area-inset-top, 0px);
     --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-left: env(safe-area-inset-left, 0px);
+    --safe-area-right: env(safe-area-inset-right, 0px);
+    
+    --blur-background: rgba(255, 255, 255, 0.8);
+    --blur-background-dark: rgba(0, 0, 0, 0.8);
 }
 
 [data-theme="dark"] {
     --system-background: #000000;
     --system-background-secondary: #1c1c1e;
     --system-background-tertiary: #2c2c2e;
+    --system-background-elevated: #1c1c1e;
     
     --label-primary: #ffffff;
     --label-secondary: #ebebf5;
@@ -50,11 +63,18 @@
     
     --separator: #38383a;
     --separator-opaque: rgba(56, 56, 58, 0.5);
+    --separator-elevated: rgba(84, 84, 88, 0.65);
     
     --blue: #0a84ff;
     --blue-hover: #409cff;
     --green: #30d158;
     --red: #ff453a;
+    
+    --toggle-on: #30d158;
+    --toggle-off: #3a3a3c;
+    
+    --blur-background: rgba(28, 28, 30, 0.8);
+    --blur-background-dark: rgba(0, 0, 0, 0.9);
 }
 
 * {
@@ -78,7 +98,7 @@ body {
     height: 100%;
     background: var(--system-background);
     color: var(--label-primary);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
     font-size: 17px;
     line-height: 1.47059;
     -webkit-font-smoothing: antialiased;
@@ -88,6 +108,8 @@ body {
     flex-direction: column;
     padding-top: var(--safe-area-top);
     padding-bottom: var(--safe-area-bottom);
+    padding-left: var(--safe-area-left);
+    padding-right: var(--safe-area-right);
 }
 
 #app {
@@ -99,18 +121,44 @@ body {
     margin: 0 auto;
     width: 100%;
     height: 100%;
+    position: relative;
 }
 
 .ios-header {
-    padding: var(--spacing-sm) var(--spacing-md);
-    background: var(--system-background);
-    border-bottom: 0.5px solid var(--separator);
+    padding: calc(var(--spacing-sm) + var(--safe-area-top)) var(--spacing-md) var(--spacing-sm);
+    background: var(--system-background-elevated);
     position: sticky;
     top: 0;
     z-index: 100;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
     flex-shrink: 0;
+    min-height: calc(44px + var(--safe-area-top));
+    display: flex;
+    align-items: center;
+    border-bottom: 0.5px solid var(--separator);
+}
+
+body.pwa-mode .ios-header {
+    background: transparent;
+    border-bottom: none;
+}
+
+body.pwa-mode .ios-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background: var(--blur-background);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    z-index: -1;
+}
+
+[data-theme="dark"] body.pwa-mode .ios-header::before {
+    background: var(--blur-background-dark);
 }
 
 .header-content {
@@ -118,13 +166,15 @@ body {
     align-items: center;
     justify-content: space-between;
     gap: var(--spacing-md);
+    width: 100%;
 }
 
 .app-title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--label-primary);
     flex: 1;
+    letter-spacing: 0.5px;
 }
 
 .ios-content {
@@ -136,6 +186,7 @@ body {
     flex-direction: column;
     gap: var(--spacing-lg);
     min-height: 0;
+    padding-top: 0;
 }
 
 .ios-content::-webkit-scrollbar {
@@ -143,9 +194,9 @@ body {
 }
 
 .ios-card {
-    background: var(--system-background-secondary);
+    background: var(--system-background-elevated);
     border-radius: var(--border-radius-large);
-    border: 0.5px solid var(--separator-opaque);
+    border: 0.5px solid var(--separator-elevated);
     overflow: hidden;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
 }
@@ -174,7 +225,7 @@ body {
 
 .password-output {
     font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 600;
     color: var(--label-primary);
     word-break: break-all;
@@ -198,6 +249,17 @@ body {
     opacity: 0.7;
 }
 
+.password-actions-row {
+    display: flex;
+    gap: var(--spacing-sm);
+    width: 100%;
+    align-items: center;
+}
+
+.password-actions-row .ios-button.primary {
+    flex: 1;
+}
+
 .ios-button {
     min-height: var(--touch-min);
     min-width: var(--touch-min);
@@ -216,9 +278,21 @@ body {
     gap: var(--spacing-sm);
     outline: none;
     position: relative;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
-.ios-button:active {
+.ios-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ios-button:disabled:active {
+    transform: none;
+    opacity: 0.5;
+}
+
+.ios-button:active:not(:disabled) {
     transform: scale(0.97);
     opacity: 0.8;
 }
@@ -228,7 +302,7 @@ body {
     color: white;
 }
 
-.ios-button.primary:active {
+.ios-button.primary:active:not(:disabled) {
     background: var(--blue-hover);
 }
 
@@ -243,11 +317,12 @@ body {
     font-weight: 600;
 }
 
-.ios-button.small {
-    min-height: 36px;
-    min-width: 36px;
+.ios-button.square {
+    width: 56px;
+    height: 56px;
     padding: 0;
-    font-size: 20px;
+    border-radius: var(--border-radius);
+    flex: 0 0 auto;
 }
 
 .ios-button.icon-button {
@@ -255,12 +330,13 @@ body {
     height: 44px;
     padding: 0;
     border-radius: 50%;
-    background: transparent;
-    border: 0.5px solid var(--separator);
+    background: var(--system-background-tertiary);
+    border: none;
 }
 
-.ios-button.icon-button:active {
+.ios-button.icon-button:active:not(:disabled) {
     background: var(--system-background-tertiary);
+    opacity: 0.8;
 }
 
 .button-icon {
@@ -291,26 +367,27 @@ body {
 }
 
 .strength-badge {
-    padding: var(--spacing-xs) var(--spacing-md);
-    border-radius: 12px;
-    font-size: 14px;
+    padding: 4px 12px;
+    border-radius: var(--border-radius-max);
+    font-size: 13px;
     font-weight: 600;
     background: var(--strength-medium);
     color: #000000;
     min-width: 80px;
     text-align: center;
+    letter-spacing: 0.3px;
 }
 
 .strength-meter {
     height: 4px;
     background: var(--system-background-tertiary);
-    border-radius: 2px;
+    border-radius: var(--border-radius-max);
     overflow: hidden;
 }
 
 .strength-fill {
     height: 100%;
-    border-radius: 2px;
+    border-radius: var(--border-radius-max);
     width: 0%;
     background: var(--strength-medium);
     transition: width 0.3s ease, background-color 0.3s ease;
@@ -329,10 +406,11 @@ body {
 }
 
 .section-title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--label-primary);
     margin-bottom: var(--spacing-lg);
+    letter-spacing: 0.3px;
 }
 
 .setting-item {
@@ -353,7 +431,7 @@ body {
 }
 
 .setting-value {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 700;
     color: var(--blue);
     min-width: 40px;
@@ -373,7 +451,7 @@ body {
     right: 0;
     height: 4px;
     background: var(--system-background-tertiary);
-    border-radius: 2px;
+    border-radius: var(--border-radius-max);
     transform: translateY(-50%);
     overflow: hidden;
 }
@@ -384,7 +462,7 @@ body {
     left: 0;
     height: 100%;
     background: var(--blue);
-    border-radius: 2px;
+    border-radius: var(--border-radius-max);
     width: 50%;
     transition: width 0.1s ease;
 }
@@ -417,82 +495,89 @@ body {
     cursor: pointer;
 }
 
-.slider-input::-moz-range-thumb {
-    width: 28px;
-    height: 28px;
-    background: var(--blue);
-    border-radius: 50%;
-    border: 2px solid var(--system-background);
-    cursor: pointer;
-}
-
-.checkboxes-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-md);
-}
-
-.checkbox-item {
+.toggle-grid {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: var(--spacing-md);
+}
+
+.toggle-item {
     padding: var(--spacing-md);
     background: var(--system-background);
     border-radius: var(--border-radius);
     border: 0.5px solid var(--separator);
     cursor: pointer;
     transition: all 0.2s ease;
-    min-height: var(--touch-min);
+    user-select: none;
 }
 
-.checkbox-item:active {
+.toggle-item:active {
     background: var(--system-background-tertiary);
-    transform: scale(0.98);
 }
 
-.ios-checkbox {
+.toggle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xs);
+}
+
+.toggle-label {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--label-primary);
+    flex: 1;
+    cursor: pointer;
+}
+
+.toggle-description {
+    font-size: 14px;
+    color: var(--label-tertiary);
+    line-height: 1.4;
+}
+
+.ios-toggle {
     position: relative;
-    width: 24px;
-    height: 24px;
+    width: 51px;
+    height: 31px;
     flex-shrink: 0;
+    margin-left: var(--spacing-md);
 }
 
-.ios-checkbox input {
+.ios-toggle input {
     position: absolute;
     opacity: 0;
     width: 0;
     height: 0;
 }
 
-.checkbox-ui {
+.toggle-track {
     width: 100%;
     height: 100%;
-    border: 2px solid var(--separator);
-    border-radius: 6px;
-    background: transparent;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: var(--toggle-off);
+    border-radius: var(--border-radius-max);
+    transition: all 0.3s cubic-bezier(0.2, 0.85, 0.32, 1.2);
+    position: relative;
 }
 
-.ios-checkbox input:checked + .checkbox-ui {
-    background: var(--blue);
-    border-color: var(--blue);
+.toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 27px;
+    height: 27px;
+    background: var(--toggle-thumb);
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.2, 0.85, 0.32, 1.2);
 }
 
-.ios-checkbox input:checked + .checkbox-ui::after {
-    content: "✓";
-    color: white;
-    font-size: 14px;
-    font-weight: bold;
+.ios-toggle input:checked + .toggle-track {
+    background: var(--toggle-on);
 }
 
-.checkbox-label {
-    font-size: 16px;
-    color: var(--label-primary);
-    flex: 1;
-    cursor: pointer;
+.ios-toggle input:checked + .toggle-track .toggle-thumb {
+    transform: translateX(20px);
 }
 
 .info-section {
@@ -513,8 +598,15 @@ body {
 }
 
 .feature-icon {
-    font-size: 24px;
+    font-size: 22px;
     flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--system-background-tertiary);
+    border-radius: 8px;
 }
 
 .feature-text {
@@ -540,9 +632,9 @@ body {
     bottom: calc(var(--spacing-xl) + var(--safe-area-bottom));
     left: 50%;
     transform: translateX(-50%) translateY(100px);
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: var(--blur-background-dark);
+    backdrop-filter: saturate(180%) blur(30px);
+    -webkit-backdrop-filter: saturate(180%) blur(30px);
     color: white;
     padding: var(--spacing-md) var(--spacing-lg);
     border-radius: var(--border-radius-large);
@@ -551,10 +643,11 @@ body {
     z-index: 1000;
     opacity: 0;
     pointer-events: none;
-    max-width: calc(100% - var(--spacing-xl));
+    max-width: calc(100% - var(--spacing-xl) * 2);
     text-align: center;
     transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
 }
 
 .ios-toast.show {
@@ -567,10 +660,10 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    background: var(--system-background-secondary);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-    border-top: 0.5px solid var(--separator-opaque);
+    background: var(--system-background-elevated);
+    backdrop-filter: saturate(180%) blur(30px);
+    -webkit-backdrop-filter: saturate(180%) blur(30px);
+    border-top: 0.5px solid var(--separator-elevated);
     padding: var(--spacing-lg);
     transform: translateY(100%);
     transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -620,43 +713,58 @@ body {
 }
 
 @media (max-width: 480px) {
-    .checkboxes-grid {
-        grid-template-columns: 1fr;
+    .toggle-grid {
+        gap: var(--spacing-sm);
     }
     
     .ios-content {
         padding: var(--spacing-sm);
+        padding-top: 0;
     }
     
     .password-output {
-        font-size: 18px;
+        font-size: 16px;
     }
     
     .strength-badge {
         min-width: 70px;
-        font-size: 13px;
+        font-size: 12px;
+        padding: 4px 10px;
+    }
+    
+    .ios-card {
+        margin-left: var(--safe-area-left);
+        margin-right: var(--safe-area-right);
+        max-width: calc(100% - var(--safe-area-left) - var(--safe-area-right));
+    }
+    
+    .app-title {
+        font-size: 17px;
     }
 }
 
 @media (min-width: 768px) {
     .ios-content {
         padding: var(--spacing-lg);
+        padding-top: 0;
     }
     
     #app {
         padding: var(--spacing-md);
+        padding-top: 0;
     }
 }
 
 @media (orientation: landscape) and (max-height: 500px) {
     .ios-header {
-        padding: var(--spacing-xs) var(--spacing-md);
+        padding: calc(var(--spacing-xs) + var(--safe-area-top)) var(--spacing-md) var(--spacing-xs);
     }
     
     .ios-content {
         flex-direction: row;
         flex-wrap: wrap;
         overflow-y: auto;
+        padding-top: 0;
     }
     
     .password-section,
@@ -686,14 +794,27 @@ input:focus-visible {
 
 @supports (-webkit-touch-callout: none) {
     body {
-        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
     }
     
     .password-output {
-        font-family: 'SF Mono', -apple-system, sans-serif;
+        font-family: 'SF Mono', -apple-system, monospace;
     }
     
     .ios-content {
         -webkit-overflow-scrolling: touch;
+    }
+    
+    .ios-header {
+        -webkit-backdrop-filter: saturate(180%) blur(20px);
+    }
+}
+
+@supports (padding: max(0px)) {
+    body {
+        padding-top: max(var(--safe-area-top), env(safe-area-inset-top));
+        padding-bottom: max(var(--safe-area-bottom), env(safe-area-inset-bottom));
+        padding-left: max(var(--safe-area-left), env(safe-area-inset-left));
+        padding-right: max(var(--safe-area-right), env(safe-area-inset-right));
     }
 }

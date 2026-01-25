@@ -1,5 +1,5 @@
-const CACHE_NAME = 'password-generator-v2.0.2';
-const STATIC_CACHE = 'static-v2';
+const CACHE_NAME = 'password-generator-v2.3.1';
+const STATIC_CACHE = 'static-v2.3';
 
 const STATIC_ASSETS = [
   './',
@@ -7,51 +7,40 @@ const STATIC_ASSETS = [
   './style.css',
   './app.js',
   './manifest.json',
-  './icon-72.png',
-  './icon-96.png',
-  './icon-128.png',
-  './icon-144.png',
-  './icon-152.png',
-  './icon-180.png',
-  './icon-192.png',
-  './icon-384.png',
-  './icon-512.png'
+  './assets/icons/icon-72.png',
+  './assets/icons/icon-96.png',
+  './assets/icons/icon-128.png',
+  './assets/icons/icon-144.png',
+  './assets/icons/icon-152.png',
+  './assets/icons/icon-167.png',
+  './assets/icons/icon-180.png',
+  './assets/icons/icon-192.png',
+  './assets/icons/icon-384.png',
+  './assets/icons/icon-512.png'
 ];
 
 self.addEventListener('install', event => {
-  console.log('[Service Worker] Установка');
-  
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then(cache => {
-        console.log('[Service Worker] Кэширование статических ресурсов');
         return cache.addAll(STATIC_ASSETS);
       })
       .then(() => self.skipWaiting())
-      .catch(err => {
-        console.log('[Service Worker] Ошибка кэширования:', err);
-      })
   );
 });
 
 self.addEventListener('activate', event => {
-  console.log('[Service Worker] Активация');
-  
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheName !== STATIC_CACHE && cacheName !== CACHE_NAME) {
-            console.log('[Service Worker] Удаление старого кэша:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     })
-    .then(() => {
-      console.log('[Service Worker] Активирован');
-      return self.clients.claim();
-    })
+    .then(() => self.clients.claim())
   );
 });
 

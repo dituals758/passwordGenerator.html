@@ -36,29 +36,32 @@ class PasswordGenerator {
         this.setupPWA();
         this.generateInitialPassword();
         
-        console.log('✅ Генератор паролей v2.0.2 инициализирован');
-        
         this.updateSafeAreas();
         window.addEventListener('resize', () => this.updateSafeAreas());
     }
 
     updateSafeAreas() {
-        const safeAreaTop = window.visualViewport ? 
-            Math.max(0, window.visualViewport.offsetTop) : 
-            parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-top')) || 0;
+        const safeAreaTop = 'env(safe-area-inset-top, 0px)';
+        const safeAreaBottom = 'env(safe-area-inset-bottom, 0px)';
+        const safeAreaLeft = 'env(safe-area-inset-left, 0px)';
+        const safeAreaRight = 'env(safe-area-inset-right, 0px)';
         
-        const safeAreaBottom = window.visualViewport ? 
-            Math.max(0, window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop) :
-            parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-bottom')) || 0;
+        document.documentElement.style.setProperty('--safe-area-top', safeAreaTop);
+        document.documentElement.style.setProperty('--safe-area-bottom', safeAreaBottom);
+        document.documentElement.style.setProperty('--safe-area-left', safeAreaLeft);
+        document.documentElement.style.setProperty('--safe-area-right', safeAreaRight);
         
-        document.documentElement.style.setProperty('--safe-area-top', `${safeAreaTop}px`);
-        document.documentElement.style.setProperty('--safe-area-bottom', `${safeAreaBottom}px`);
+        const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        if (isPWA) {
+            document.body.classList.add('pwa-mode');
+        }
     }
 
     cacheElements() {
         this.elements = {
             passwordOutput: document.getElementById('passwordOutput'),
             generateButton: document.getElementById('generateButton'),
+            shareButton: document.getElementById('shareButton'),
             themeToggle: document.getElementById('themeToggle'),
             
             strengthBadge: document.getElementById('strengthBadge'),
@@ -69,18 +72,15 @@ class PasswordGenerator {
             lengthValue: document.getElementById('lengthValue'),
             sliderFill: document.getElementById('sliderFill'),
             
-            lowercaseCheckbox: document.getElementById('lowercaseCheckbox'),
-            uppercaseCheckbox: document.getElementById('uppercaseCheckbox'),
-            numbersCheckbox: document.getElementById('numbersCheckbox'),
-            symbolsCheckbox: document.getElementById('symbolsCheckbox'),
+            lowercaseToggle: document.getElementById('lowercaseToggle'),
+            uppercaseToggle: document.getElementById('uppercaseToggle'),
+            numbersToggle: document.getElementById('numbersToggle'),
+            symbolsToggle: document.getElementById('symbolsToggle'),
             
             toast: document.getElementById('toast'),
             pwaBanner: document.getElementById('pwaBanner'),
             pwaInstall: document.getElementById('pwaInstall'),
-            pwaDismiss: document.getElementById('pwaDismiss'),
-            
-            app: document.getElementById('app'),
-            iosContent: document.querySelector('.ios-content')
+            pwaDismiss: document.getElementById('pwaDismiss')
         };
     }
 
@@ -98,19 +98,20 @@ class PasswordGenerator {
         };
 
         addTouchHandler(this.elements.generateButton, () => this.generateAndCopy());
+        addTouchHandler(this.elements.shareButton, () => this.sharePassword());
         addTouchHandler(this.elements.themeToggle, () => this.toggleTheme());
         
         this.elements.lengthSlider.addEventListener('input', () => this.updateSlider());
         this.elements.lengthSlider.addEventListener('change', () => this.generatePassword());
         
-        document.querySelectorAll('.checkbox-item').forEach(item => {
-            const checkboxId = item.getAttribute('data-for');
-            const checkbox = document.getElementById(checkboxId);
+        document.querySelectorAll('.toggle-item').forEach(item => {
+            const toggleId = item.getAttribute('data-for');
+            const toggle = document.getElementById(toggleId);
             
             item.addEventListener('click', (e) => {
-                if (e.target !== checkbox) {
-                    checkbox.checked = !checkbox.checked;
-                    checkbox.dispatchEvent(new Event('change'));
+                if (!e.target.closest('.ios-toggle')) {
+                    toggle.checked = !toggle.checked;
+                    toggle.dispatchEvent(new Event('change'));
                     
                     item.style.backgroundColor = 'var(--system-background-tertiary)';
                     setTimeout(() => {
@@ -119,7 +120,7 @@ class PasswordGenerator {
                 }
             });
             
-            checkbox.addEventListener('change', () => this.generatePassword());
+            toggle.addEventListener('change', () => this.generatePassword());
         });
 
         addTouchHandler(this.elements.pwaInstall, () => this.installPWA());
@@ -158,6 +159,10 @@ class PasswordGenerator {
             }
             lastTouchEnd = now;
         }, { passive: false });
+        
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => this.updateSafeAreas(), 100);
+        });
     }
 
     updateSlider() {
@@ -177,10 +182,10 @@ class PasswordGenerator {
 
     getCharacterPool() {
         let pool = '';
-        if (this.elements.lowercaseCheckbox.checked) pool += this.CONFIG.charSets.lowercase;
-        if (this.elements.uppercaseCheckbox.checked) pool += this.CONFIG.charSets.uppercase;
-        if (this.elements.numbersCheckbox.checked) pool += this.CONFIG.charSets.numbers;
-        if (this.elements.symbolsCheckbox.checked) pool += this.CONFIG.charSets.symbols;
+        if (this.elements.lowercaseToggle.checked) pool += this.CONFIG.charSets.lowercase;
+        if (this.elements.uppercaseToggle.checked) pool += this.CONFIG.charSets.uppercase;
+        if (this.elements.numbersToggle.checked) pool += this.CONFIG.charSets.numbers;
+        if (this.elements.symbolsToggle.checked) pool += this.CONFIG.charSets.symbols;
         return pool;
     }
 
@@ -240,6 +245,7 @@ class PasswordGenerator {
             this.showToast('Выберите хотя бы один тип символов', 'error');
             this.elements.passwordOutput.textContent = 'Выберите типы символов';
             this.updateStrengthIndicator('', '');
+            this.elements.shareButton.disabled = true;
             return '';
         }
         
@@ -255,10 +261,10 @@ class PasswordGenerator {
             this.currentPassword = password;
             this.elements.passwordOutput.textContent = password;
             this.updateStrengthIndicator(password, charPool);
+            this.elements.shareButton.disabled = false;
             
             return password;
         } catch (error) {
-            console.warn('Web Crypto недоступен, используется резервный метод:', error);
             return this.generateFallbackPassword(length, charPool);
         }
     }
@@ -275,6 +281,7 @@ class PasswordGenerator {
         this.currentPassword = password;
         this.elements.passwordOutput.textContent = password;
         this.updateStrengthIndicator(password, charPool);
+        this.elements.shareButton.disabled = false;
         
         return password;
     }
@@ -325,7 +332,6 @@ class PasswordGenerator {
             this.showToast('Пароль скопирован в буфер обмена');
             return true;
         } catch (err) {
-            console.warn('Clipboard API не доступен:', err);
             return this.fallbackCopy();
         }
     }
@@ -355,6 +361,54 @@ class PasswordGenerator {
         return false;
     }
 
+    async sharePassword() {
+        if (!this.currentPassword) {
+            this.showToast('Сначала сгенерируйте пароль', 'error');
+            return;
+        }
+
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Безопасный пароль',
+                    text: `Вот сгенерированный пароль: ${this.currentPassword}`,
+                    url: window.location.href
+                });
+                this.showToast('Пароль отправлен');
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    this.fallbackShare();
+                }
+            }
+        } else {
+            this.fallbackShare();
+        }
+    }
+
+    fallbackShare() {
+        if (!this.currentPassword) return;
+        
+        const textArea = document.createElement('textarea');
+        textArea.value = `Пароль: ${this.currentPassword}\nСгенерировано с помощью Генератора паролей: ${window.location.href}`;
+        document.body.appendChild(textArea);
+        textArea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            if (successful) {
+                this.showToast('Текст пароля скопирован для отправки');
+            } else {
+                this.showToast('Скопируйте пароль вручную', 'error');
+            }
+        } catch (err) {
+            console.error('Не удалось скопировать текст:', err);
+            this.showToast('Скопируйте пароль вручную', 'error');
+            document.body.removeChild(textArea);
+        }
+    }
+
     setupTheme() {
         const savedTheme = localStorage.getItem('password-generator-theme');
         
@@ -378,16 +432,19 @@ class PasswordGenerator {
     applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
         this.updateThemeIcon(theme);
+        
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (metaThemeColor) {
+            metaThemeColor.setAttribute('content', theme === 'dark' ? '#000000' : '#007AFF');
+        }
     }
 
     updateThemeIcon(theme) {
         const icon = this.elements.themeToggle.querySelector('.theme-icon');
         if (theme === 'dark') {
             icon.textContent = '☀️';
-            icon.style.filter = 'invert(0)';
         } else {
             icon.textContent = '🌙';
-            icon.style.filter = 'invert(0)';
         }
     }
 
@@ -396,9 +453,7 @@ class PasswordGenerator {
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         
         localStorage.setItem('password-generator-theme', newTheme);
-        
         this.applyTheme(newTheme);
-        
         this.showToast(`Тема: ${newTheme === 'dark' ? 'Тёмная' : 'Светлая'}`);
     }
 
@@ -436,13 +491,13 @@ class PasswordGenerator {
         
         window.addEventListener('appinstalled', () => {
             this.hidePWABanner();
-            this.showToast('Приложение установлено!');
+            this.showToast('Приложение установлено! Работает без интернета.');
             localStorage.setItem('pwa-dismissed', 'true');
+            document.body.classList.add('pwa-mode');
         });
         
-        if (window.matchMedia('(display-mode: standalone)').matches || 
-            window.navigator.standalone) {
-            console.log('Запущено как PWA');
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+            document.body.classList.add('pwa-mode');
             this.hidePWABanner();
         }
     }
@@ -471,8 +526,7 @@ class PasswordGenerator {
             const { outcome } = await this.deferredPrompt.userChoice;
             
             if (outcome === 'accepted') {
-                console.log('PWA установлено');
-                this.showToast('Приложение установлено!');
+                this.showToast('Приложение установлено! Работает без интернета.');
             }
             
             this.deferredPrompt = null;

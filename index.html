@@ -5,18 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Генератор паролей">
+    <meta name="apple-mobile-web-app-title" content="Пароли">
     <meta name="theme-color" content="#007AFF" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
     <meta name="color-scheme" content="light dark">
     
-    <title>Генератор паролей | Стиль iOS | Безопасные пароли</title>
-    <meta name="description" content="Генератор криптографически безопасных паролей в стиле iOS. Локальная генерация, PWA, работа без интернета.">
-    <meta name="keywords" content="генератор паролей, iOS, безопасные пароли, PWA, офлайн">
+    <title>Генератор паролей | iOS 18 | Безопасность</title>
+    <meta name="description" content="Криптографически безопасный генератор паролей в стиле iOS 18. Работает без интернета.">
+    <meta name="keywords" content="пароль, безопасность, iOS 18, генератор, PWA">
     
     <link rel="manifest" href="./manifest.json">
-    <link rel="icon" href="./icon-192.png" type="image/png">
-    <link rel="apple-touch-icon" href="./icon-180.png">
+    <link rel="icon" href="./assets/icons/icon-192.png" type="image/png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/icon-180.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="./assets/icons/icon-167.png">
     
     <link rel="stylesheet" href="./style.css">
     
@@ -57,14 +58,19 @@
                     </div>
                 </div>
 
-                <button class="ios-button primary large" id="generateButton">
-                    <span class="button-icon">🔐</span>
-                    <span class="button-text">Сгенерировать и скопировать</span>
-                </button>
+                <div class="password-actions-row">
+                    <button class="ios-button primary large" id="generateButton">
+                        <span class="button-icon">🔐</span>
+                        <span class="button-text">Сгенерировать</span>
+                    </button>
+                    <button class="ios-button secondary square" id="shareButton" disabled>
+                        <span class="button-icon">↗️</span>
+                    </button>
+                </div>
             </section>
 
             <section class="ios-card settings-section">
-                <h2 class="section-title">Настройки генерации</h2>
+                <h2 class="section-title">Настройки сложности пароля</h2>
                 
                 <div class="setting-item">
                     <div class="setting-header">
@@ -72,53 +78,72 @@
                         <span id="lengthValue" class="setting-value">16</span>
                     </div>
                     <div class="ios-slider">
-                        <input type="range" id="lengthSlider" min="8" max="32" value="16" 
-                               class="slider-input" aria-label="Длина пароля">
+                        <input type="range" id="lengthSlider" min="8" max="32" value="16" class="slider-input">
                         <div class="slider-track">
                             <div id="sliderFill" class="slider-fill"></div>
                         </div>
                     </div>
                 </div>
 
-                <div class="checkboxes-grid">
-                    <div class="checkbox-item" data-for="lowercaseCheckbox">
-                        <div class="ios-checkbox">
-                            <input type="checkbox" id="lowercaseCheckbox" checked>
-                            <div class="checkbox-ui"></div>
+                <div class="toggle-grid">
+                    <div class="toggle-item" data-for="lowercaseToggle">
+                        <div class="toggle-header">
+                            <label for="lowercaseToggle" class="toggle-label">
+                                Строчные буквы (a-z)
+                            </label>
+                            <div class="ios-toggle">
+                                <input type="checkbox" id="lowercaseToggle" checked>
+                                <div class="toggle-track">
+                                    <div class="toggle-thumb"></div>
+                                </div>
+                            </div>
                         </div>
-                        <label for="lowercaseCheckbox" class="checkbox-label">
-                            Строчные буквы (a-z)
-                        </label>
+                        <p class="toggle-description">Использовать маленькие буквы</p>
                     </div>
 
-                    <div class="checkbox-item" data-for="uppercaseCheckbox">
-                        <div class="ios-checkbox">
-                            <input type="checkbox" id="uppercaseCheckbox" checked>
-                            <div class="checkbox-ui"></div>
+                    <div class="toggle-item" data-for="uppercaseToggle">
+                        <div class="toggle-header">
+                            <label for="uppercaseToggle" class="toggle-label">
+                                Заглавные буквы (A-Z)
+                            </label>
+                            <div class="ios-toggle">
+                                <input type="checkbox" id="uppercaseToggle" checked>
+                                <div class="toggle-track">
+                                    <div class="toggle-thumb"></div>
+                                </div>
+                            </div>
                         </div>
-                        <label for="uppercaseCheckbox" class="checkbox-label">
-                            Заглавные буквы (A-Z)
-                        </label>
+                        <p class="toggle-description">Использовать большие буквы</p>
                     </div>
 
-                    <div class="checkbox-item" data-for="numbersCheckbox">
-                        <div class="ios-checkbox">
-                            <input type="checkbox" id="numbersCheckbox" checked>
-                            <div class="checkbox-ui"></div>
+                    <div class="toggle-item" data-for="numbersToggle">
+                        <div class="toggle-header">
+                            <label for="numbersToggle" class="toggle-label">
+                                Цифры (0-9)
+                            </label>
+                            <div class="ios-toggle">
+                                <input type="checkbox" id="numbersToggle" checked>
+                                <div class="toggle-track">
+                                    <div class="toggle-thumb"></div>
+                                </div>
+                            </div>
                         </div>
-                        <label for="numbersCheckbox" class="checkbox-label">
-                            Цифры (0-9)
-                        </label>
+                        <p class="toggle-description">Использовать цифры</p>
                     </div>
 
-                    <div class="checkbox-item" data-for="symbolsCheckbox">
-                        <div class="ios-checkbox">
-                            <input type="checkbox" id="symbolsCheckbox" checked>
-                            <div class="checkbox-ui"></div>
+                    <div class="toggle-item" data-for="symbolsToggle">
+                        <div class="toggle-header">
+                            <label for="symbolsToggle" class="toggle-label">
+                                Символы (!@#$%^&*)
+                            </label>
+                            <div class="ios-toggle">
+                                <input type="checkbox" id="symbolsToggle" checked>
+                                <div class="toggle-track">
+                                    <div class="toggle-thumb"></div>
+                                </div>
+                            </div>
                         </div>
-                        <label for="symbolsCheckbox" class="checkbox-label">
-                            Символы (!@#$%^&*)
-                        </label>
+                        <p class="toggle-description">Использовать специальные символы</p>
                     </div>
                 </div>
             </section>
@@ -143,8 +168,15 @@
                     <div class="feature-item">
                         <span class="feature-icon">📶</span>
                         <div class="feature-text">
-                            <strong>Работает без интернета</strong>
-                            <p>Не требует подключения к интернету</p>
+                            <strong>Офлайн работа</strong>
+                            <p>Работает без интернета после установки</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📱</span>
+                        <div class="feature-text">
+                            <strong>Установка на iOS</strong>
+                            <p>Нажмите "Поделиться" → "На экран «Домой»"</p>
                         </div>
                     </div>
                 </div>
@@ -158,7 +190,7 @@
                 <div class="pwa-icon">📱</div>
                 <div class="pwa-text">
                     <h3>Установить приложение</h3>
-                    <p>Доступ с домашнего экрана</p>
+                    <p>Для работы без интернета и быстрого доступа</p>
                 </div>
             </div>
             <div class="pwa-buttons">
@@ -171,14 +203,23 @@
     <script src="./app.js" defer></script>
     
     <script>
-        (function() {
-            document.addEventListener('touchstart', function(e) {
-                if (e.touches.length > 1) e.preventDefault();
-            }, { passive: false });
-            
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) e.preventDefault();
+        }, { passive: false });
+        
+        const updateSafeAreas = () => {
             document.documentElement.style.setProperty('--safe-area-top', 'env(safe-area-inset-top, 0px)');
             document.documentElement.style.setProperty('--safe-area-bottom', 'env(safe-area-inset-bottom, 0px)');
-        })();
+            document.documentElement.style.setProperty('--safe-area-left', 'env(safe-area-inset-left, 0px)');
+            document.documentElement.style.setProperty('--safe-area-right', 'env(safe-area-inset-right, 0px)');
+        };
+        
+        updateSafeAreas();
+        window.addEventListener('resize', updateSafeAreas);
+        
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+            document.body.classList.add('pwa-mode');
+        }
     </script>
 </body>
 </html>
