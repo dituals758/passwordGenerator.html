@@ -1,75 +1,20 @@
 {
   "name": "Генератор паролей",
-  "short_name": "Пароли",
-  "description": "Криптографически безопасный генератор паролей в стиле iOS 18",
+  "short_name": "Ген.паролей",
+  "description": "Простое приложение для создания надёжных паролей. Работает без интернета.",
+  "id": "/password-generator/",
+  "lang": "ru",
+  "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "fullscreen"],
-  "orientation": "portrait-primary",
-  "theme_color": "#007aff",
-  "background_color": "#ffffff",
-  "categories": ["утилиты", "безопасность", "продуктивность"],
-  "id": "/",
-  "launch_handler": {
-    "client_mode": "auto"
-  },
-  "handle_links": "preferred",
-  "edge_side_panel": {
-    "preferred_width": 400
-  },
+  "orientation": "portrait",
+  "theme_color": "#0078d4",
+  "background_color": "#f5f7fa",
   "icons": [
-    {
-      "src": "./assets/icons/icon-72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./assets/icons/icon-96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./assets/icons/icon-128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./assets/icons/icon-144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./assets/icons/icon-152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./assets/icons/icon-167.png",
-      "sizes": "167x167",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./assets/icons/icon-180.png",
-      "sizes": "180x180",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
     {
       "src": "./assets/icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./assets/icons/icon-384.png",
-      "sizes": "384x384",
       "type": "image/png",
       "purpose": "any maskable"
     },
@@ -80,28 +25,13 @@
       "purpose": "any maskable"
     }
   ],
-  "screenshots": [
-    {
-      "src": "./assets/screenshots/screenshot-light.png",
-      "sizes": "1170x2532",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Генератор паролей (светлая тема)"
-    },
-    {
-      "src": "./assets/screenshots/screenshot-dark.png",
-      "sizes": "1170x2532",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Генератор паролей (тёмная тема)"
-    }
-  ],
+  "categories": ["utilities", "security", "productivity"],
   "shortcuts": [
     {
-      "name": "Новый пароль",
-      "short_name": "Сгенерировать",
-      "description": "Создать новый безопасный пароль",
-      "url": "./",
+      "name": "Создать пароль",
+      "short_name": "Новый пароль",
+      "description": "Быстро создать новый пароль",
+      "url": "./?action=generate",
       "icons": [
         {
           "src": "./assets/icons/icon-96.png",
