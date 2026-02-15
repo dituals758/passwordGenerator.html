@@ -1,4 +1,4 @@
-const APP_VERSION = "20260215";
+const APP_VERSION = "20260215_upd2";
 const APP_NAME = "Генератор паролей";
 
 const charSets = {
@@ -8,6 +8,11 @@ const charSets = {
     special: "!@#$%^&*"
 };
 
+const SIMILAR_CHARS = "0O1lI|";
+
+const sunSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/><path d="M12 2V4M12 20V22M4 12H2M22 12H20M6 6L4 4M20 20L18 18M6 18L4 20M20 4L18 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+const moonSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
 const elements = {
     password: document.getElementById('password'),
     length: document.getElementById('length'),
@@ -16,11 +21,15 @@ const elements = {
     copyBtn: document.getElementById('copyBtn'),
     notificationArea: document.getElementById('notificationArea'),
     themeToggle: document.getElementById('themeToggle'),
-    themeIcon: document.getElementById('themeIcon'),
-    themeText: document.getElementById('themeText'),
     installPWA: document.getElementById('installPWA'),
     footerVersion: document.getElementById('footerVersion'),
-    lengthIndicator: document.getElementById('lengthIndicator')
+    lowercase: document.getElementById('lowercase'),
+    uppercase: document.getElementById('uppercase'),
+    numbers: document.getElementById('numbers'),
+    special: document.getElementById('special'),
+    excludeSimilar: document.getElementById('excludeSimilar'),
+    excludeRepeating: document.getElementById('excludeRepeating'),
+    resetSettingsBtn: document.getElementById('resetSettingsBtn')
 };
 
 let notificationTimeout = null;
@@ -46,10 +55,10 @@ function applyTheme(theme) {
 
 function updateThemeUI(theme) {
     const isDark = theme === 'dark';
-    elements.themeIcon.textContent = isDark ? '☀️' : '🌙';
-    elements.themeText.textContent = isDark ? 'Светлая' : 'Темная';
-    elements.themeToggle.setAttribute('aria-label', 
-        isDark ? 'Переключить на светлую тему' : 'Переключить на тёмную тему');
+    const svg = isDark ? sunSvg : moonSvg;
+    const tooltipText = isDark ? 'Светлая тема' : 'Тёмная тема';
+    elements.themeToggle.innerHTML = svg + '<span class="tooltip" id="themeTooltip">' + tooltipText + '</span>';
+    elements.themeToggle.setAttribute('aria-label', isDark ? 'Переключить на светлую тему' : 'Переключить на тёмную тему');
 }
 
 function toggleTheme() {
@@ -58,17 +67,63 @@ function toggleTheme() {
     applyTheme(newTheme);
 }
 
+function loadSettings() {
+    const settings = JSON.parse(localStorage.getItem('passwordSettings')) || {};
+    elements.length.value = settings.length || 16;
+    elements.lowercase.checked = settings.lowercase !== undefined ? settings.lowercase : true;
+    elements.uppercase.checked = settings.uppercase !== undefined ? settings.uppercase : true;
+    elements.numbers.checked = settings.numbers !== undefined ? settings.numbers : true;
+    elements.special.checked = settings.special !== undefined ? settings.special : true;
+    elements.excludeSimilar.checked = settings.excludeSimilar || false;
+    elements.excludeRepeating.checked = settings.excludeRepeating || false;
+    updateLengthValue();
+}
+
+function saveSettings() {
+    const settings = {
+        length: parseInt(elements.length.value),
+        lowercase: elements.lowercase.checked,
+        uppercase: elements.uppercase.checked,
+        numbers: elements.numbers.checked,
+        special: elements.special.checked,
+        excludeSimilar: elements.excludeSimilar.checked,
+        excludeRepeating: elements.excludeRepeating.checked
+    };
+    localStorage.setItem('passwordSettings', JSON.stringify(settings));
+}
+
+function resetSettingsToDefault() {
+    elements.length.value = 16;
+    elements.lowercase.checked = true;
+    elements.uppercase.checked = true;
+    elements.numbers.checked = true;
+    elements.special.checked = true;
+    elements.excludeSimilar.checked = false;
+    elements.excludeRepeating.checked = false;
+    updateLengthValue();
+    saveSettings();
+    generateAndShow();
+    showNotification('↻ Настройки сброшены', 'success');
+}
+
+function filterCharSet(charSet, excludeSimilar) {
+    if (!excludeSimilar) return charSet;
+    return charSet.split('').filter(c => !SIMILAR_CHARS.includes(c)).join('');
+}
+
 function generatePassword() {
     const length = parseInt(elements.length.value);
+    const excludeSimilar = elements.excludeSimilar.checked;
+    const excludeRepeating = elements.excludeRepeating.checked;
+
     const charPool = [];
-    
-    if (document.getElementById('lowercase').checked) charPool.push(charSets.lowercase);
-    if (document.getElementById('uppercase').checked) charPool.push(charSets.uppercase);
-    if (document.getElementById('numbers').checked) charPool.push(charSets.numbers);
-    if (document.getElementById('special').checked) charPool.push(charSets.special);
+    if (elements.lowercase.checked) charPool.push(filterCharSet(charSets.lowercase, excludeSimilar));
+    if (elements.uppercase.checked) charPool.push(filterCharSet(charSets.uppercase, excludeSimilar));
+    if (elements.numbers.checked) charPool.push(filterCharSet(charSets.numbers, excludeSimilar));
+    if (elements.special.checked) charPool.push(filterCharSet(charSets.special, excludeSimilar));
 
     if (charPool.length === 0) {
-        showNotification('⚠️ Выберите хотя бы один тип символов', 'error');
+        showNotification('Выберите хотя бы один тип символов', 'error');
         return '';
     }
 
@@ -77,14 +132,28 @@ function generatePassword() {
         window.crypto.getRandomValues(array);
         const pool = charPool.join('');
         const selectedSets = charPool;
-        let password = '';
         let attempts = 0;
         const maxAttempts = 100;
         
         while (attempts < maxAttempts) {
-            password = '';
+            let password = '';
+            let lastChar = '';
             for (let i = 0; i < length; i++) {
-                password += pool[array[i] % pool.length];
+                let validChar = false;
+                let localAttempts = 0;
+                let chosenChar;
+                while (!validChar && localAttempts < 20) {
+                    const randomIndex = array[i] % pool.length;
+                    chosenChar = pool[randomIndex];
+                    if (excludeRepeating && chosenChar === lastChar && pool.length > 1) {
+                        window.crypto.getRandomValues(array);
+                        localAttempts++;
+                    } else {
+                        validChar = true;
+                    }
+                }
+                password += chosenChar;
+                lastChar = chosenChar;
             }
             
             const hasAllTypes = selectedSets.every(chars => 
@@ -104,8 +173,21 @@ function generatePassword() {
     } catch {
         const pool = charPool.join('');
         let password = '';
+        let lastChar = '';
         for (let i = 0; i < length; i++) {
-            password += pool[Math.floor(Math.random() * pool.length)];
+            let validChar = false;
+            let localAttempts = 0;
+            let chosenChar;
+            while (!validChar && localAttempts < 20) {
+                chosenChar = pool[Math.floor(Math.random() * pool.length)];
+                if (excludeRepeating && chosenChar === lastChar && pool.length > 1) {
+                    localAttempts++;
+                } else {
+                    validChar = true;
+                }
+            }
+            password += chosenChar;
+            lastChar = chosenChar;
         }
         return password;
     }
@@ -118,11 +200,12 @@ function generateAndShow() {
     elements.password.value = password;
     clearNotification();
     updatePasswordStrength();
+    saveSettings();
 }
 
 async function copyToClipboard() {
     if (!elements.password.value) {
-        showNotification('⚠️ Сначала создайте пароль', 'error');
+        showNotification('Сначала создайте пароль', 'error');
         return;
     }
     
@@ -130,10 +213,10 @@ async function copyToClipboard() {
     
     try {
         await navigator.clipboard.writeText(elements.password.value);
-        showNotification('✅ Пароль создан и скопирован в буфер обмена', 'success');
+        showNotification('Пароль скопирован', 'success');
     } catch (err) {
         console.error('Clipboard API failed:', err);
-        showNotification('❌ Не удалось скопировать', 'error');
+        showNotification('Не удалось скопировать', 'error');
     }
 }
 
@@ -154,14 +237,14 @@ async function generateAndCopy() {
         elements.password.value = password;
         
         await navigator.clipboard.writeText(password);
-        // No background color change
-        showNotification('✅ Пароль создан и скопирован в буфер обмена', 'success');
+        showNotification('Пароль создан и скопирован в буфер обмена', 'success');
         
         updatePasswordStrength();
+        saveSettings();
         
     } catch (err) {
         console.error('Ошибка при генерации:', err);
-        showNotification('⚠️ Пароль создан, но не скопирован в буфер обмена', 'warning');
+        showNotification('Пароль создан, но не скопирован', 'warning');
     } finally {
         generateBtn.disabled = false;
         generateBtn.textContent = originalText;
@@ -173,7 +256,7 @@ function showNotification(message, type = 'success') {
     clearNotification();
     
     elements.notificationArea.textContent = message;
-    elements.notificationArea.className = `notification-area show notification-${type}`;
+    elements.notificationArea.className = `toast-notification show notification-${type}`;
     
     notificationTimeout = setTimeout(() => {
         clearNotification();
@@ -185,24 +268,13 @@ function clearNotification() {
         clearTimeout(notificationTimeout);
         notificationTimeout = null;
     }
-    elements.notificationArea.className = 'notification-area';
+    elements.notificationArea.className = 'toast-notification';
     elements.notificationArea.textContent = '';
 }
 
 function updateLengthValue() {
     const value = elements.length.value;
     elements.lengthValue.textContent = value;
-    updateLengthIndicator();
-}
-
-function updateLengthIndicator() {
-    const value = parseInt(elements.length.value);
-    if (elements.lengthIndicator) {
-        elements.lengthIndicator.querySelectorAll('span').forEach(span => {
-            const length = parseInt(span.dataset.length);
-            span.classList.toggle('active', value >= length);
-        });
-    }
 }
 
 function updatePasswordStrength() {
@@ -211,8 +283,8 @@ function updatePasswordStrength() {
     const strength = length * complexity;
     
     let strengthText = '';
-    if (strength >= 96) strengthText = 'очень надежный';
-    else if (strength >= 64) strengthText = 'надежный';
+    if (strength >= 96) strengthText = 'очень надёжный';
+    else if (strength >= 64) strengthText = 'надёжный';
     else if (strength >= 32) strengthText = 'средний';
     else strengthText = 'слабый';
     
@@ -232,20 +304,20 @@ function checkPWAInstallStatus() {
 
 function initPWAInstall() {
     if (checkPWAInstallStatus()) {
-        elements.installPWA.classList.remove('show');
+        elements.installPWA.classList.add('hide');
         return;
     }
     
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        elements.installPWA.classList.add('show');
+        elements.installPWA.classList.remove('hide');
     });
     
     window.addEventListener('appinstalled', () => {
         deferredPrompt = null;
         isAppInstalled = true;
-        elements.installPWA.classList.remove('show');
+        elements.installPWA.classList.add('hide');
         showNotification('✅ Приложение установлено!', 'success');
     });
 }
@@ -253,7 +325,7 @@ function initPWAInstall() {
 async function installPWA() {
     if (!deferredPrompt || isAppInstalled) {
         showNotification('ℹ️ Приложение уже установлено', 'warning');
-        elements.installPWA.classList.remove('show');
+        elements.installPWA.classList.add('hide');
         return;
     }
     
@@ -264,7 +336,7 @@ async function installPWA() {
     
     if (outcome === 'accepted') {
         isAppInstalled = true;
-        elements.installPWA.classList.remove('show');
+        elements.installPWA.classList.add('hide');
     } else {
         showNotification('❌ Установка отменена', 'error');
     }
@@ -330,6 +402,7 @@ function initServiceWorker() {
 function initApp() {
     initAppVersion();
     initTheme();
+    loadSettings();
     generateAndShow();
     initPWAInstall();
     initServiceWorker();
@@ -344,6 +417,7 @@ function initApp() {
     elements.copyBtn.addEventListener('click', copyToClipboard);
     elements.themeToggle.addEventListener('click', toggleTheme);
     elements.installPWA.addEventListener('click', installPWA);
+    elements.resetSettingsBtn.addEventListener('click', resetSettingsToDefault);
     
     document.querySelectorAll('.switch input').forEach(switchInput => {
         switchInput.addEventListener('change', handleSettingChange);

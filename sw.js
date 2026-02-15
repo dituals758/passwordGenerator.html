@@ -1,4 +1,4 @@
-const APP_VERSION = "20260215";
+const APP_VERSION = "20260215_upd2";
 const CACHE_NAME = `password-generator-v${APP_VERSION}`;
 
 const STATIC_ASSETS = [
@@ -6,8 +6,14 @@ const STATIC_ASSETS = [
   './index.html',
   './manifest.json',
   './script.js',
+  './assets/icons/icon-96.png',
   './assets/icons/icon-192.png',
-  './assets/icons/icon-512.png'
+  './assets/icons/icon-512.png',
+  './assets/icons/icon-32.png',
+  './assets/icons/icon-16.png',
+  './assets/icons/apple-touch-icon.png',
+  './assets/icons/icon-192-maskable.png',
+  './assets/icons/icon-512-maskable.png'
 ];
 
 self.addEventListener('install', event => {

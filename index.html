@@ -2,10 +2,10 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Генератор паролей</title>
     <meta name="description" content="Простое приложение для создания безопасных паролей. Работает без интернета, данные остаются на вашем устройстве.">
-    <meta name="keywords" content="генератор паролей, создать пароль, безопасный пароль, пароли офлайн, бесплатный генератор">
+    <meta name="keywords" content="генератор паролей, создать пароль, безопасный пароль, пароли офлайн, бесплатный генератор, pwa">
     <meta name="author" content="Password Generator">
     <meta property="og:title" content="Генератор паролей | Быстро и безопасно">
     <meta property="og:description" content="Создавайте надёжные пароли без интернета. Просто, бесплатно, безопасно.">
@@ -120,7 +120,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             padding: 20px;
             padding-top: max(20px, env(safe-area-inset-top));
             padding-bottom: max(20px, env(safe-area-inset-bottom));
@@ -130,20 +130,22 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             color-scheme: light dark;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .container {
-            background-color: var(--container-bg);
+            background-color: color-mix(in srgb, var(--container-bg) 70%, transparent);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             padding: clamp(20px, 5vw, 30px);
             border-radius: 20px;
             width: 100%;
             max-width: 500px;
-            border: 1px solid var(--border-color);
+            border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.02);
             margin: 0 auto;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            background-color: color-mix(in srgb, var(--container-bg) 90%, transparent);
+            overflow: visible;
         }
 
         .header-row {
@@ -175,12 +177,13 @@
         }
 
         .password-display {
+            position: relative;
             margin-bottom: var(--vertical-spacing);
         }
 
         .password-field {
             position: relative;
-            margin-bottom: var(--vertical-spacing);
+            margin-bottom: 12px;
         }
 
         #password {
@@ -208,7 +211,7 @@
             box-shadow: var(--focus-shadow);
         }
 
-        .copy-btn, .visibility-toggle {
+        .copy-btn, .visibility-toggle, .reset-btn {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
@@ -226,6 +229,7 @@
             min-width: 44px;
             min-height: 44px;
             -webkit-tap-highlight-color: transparent;
+            will-change: background-color;
         }
 
         .copy-btn {
@@ -236,7 +240,16 @@
             right: 58px;
         }
 
-        .copy-btn svg, .visibility-toggle svg {
+        .reset-btn {
+            position: relative;
+            top: auto;
+            right: auto;
+            transform: none;
+            margin-left: 12px;
+            flex-shrink: 0;
+        }
+
+        .copy-btn svg, .visibility-toggle svg, .reset-btn svg {
             width: 24px;
             height: 24px;
             display: block;
@@ -244,24 +257,30 @@
             fill: none;
         }
 
-        .copy-btn:hover, .visibility-toggle:hover {
-            background-color: var(--border-color);
+        .reset-btn svg {
+            stroke: currentColor;
+        }
+
+        .copy-btn:hover, .visibility-toggle:hover, .reset-btn:hover {
+            background-color: color-mix(in srgb, var(--border-color) 70%, transparent);
             color: var(--text-color);
         }
 
-        .copy-btn:focus-visible, .visibility-toggle:focus-visible {
+        .copy-btn:focus-visible, .visibility-toggle:focus-visible, .reset-btn:focus-visible {
             outline: 2px solid var(--primary-color);
             outline-offset: 2px;
-            background-color: var(--border-color);
+            background-color: color-mix(in srgb, var(--border-color) 70%, transparent);
         }
 
-        .copy-btn .tooltip, .visibility-toggle .tooltip {
+        .copy-btn .tooltip, .visibility-toggle .tooltip, .reset-btn .tooltip {
             position: absolute;
             bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
-            background: var(--container-bg);
-            border: 1px solid var(--border-color);
+            background-color: color-mix(in srgb, var(--container-bg) 70%, transparent);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
             border-radius: 12px;
             padding: 8px 12px;
             font-size: 0.85rem;
@@ -269,56 +288,16 @@
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.2s;
-            z-index: 10;
+            z-index: 30;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             pointer-events: none;
             color: var(--text-color);
+            margin-bottom: 8px;
         }
 
-        .copy-btn:hover .tooltip, .visibility-toggle:hover .tooltip {
+        .copy-btn:hover .tooltip, .visibility-toggle:hover .tooltip, .reset-btn:hover .tooltip {
             opacity: 1;
             visibility: visible;
-        }
-
-        .notification-area {
-            min-height: 44px;
-            margin-top: 0;
-            margin-bottom: var(--vertical-spacing);
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transform: translateY(-8px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            font-weight: 500;
-            border-radius: 12px;
-            padding: 8px 16px;
-            gap: 8px;
-            will-change: opacity, transform;
-            background-color: color-mix(in srgb, var(--container-bg) 95%, var(--text-color));
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border-color);
-        }
-
-        .notification-area.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .notification-success {
-            color: var(--success-color);
-        }
-
-        .notification-error {
-            color: var(--error-color);
-        }
-
-        .notification-warning {
-            color: var(--warning-color);
         }
 
         .main-btn {
@@ -337,6 +316,7 @@
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
             box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+            will-change: transform, background-color;
         }
 
         .main-btn:hover {
@@ -361,9 +341,11 @@
         .section-container {
             margin: var(--vertical-spacing) 0;
             padding: 20px;
-            background-color: var(--container-bg);
+            background-color: color-mix(in srgb, var(--container-bg) 70%, transparent);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             border-radius: 18px;
-            border: 1px solid var(--border-color);
+            border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02);
         }
 
@@ -372,34 +354,69 @@
             color: var(--text-color);
             margin-bottom: 20px;
             font-size: 1.3rem;
-            text-align: center;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 12px;
+            justify-content: space-between;
             letter-spacing: -0.01em;
         }
 
-        .section-title::before,
-        .section-title::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background-color: var(--border-color);
-        }
-
-        .section-title span {
-            padding: 0 12px;
-        }
-
-        .length-control {
+        .section-title .title-text {
             display: flex;
             align-items: center;
             gap: 12px;
+            flex: 1;
+        }
+
+        .section-title .title-text::before,
+        .section-title .title-text::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background-color: color-mix(in srgb, var(--border-color) 70%, transparent);
+        }
+
+        .section-title .title-text span {
+            padding: 0 12px;
+        }
+
+        .sub-section-title {
+            font-weight: 600;
+            color: var(--text-color);
+            margin: 16px 0 12px 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .sub-section-title:first-of-type {
+            margin-top: 0;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            background-color: color-mix(in srgb, var(--input-bg) 70%, transparent);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
+            border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+            transition: background-color 0.2s;
+            will-change: background-color;
+            cursor: default;
             margin-bottom: 12px;
         }
 
-        .length-control label {
+        .setting-item:hover {
+            background-color: color-mix(in srgb, var(--border-color) 70%, transparent);
+        }
+
+        .setting-item:focus-within {
+            background-color: color-mix(in srgb, var(--border-color) 70%, transparent);
+            box-shadow: var(--focus-shadow);
+        }
+
+        .setting-item label {
             font-weight: 500;
             min-width: 150px;
             position: relative;
@@ -407,12 +424,14 @@
             font-size: 1rem;
         }
 
-        .length-control label .tooltip {
+        .setting-item label .tooltip {
             position: absolute;
             bottom: 100%;
             left: 0;
-            background: var(--container-bg);
-            border: 1px solid var(--border-color);
+            background-color: color-mix(in srgb, var(--container-bg) 70%, transparent);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
             border-radius: 12px;
             padding: 10px 16px;
             font-size: 0.9rem;
@@ -422,16 +441,16 @@
             transition: opacity 0.2s;
             z-index: 10;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            pointer-events: none;
+            color: var(--text-color);
         }
 
-        .length-control label:hover .tooltip {
+        .setting-item label:hover .tooltip {
             opacity: 1;
             visibility: visible;
         }
 
-        #length {
+        .setting-item input[type=range] {
             -webkit-appearance: none;
             appearance: none;
             flex: 1;
@@ -442,11 +461,11 @@
             cursor: pointer;
         }
 
-        #length:focus-visible {
+        .setting-item input[type=range]:focus-visible {
             box-shadow: var(--focus-shadow);
         }
 
-        #length::-webkit-slider-thumb {
+        .setting-item input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 26px;
             height: 26px;
@@ -456,13 +475,14 @@
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             transition: transform 0.1s;
+            will-change: transform;
         }
 
-        #length::-webkit-slider-thumb:hover {
+        .setting-item input[type=range]::-webkit-slider-thumb:hover {
             transform: scale(1.1);
         }
 
-        #length::-moz-range-thumb {
+        .setting-item input[type=range]::-moz-range-thumb {
             width: 26px;
             height: 26px;
             border-radius: 50%;
@@ -473,7 +493,7 @@
             transition: transform 0.1s;
         }
 
-        .length-value {
+        .setting-item .length-value {
             font-weight: 600;
             min-width: 40px;
             text-align: center;
@@ -482,7 +502,7 @@
 
         .switches {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr;
             gap: 16px;
         }
 
@@ -498,16 +518,19 @@
             outline: none;
             -webkit-tap-highlight-color: transparent;
             min-height: 56px;
-            background-color: var(--input-bg);
-            border: 1px solid var(--border-color);
+            background-color: color-mix(in srgb, var(--input-bg) 70%, transparent);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
+            border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+            will-change: background-color;
         }
 
         .switch-label:hover {
-            background-color: var(--border-color);
+            background-color: color-mix(in srgb, var(--border-color) 70%, transparent);
         }
 
         .switch-label:focus-within {
-            background-color: var(--border-color);
+            background-color: color-mix(in srgb, var(--border-color) 70%, transparent);
             box-shadow: var(--focus-shadow);
         }
 
@@ -535,6 +558,7 @@
             background-color: var(--switch-off);
             transition: background-color 0.2s;
             border-radius: 31px;
+            will-change: background-color;
         }
 
         .slider:hover {
@@ -593,177 +617,204 @@
             font-size: 1.3rem;
         }
 
-        .install-pwa-btn {
-            background: var(--input-bg);
-            padding: 14px 18px;
-            border-radius: 14px;
-            font-size: 1rem;
-            text-align: center;
-            border: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--primary-color);
-            font-family: inherit;
-            margin-top: var(--vertical-spacing);
-            display: none;
-            width: 100%;
-            font-weight: 600;
-            min-height: 56px;
-            -webkit-tap-highlight-color: transparent;
+        .toast-notification {
+            position: fixed;
+            top: max(20px, env(safe-area-inset-top));
+            left: 20px;
+            right: 20px;
+            margin: 0 auto;
+            max-width: 500px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(-100%) scale(0.95);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            font-weight: 500;
+            border-radius: 12px;
+            padding: 8px 16px;
+            gap: 8px;
+            will-change: opacity, transform;
+            background-color: color-mix(in srgb, var(--container-bg) 80%, transparent);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            pointer-events: none;
+            z-index: 100;
+            color: var(--text-color);
         }
 
-        .install-pwa-btn:hover {
-            background-color: var(--border-color);
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
         }
 
-        .install-pwa-btn:focus-visible {
-            outline: 2px solid var(--primary-color);
-            outline-offset: 2px;
+        .toast-notification.notification-success {
+            color: var(--success-color);
         }
 
-        .install-pwa-btn.show {
-            display: block;
+        .toast-notification.notification-success::before {
+            content: "✓";
+            margin-right: 8px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .toast-notification.notification-error {
+            color: var(--error-color);
+        }
+
+        .toast-notification.notification-error::before {
+            content: "✗";
+            margin-right: 8px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .toast-notification.notification-warning {
+            color: var(--warning-color);
+        }
+
+        .toast-notification.notification-warning::before {
+            content: "⚠";
+            margin-right: 8px;
+            font-weight: bold;
+            font-size: 1.2rem;
         }
 
         footer {
             margin-top: 32px;
-            text-align: center;
-            color: var(--secondary-color);
-            font-size: 0.9rem;
-            padding: 16px;
             width: 100%;
             max-width: 500px;
-            border-top: 1px solid var(--border-color);
-            background-color: transparent;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
+            background-color: color-mix(in srgb, var(--container-bg) 70%, transparent);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 20px;
+            border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+            padding: 16px 20px;
+            color: var(--secondary-color);
+            font-size: 0.95rem;
         }
 
         .footer-content {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 16px;
+            justify-content: space-between;
             flex-wrap: wrap;
+            gap: 12px;
         }
 
-        .footer-text {
-            font-weight: 500;
-            color: var(--secondary-color);
+        .footer-info {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.4;
         }
 
-        .app-version {
-            color: var(--text-color);
+        .footer-app-name {
             font-weight: 600;
-            margin-left: 4px;
+            color: var(--text-color);
+            font-size: 1rem;
         }
 
-        .theme-toggle {
-            background: var(--input-bg);
-            border: 1px solid var(--border-color);
-            cursor: pointer;
+        .footer-version {
+            color: var(--secondary-color);
+            font-size: 0.85rem;
+        }
+
+        .footer-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-btn {
+            background-color: color-mix(in srgb, var(--input-bg) 70%, transparent);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
+            border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
             color: var(--text-color);
-            padding: 8px 14px;
-            border-radius: 20px;
-            display: inline-flex;
+            width: 44px;
+            height: 44px;
+            border-radius: 22px;
+            display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            cursor: pointer;
             transition: all 0.2s;
             outline: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            min-height: 40px;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .theme-toggle:hover {
-            background-color: var(--border-color);
+        .footer-btn:hover {
+            background-color: color-mix(in srgb, var(--border-color) 70%, transparent);
         }
 
-        .theme-toggle:focus-visible {
+        .footer-btn:focus-visible {
             outline: 2px solid var(--primary-color);
             outline-offset: 2px;
         }
 
-        .theme-toggle .icon {
-            font-size: 1.1rem;
-            line-height: 1;
+        .footer-btn .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: color-mix(in srgb, var(--container-bg) 70%, transparent);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s;
+            z-index: 30;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+            color: var(--text-color);
+            margin-bottom: 8px;
         }
 
-        @media (max-width: 768px) {
-            .container {
-                padding: 24px;
-                max-width: 450px;
-            }
-            
-            .header-row h1 {
-                font-size: 1.8rem;
-            }
-            
-            .switches {
-                grid-template-columns: 1fr;
-            }
-            
-            .length-control label {
-                min-width: 140px;
-            }
+        .footer-btn:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .footer-btn svg {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            fill: none;
+        }
+
+        .footer-btn.github-icon svg {
+            fill: currentColor;
+            stroke: none;
+        }
+
+        .footer-btn.hide {
+            display: none;
         }
 
         @media (max-width: 600px) {
-            body {
-                padding: 16px;
+            .footer-content {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
             }
-            
-            .container {
-                padding: 20px;
-            }
-            
-            .header-row {
-                gap: 12px;
-            }
-            
-            .length-control {
-                flex-wrap: wrap;
-            }
-            
-            .length-control label {
-                min-width: 100%;
-                margin-bottom: 8px;
-            }
-            
-            #length {
-                order: 1;
-                flex: 1 1 70%;
-            }
-            
-            .length-value {
-                order: 2;
-                flex: 1 1 20%;
-                text-align: right;
+            .footer-info {
+                align-items: center;
             }
         }
 
         @media (max-width: 480px) {
-            .header-row {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 16px;
-            }
-            
-            .header-row h1 {
-                text-align: center;
-            }
-            
-            .subtitle {
-                max-width: 100%;
-                overflow-wrap: break-word;
-            }
-            
-            .footer-content {
-                flex-direction: column;
-                gap: 8px;
+            footer {
+                padding: 14px 16px;
             }
         }
 
@@ -786,7 +837,7 @@
             <h1>Генератор паролей</h1>
         </div>
         
-        <p class="subtitle">Простое приложение для создания надёжных паролей. Работает без интернета, данные создаются и хранятся только на вашем устройстве.</p>
+        <p class="subtitle">Простое приложение для создания безопасных паролей. Работает без интернета, данные создаются и хранятся только на вашем устройстве.</p>
         
         <div class="password-display">
             <div class="password-field">
@@ -799,15 +850,26 @@
                     <span class="tooltip">Копировать пароль</span>
                 </button>
             </div>
-            <div class="notification-area" id="notificationArea" role="status" aria-live="polite"></div>
             <button class="main-btn" id="generateBtn">Создать и скопировать пароль</button>
         </div>
 
         <div class="section-container password-settings">
             <div class="section-title">
-                <span>Настройки пароля</span>
+                <div class="title-text">
+                    <span>Настройки пароля</span>
+                </div>
+                <button class="reset-btn" id="resetSettingsBtn" aria-label="Сбросить настройки">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 4V10H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M23 20V14H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M20.49 9.00001C19.9828 7.56678 19.1209 6.2854 17.9845 5.27543C16.8482 4.26545 15.4745 3.56576 13.9917 3.24752C12.5089 2.92928 10.9692 3.00454 9.52556 3.46585C8.08195 3.92716 6.78561 4.7563 5.76 5.87001L1 10M23 14L18.24 18.13C17.2144 19.2437 15.9181 20.0729 14.4745 20.5342C13.0309 20.9955 11.4912 21.0707 10.0084 20.7525C8.52556 20.4343 7.15186 19.7346 6.01551 18.7246C4.87917 17.7146 4.01727 16.4332 3.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="tooltip">Сбросить настройки по умолчанию</span>
+                </button>
             </div>
-            <div class="length-control">
+            
+            <div class="sub-section-title">Основные:</div>
+            <div class="setting-item">
                 <label for="length">
                     Длина пароля:
                     <span class="tooltip">Количество символов в пароле (от 8 до 32)</span>
@@ -846,40 +908,75 @@
                     </div>
                 </label>
             </div>
+
+            <div class="sub-section-title">Дополнительные:</div>
+            <div class="switches">
+                <label class="switch-label">
+                    Исключить похожие символы (0O, 1lI|)
+                    <div class="switch">
+                        <input type="checkbox" id="excludeSimilar">
+                        <span class="slider"></span>
+                    </div>
+                </label>
+                <label class="switch-label">
+                    Исключить повторение символов подряд
+                    <div class="switch">
+                        <input type="checkbox" id="excludeRepeating">
+                        <span class="slider"></span>
+                    </div>
+                </label>
+            </div>
         </div>
 
         <div class="section-container app-features">
             <div class="section-title">
-                <span>Преимущества приложения</span>
+                <div class="title-text">
+                    <span>Преимущества приложения</span>
+                </div>
             </div>
             <div class="app-features">
                 <p class="feature-text">
                     <span class="icon">🔐</span> Все пароли генерируются локально на вашем устройстве без передачи данных в сеть.
                 </p>
-                <p class="feature-text">
-                    <span class="icon">📱</span> Приложение работает полностью офлайн и может быть установлено как PWA.
+                 <p class="feature-text">
+                    <span class="icon">⚡</span> Мгновенное копирование созданных паролей в буфер обмена одним нажатием.
                 </p>
                 <p class="feature-text">
-                    <span class="icon">⚡</span> Мгновенное копирование созданных паролей в буфер обмена одним нажатием.
+                    <span class="icon">📱</span> Приложение работает полностью офлайн и может быть установлено как PWA.
                 </p>
                 <p class="feature-text">
                     <span class="icon">🌓</span> Автоматическое переключение между тёмной и светлой темой в зависимости от настроек системы.
                 </p>
             </div>
         </div>
-        
-        <button class="install-pwa-btn" id="installPWA" aria-label="Установить как PWA приложение">
-            🔄 Установить как PWA приложение
-        </button>
     </div>
+
+    <div class="toast-notification" id="notificationArea" role="status" aria-live="polite"></div>
 
     <footer>
         <div class="footer-content">
-            <span class="footer-text">Генератор паролей. Версия:<span class="app-version" id="footerVersion"></span>.<br>Переключить тему оформления на: </span>
-            <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему оформления">
-                <span class="icon" id="themeIcon">🌙</span>
-                <span id="themeText">Темная</span>
-            </button>
+            <div class="footer-info">
+                <span class="footer-app-name">Генератор паролей</span>
+                <span class="footer-version">Версия <span id="footerVersion"></span></span>
+            </div>
+            <div class="footer-actions">
+                <a href="https://dituals758.github.io/passwordGenerator.html" target="_blank" rel="noopener noreferrer" class="footer-btn github-icon" aria-label="GitHub">
+                    <svg viewBox="0 0 24 24" width="24" height="24">
+                        <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.03-2.682-.103-.253-.447-1.27.098-2.646 0 0 .84-.269 2.75 1.025.8-.223 1.65-.334 2.5-.334.85 0 1.7.111 2.5.334 1.91-1.294 2.75-1.025 2.75-1.025.545 1.376.201 2.393.099 2.646.64.698 1.03 1.591 1.03 2.682 0 3.841-2.337 4.687-4.565 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+                    </svg>
+                    <span class="tooltip">Исходный код на GitHub</span>
+                </a>
+                <button class="footer-btn" id="themeToggle" aria-label="Переключить тему">
+                    <span class="tooltip" id="themeTooltip">Тёмная тема</span>
+                </button>
+                <button class="footer-btn" id="installPWA" aria-label="Установить приложение">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 16V4M8 12L12 16L16 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <rect x="4" y="18" width="16" height="2" rx="1" fill="currentColor"/>
+                    </svg>
+                    <span class="tooltip">Установить как PWA</span>
+                </button>
+            </div>
         </div>
     </footer>
 
