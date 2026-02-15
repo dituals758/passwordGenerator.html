@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Генератор паролей | Создавайте надёжные пароли быстро и безопасно</title>
+    <title>Генератор паролей</title>
     <meta name="description" content="Простое приложение для создания безопасных паролей. Работает без интернета, данные остаются на вашем устройстве.">
     <meta name="keywords" content="генератор паролей, создать пароль, безопасный пароль, пароли офлайн, бесплатный генератор">
     <meta name="author" content="Password Generator">
@@ -22,8 +22,6 @@
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta name="referrer" content="no-referrer">
     <link rel="canonical" href="https://dituals758.github.io/passwordGenerator.html">
-    <link rel="preload" href="./assets/icons/icon-192.png" as="image" type="image/png">
-    <link rel="preload" href="./assets/icons/icon-512.png" as="image" type="image/png">
     <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="./assets/icons/icon-32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="./assets/icons/icon-16.png">
@@ -34,47 +32,88 @@
     <meta name="mobile-web-app-capable" content="yes">
     <style>
         :root {
-            --primary-color: #0078d4;
-            --primary-hover: #00589c;
-            --success-color: #28a745;
-            --error-color: #dc3545;
-            --warning-color: #ffc107;
-            --switch-knob: #ffffff;
-            --bg-color: #f5f7fa;
-            --container-bg: #ffffff;
-            --text-color: #333333;
-            --border-color: #e1e5eb;
-            --secondary-color: #6c757d;
-            --input-bg: #f8f9fa;
-            --switch-off: #e1e5eb;
-            --focus-color: rgba(0, 120, 212, 0.3);
-            --focus-shadow: 0 0 0 3px rgba(0, 120, 212, 0.3);
+            --ios-background: #FFFFFF;
+            --ios-secondary-background: #F2F2F7;
+            --ios-tertiary-background: #E5E5EA;
+            --ios-label: #000000;
+            --ios-secondary-label: #3C3C4399;
+            --ios-tertiary-label: #3C3C434D;
+            --ios-quaternary-label: #3C3C432E;
+            --ios-separator: #C6C6C8;
+            --ios-tint: #007AFF;
+            --ios-tint-pressed: #005BBF;
+            --ios-green: #34C759;
+            --ios-red: #FF3B30;
+            --ios-yellow: #FFCC00;
+            --ios-gray: #8E8E93;
+            --ios-gray2: #AEAEB2;
+            --ios-gray3: #C7C7CC;
+            --ios-gray4: #D1D1D6;
+            --ios-gray5: #E5E5EA;
+            --ios-gray6: #F2F2F7;
+            --bg-color: var(--ios-background);
+            --container-bg: var(--ios-secondary-background);
+            --text-color: var(--ios-label);
+            --border-color: var(--ios-separator);
+            --secondary-color: var(--ios-secondary-label);
+            --input-bg: var(--ios-tertiary-background);
+            --switch-off: var(--ios-gray4);
+            --primary-color: var(--ios-tint);
+            --primary-hover: var(--ios-tint-pressed);
+            --success-color: var(--ios-green);
+            --error-color: var(--ios-red);
+            --warning-color: var(--ios-yellow);
+            --focus-color: rgba(0, 122, 255, 0.3);
+            --focus-shadow: 0 0 0 4px rgba(0, 122, 255, 0.3);
+            --switch-knob: #FFFFFF;
             --vertical-spacing: 16px;
         }
 
         [data-theme="dark"] {
-            --bg-color: #121826;
-            --container-bg: #1e293b;
-            --text-color: #e2e8f0;
-            --border-color: #334155;
-            --secondary-color: #94a3b8;
-            --success-color: #34d399;
-            --error-color: #f87171;
-            --warning-color: #fbbf24;
-            --input-bg: #2d3748;
-            --switch-off: #4a5568;
-            --focus-color: rgba(0, 120, 212, 0.5);
-            --focus-shadow: 0 0 0 3px rgba(0, 120, 212, 0.5);
+            --ios-background: #000000;
+            --ios-secondary-background: #1C1C1E;
+            --ios-tertiary-background: #2C2C2E;
+            --ios-label: #FFFFFF;
+            --ios-secondary-label: #EBEBF599;
+            --ios-tertiary-label: #EBEBF54D;
+            --ios-quaternary-label: #EBEBF52E;
+            --ios-separator: #38383A;
+            --ios-tint: #0A84FF;
+            --ios-tint-pressed: #0071E3;
+            --ios-green: #32D74B;
+            --ios-red: #FF453A;
+            --ios-yellow: #FFD60A;
+            --ios-gray: #8E8E93;
+            --ios-gray2: #636366;
+            --ios-gray3: #48484A;
+            --ios-gray4: #3A3A3C;
+            --ios-gray5: #2C2C2E;
+            --ios-gray6: #1C1C1E;
+            --bg-color: var(--ios-background);
+            --container-bg: var(--ios-secondary-background);
+            --text-color: var(--ios-label);
+            --border-color: var(--ios-separator);
+            --secondary-color: var(--ios-secondary-label);
+            --input-bg: var(--ios-tertiary-background);
+            --switch-off: var(--ios-gray4);
+            --primary-color: var(--ios-tint);
+            --primary-hover: var(--ios-tint-pressed);
+            --success-color: var(--ios-green);
+            --error-color: var(--ios-red);
+            --warning-color: var(--ios-yellow);
+            --focus-color: rgba(10, 132, 255, 0.4);
+            --focus-shadow: 0 0 0 4px rgba(10, 132, 255, 0.4);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             min-height: 100vh;
             background-color: var(--bg-color);
             color: var(--text-color);
@@ -87,20 +126,24 @@
             padding-bottom: max(20px, env(safe-area-inset-bottom));
             padding-left: max(20px, env(safe-area-inset-left));
             padding-right: max(20px, env(safe-area-inset-right));
-            line-height: 1.6;
+            line-height: 1.5;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            color-scheme: light dark;
         }
 
         .container {
             background-color: var(--container-bg);
             padding: clamp(20px, 5vw, 30px);
-            border-radius: 16px;
+            border-radius: 20px;
             width: 100%;
             max-width: 500px;
             border: 1px solid var(--border-color);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.02);
             margin: 0 auto;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            background-color: color-mix(in srgb, var(--container-bg) 90%, transparent);
         }
 
         .header-row {
@@ -112,56 +155,23 @@
         }
 
         .header-row h1 {
-            font-size: clamp(1.5rem, 4vw, 1.75rem);
+            font-size: clamp(1.75rem, 5vw, 2.2rem);
             font-weight: 700;
             color: var(--text-color);
-            line-height: 1.2;
+            line-height: 1.1;
             flex: 1;
             min-width: 0;
+            letter-spacing: -0.02em;
         }
 
         .subtitle {
             color: var(--secondary-color);
-            font-size: clamp(0.85rem, 3vw, 0.95rem);
+            font-size: clamp(0.9rem, 3vw, 1rem);
             line-height: 1.4;
             margin-bottom: var(--vertical-spacing);
             text-align: center;
             width: 100%;
             padding: 0 4px;
-        }
-
-        .theme-toggle {
-            background: var(--input-bg);
-            border: 1px solid var(--border-color);
-            cursor: pointer;
-            color: var(--text-color);
-            padding: 10px 14px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s;
-            outline: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            flex-shrink: 0;
-            height: fit-content;
-            contain: content;
-        }
-
-        .theme-toggle:hover {
-            background-color: var(--border-color);
-        }
-
-        .theme-toggle:focus-visible {
-            outline: 2px solid var(--primary-color);
-            outline-offset: 2px;
-        }
-
-        .theme-toggle .icon {
-            font-size: 1.2rem;
-            line-height: 1;
         }
 
         .password-display {
@@ -175,13 +185,13 @@
 
         #password {
             width: 100%;
-            padding: 16px 90px 16px 16px;
+            padding: 18px 100px 18px 18px;
             border: 1px solid var(--border-color);
-            border-radius: 10px;
+            border-radius: 14px;
             font-size: 1.1rem;
             background-color: var(--input-bg);
             color: var(--text-color);
-            font-family: 'Courier New', monospace, 'SF Mono', Monaco, 'Cascadia Code', Consolas;
+            font-family: 'SF Mono', 'Courier New', monospace;
             font-weight: 600;
             letter-spacing: 1px;
             outline: none;
@@ -198,86 +208,100 @@
             box-shadow: var(--focus-shadow);
         }
 
-        .copy-btn {
+        .copy-btn, .visibility-toggle {
             position: absolute;
-            right: 8px;
             top: 50%;
             transform: translateY(-50%);
             background: none;
             border: none;
             cursor: pointer;
             color: var(--secondary-color);
-            padding: 8px;
-            border-radius: 6px;
+            padding: 10px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
             outline: none;
+            min-width: 44px;
+            min-height: 44px;
             -webkit-tap-highlight-color: transparent;
         }
 
-        .copy-btn:hover {
-            background-color: var(--border-color);
-            color: var(--text-color);
-        }
-
-        .copy-btn:focus-visible {
-            outline: 2px solid var(--primary-color);
-            outline-offset: 2px;
-            background-color: var(--border-color);
-        }
-
-        .copy-btn.copied {
-            color: var(--success-color);
+        .copy-btn {
+            right: 8px;
         }
 
         .visibility-toggle {
-            position: absolute;
-            right: 50px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--secondary-color);
-            padding: 8px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            outline: none;
-            -webkit-tap-highlight-color: transparent;
+            right: 58px;
         }
 
-        .visibility-toggle:hover {
+        .copy-btn svg, .visibility-toggle svg {
+            width: 24px;
+            height: 24px;
+            display: block;
+            stroke: currentColor;
+            fill: none;
+        }
+
+        .copy-btn:hover, .visibility-toggle:hover {
             background-color: var(--border-color);
             color: var(--text-color);
         }
 
-        .visibility-toggle:focus-visible {
+        .copy-btn:focus-visible, .visibility-toggle:focus-visible {
             outline: 2px solid var(--primary-color);
             outline-offset: 2px;
             background-color: var(--border-color);
         }
 
+        .copy-btn .tooltip, .visibility-toggle .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s;
+            z-index: 10;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            pointer-events: none;
+            color: var(--text-color);
+        }
+
+        .copy-btn:hover .tooltip, .visibility-toggle:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
         .notification-area {
-            height: 28px;
+            min-height: 44px;
             margin-top: 0;
             margin-bottom: var(--vertical-spacing);
-            font-size: 0.875rem;
+            font-size: 0.95rem;
             display: flex;
             align-items: center;
             justify-content: center;
             opacity: 0;
-            transform: translateY(-10px);
+            transform: translateY(-8px);
             transition: opacity 0.3s ease, transform 0.3s ease;
             font-weight: 500;
-            border-radius: 8px;
-            padding: 6px 12px;
+            border-radius: 12px;
+            padding: 8px 16px;
             gap: 8px;
             will-change: opacity, transform;
+            background-color: color-mix(in srgb, var(--container-bg) 95%, var(--text-color));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
         }
 
         .notification-area.show {
@@ -286,50 +310,51 @@
         }
 
         .notification-success {
-            background-color: rgba(40, 167, 69, 0.1);
             color: var(--success-color);
-            border: 1px solid rgba(40, 167, 69, 0.2);
         }
 
         .notification-error {
-            background-color: rgba(220, 53, 69, 0.1);
             color: var(--error-color);
-            border: 1px solid rgba(220, 53, 69, 0.2);
         }
 
         .notification-warning {
-            background-color: rgba(255, 193, 7, 0.1);
             color: var(--warning-color);
-            border: 1px solid rgba(255, 193, 7, 0.2);
         }
 
         .main-btn {
             background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 16px;
-            border-radius: 10px;
+            padding: 16px 20px;
+            border-radius: 14px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 600;
             width: 100%;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, transform 0.1s;
             outline: none;
+            min-height: 56px;
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
         }
 
         .main-btn:hover {
             background-color: var(--primary-hover);
         }
 
+        .main-btn:active {
+            transform: scale(0.98);
+        }
+
         .main-btn:focus-visible {
             background-color: var(--primary-hover);
-            box-shadow: var(--focus-shadow);
+            box-shadow: var(--focus-shadow), 0 4px 12px rgba(0, 122, 255, 0.3);
         }
 
         .main-btn:disabled {
-            opacity: 0.8;
+            opacity: 0.6;
+            transform: none;
             cursor: not-allowed;
         }
 
@@ -337,20 +362,22 @@
             margin: var(--vertical-spacing) 0;
             padding: 20px;
             background-color: var(--container-bg);
-            border-radius: 12px;
+            border-radius: 18px;
             border: 1px solid var(--border-color);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02);
         }
 
         .section-title {
             font-weight: 700;
             color: var(--text-color);
-            margin-bottom: 16px;
-            font-size: 1.2rem;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
             text-align: center;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
+            letter-spacing: -0.01em;
         }
 
         .section-title::before,
@@ -369,14 +396,15 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
 
         .length-control label {
             font-weight: 500;
-            min-width: 140px;
+            min-width: 150px;
             position: relative;
             cursor: help;
+            font-size: 1rem;
         }
 
         .length-control label .tooltip {
@@ -385,15 +413,17 @@
             left: 0;
             background: var(--container-bg);
             border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 8px 12px;
-            font-size: 0.8rem;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-size: 0.9rem;
             white-space: nowrap;
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.2s;
             z-index: 10;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
 
         .length-control label:hover .tooltip {
@@ -418,45 +448,36 @@
 
         #length::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
-            background: var(--primary-color);
+            background: white;
+            border: 2px solid var(--primary-color);
             cursor: pointer;
-            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.1s;
+        }
+
+        #length::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
         }
 
         #length::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
-            background: var(--primary-color);
+            background: white;
+            border: 2px solid var(--primary-color);
             cursor: pointer;
-            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.1s;
         }
 
         .length-value {
-            font-weight: 700;
-            min-width: 36px;
+            font-weight: 600;
+            min-width: 40px;
             text-align: center;
-            font-size: 1.1rem;
-        }
-
-        .length-indicator {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 4px;
-            font-size: 0.8rem;
-            color: var(--secondary-color);
-        }
-
-        .length-indicator span {
-            transition: color 0.2s;
-        }
-
-        .length-indicator .active {
-            color: var(--primary-color);
-            font-weight: bold;
+            font-size: 1.2rem;
         }
 
         .switches {
@@ -469,21 +490,24 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px;
-            border-radius: 10px;
+            padding: 12px 16px;
+            border-radius: 14px;
             cursor: pointer;
             user-select: none;
             transition: background-color 0.2s;
             outline: none;
             -webkit-tap-highlight-color: transparent;
+            min-height: 56px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
         }
 
         .switch-label:hover {
-            background-color: var(--input-bg);
+            background-color: var(--border-color);
         }
 
         .switch-label:focus-within {
-            background-color: var(--input-bg);
+            background-color: var(--border-color);
             box-shadow: var(--focus-shadow);
         }
 
@@ -509,12 +533,12 @@
             right: 0;
             bottom: 0;
             background-color: var(--switch-off);
-            transition: .3s;
-            border-radius: 34px;
+            transition: background-color 0.2s;
+            border-radius: 31px;
         }
 
         .slider:hover {
-            background-color: var(--primary-hover);
+            background-color: var(--ios-gray3);
         }
 
         .slider:before {
@@ -525,9 +549,9 @@
             left: 2px;
             bottom: 2px;
             background-color: var(--switch-knob);
-            transition: .3s;
+            transition: transform 0.2s cubic-bezier(0.3, 1, 0.5, 1);
             border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
             transform: translateX(0);
             will-change: transform;
         }
@@ -551,37 +575,41 @@
         .app-features {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
         }
 
         .feature-text {
-            font-size: 0.95rem;
+            font-size: 1rem;
             line-height: 1.5;
             color: var(--text-color);
             text-align: left;
+            padding: 4px 0;
         }
 
         .feature-text .icon {
             display: inline-block;
-            margin-right: 8px;
+            margin-right: 12px;
             vertical-align: middle;
-            font-size: 1.1rem;
+            font-size: 1.3rem;
         }
 
         .install-pwa-btn {
             background: var(--input-bg);
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 0.85rem;
+            padding: 14px 18px;
+            border-radius: 14px;
+            font-size: 1rem;
             text-align: center;
-            border: none;
+            border: 1px solid var(--border-color);
             cursor: pointer;
             transition: all 0.2s;
-            color: var(--text-color);
+            color: var(--primary-color);
             font-family: inherit;
             margin-top: var(--vertical-spacing);
             display: none;
-            border: 1px solid var(--border-color);
+            width: 100%;
+            font-weight: 600;
+            min-height: 56px;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .install-pwa-btn:hover {
@@ -597,12 +625,71 @@
             display: block;
         }
 
-        .github-icon {
-            width: 20px;
-            height: 20px;
-            fill: currentColor;
-            vertical-align: middle;
-            margin: 0 4px;
+        footer {
+            margin-top: 32px;
+            text-align: center;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+            padding: 16px;
+            width: 100%;
+            max-width: 500px;
+            border-top: 1px solid var(--border-color);
+            background-color: transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .footer-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .footer-text {
+            font-weight: 500;
+            color: var(--secondary-color);
+        }
+
+        .app-version {
+            color: var(--text-color);
+            font-weight: 600;
+            margin-left: 4px;
+        }
+
+        .theme-toggle {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            color: var(--text-color);
+            padding: 8px 14px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+            outline: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            min-height: 40px;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--border-color);
+        }
+
+        .theme-toggle:focus-visible {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        .theme-toggle .icon {
+            font-size: 1.1rem;
+            line-height: 1;
         }
 
         @media (max-width: 768px) {
@@ -612,7 +699,7 @@
             }
             
             .header-row h1 {
-                font-size: 1.5rem;
+                font-size: 1.8rem;
             }
             
             .switches {
@@ -627,10 +714,6 @@
         @media (max-width: 600px) {
             body {
                 padding: 16px;
-                padding-top: max(16px, env(safe-area-inset-top));
-                padding-bottom: max(16px, env(safe-area-inset-bottom));
-                padding-left: max(16px, env(safe-area-inset-left));
-                padding-right: max(16px, env(safe-area-inset-right));
             }
             
             .container {
@@ -639,18 +722,6 @@
             
             .header-row {
                 gap: 12px;
-            }
-            
-            .theme-toggle {
-                padding: 8px 12px;
-            }
-            
-            .theme-toggle .icon {
-                font-size: 1.1rem;
-            }
-            
-            .theme-toggle #themeText {
-                font-size: 0.85rem;
             }
             
             .length-control {
@@ -681,13 +752,7 @@
                 gap: 16px;
             }
             
-            .theme-toggle {
-                align-self: flex-end;
-                width: auto;
-            }
-            
             .header-row h1 {
-                width: 100%;
                 text-align: center;
             }
             
@@ -695,88 +760,11 @@
                 max-width: 100%;
                 overflow-wrap: break-word;
             }
-        }
-
-        a {
-            color: var(--primary-color);
-            text-decoration: none;
-            transition: color 0.2s;
-            outline: none;
-        }
-
-        a:hover {
-            color: var(--primary-hover);
-            text-decoration: underline;
-        }
-
-        a:focus-visible {
-            color: var(--primary-hover);
-            text-decoration: underline;
-            outline: 2px solid var(--primary-color);
-            outline-offset: 2px;
-            border-radius: 2px;
-        }
-
-        footer {
-            margin-top: auto;
-            text-align: center;
-            color: var(--secondary-color);
-            font-size: 0.9rem;
-            padding: 20px 16px;
-            width: 100%;
-            padding-bottom: max(20px, env(safe-area-inset-bottom));
-            background-color: var(--bg-color);
-        }
-
-        .footer-content {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        .footer-app-name {
-            font-weight: 600;
-            color: var(--text-color);
-            margin-bottom: 12px;
-            font-size: 1rem;
-        }
-
-        .app-version {
-            font-size: 0.8rem;
-            color: var(--secondary-color);
-            font-weight: 400;
-            margin-left: 4px;
-        }
-
-        .github-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-color);
-            text-decoration: none;
-            padding: 8px 14px;
-            border-radius: 8px;
-            transition: background-color 0.2s;
-            margin: 8px 0;
-            background: var(--container-bg);
-            border: 1px solid var(--border-color);
-            font-size: 0.9rem;
-        }
-
-        .github-link:hover {
-            background-color: var(--input-bg);
-            text-decoration: none;
-        }
-
-        .footer-note {
-            font-size: 0.8rem;
-            color: var(--secondary-color);
-            margin-top: 16px;
-            line-height: 1.4;
-            padding-top: 12px;
-            border-top: 1px solid var(--border-color);
-            max-width: 400px;
-            margin-left: auto;
-            margin-right: auto;
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 8px;
+            }
         }
 
         .visually-hidden {
@@ -796,19 +784,19 @@
     <div class="container">
         <div class="header-row">
             <h1>Генератор паролей</h1>
-            <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему оформления">
-                <span class="icon" id="themeIcon">🌙</span>
-                <span id="themeText">Темная</span>
-            </button>
         </div>
         
-        <p class="subtitle">Простое приложение для создания надёжных паролей. Работает без интернета, данные хранятся только на вашем устройстве.</p>
+        <p class="subtitle">Простое приложение для создания надёжных паролей. Работает без интернета, данные создаются и хранятся только на вашем устройстве.</p>
         
         <div class="password-display">
             <div class="password-field">
                 <input type="text" id="password" readonly aria-label="Сгенерированный пароль" inputmode="none">
                 <button class="copy-btn" id="copyBtn" aria-label="Копировать пароль">
-                    📋
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="4" y="4" width="14" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
+                        <rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+                    </svg>
+                    <span class="tooltip">Копировать пароль</span>
                 </button>
             </div>
             <div class="notification-area" id="notificationArea" role="status" aria-live="polite"></div>
@@ -821,20 +809,11 @@
             </div>
             <div class="length-control">
                 <label for="length">
-                    Длина пароля (символов):
+                    Длина пароля:
                     <span class="tooltip">Количество символов в пароле (от 8 до 32)</span>
                 </label>
                 <input type="range" id="length" min="8" max="32" value="16">
                 <span class="length-value" id="lengthValue">16</span>
-            </div>
-            <div class="length-indicator" id="lengthIndicator">
-                <span data-length="8">8</span>
-                <span data-length="12">12</span>
-                <span data-length="16">16</span>
-                <span data-length="20">20</span>
-                <span data-length="24">24</span>
-                <span data-length="28">28</span>
-                <span data-length="32">32</span>
             </div>
             
             <div class="switches">
@@ -896,390 +875,14 @@
 
     <footer>
         <div class="footer-content">
-            <div class="footer-app-name">Генератор паролей <span class="app-version" id="footerVersion"></span></div>
-            <a href="https://github.com/dituals758/passwordGenerator.html" target="_blank" class="github-link" aria-label="Исходный код на GitHub">
-                <svg class="github-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
-                </svg>
-                <span>Исходный код доступен на GitHub</span>
-            </a>
-            <p class="footer-note">Все данные остаются на вашем устройстве и никуда не передаются</p>
+            <span class="footer-text">Генератор паролей. Версия:<span class="app-version" id="footerVersion"></span>.<br>Переключить тему оформления на: </span>
+            <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему оформления">
+                <span class="icon" id="themeIcon">🌙</span>
+                <span id="themeText">Темная</span>
+            </button>
         </div>
     </footer>
 
-    <script>
-        const APP_VERSION = "4.0";
-        const APP_NAME = "Генератор паролей";
-        
-        const charSets = {
-            lowercase: "abcdefghijklmnopqrstuvwxyz",
-            uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            numbers: "0123456789",
-            special: "!@#$%^&*"
-        };
-
-        const elements = {
-            password: document.getElementById('password'),
-            length: document.getElementById('length'),
-            lengthValue: document.getElementById('lengthValue'),
-            generateBtn: document.getElementById('generateBtn'),
-            copyBtn: document.getElementById('copyBtn'),
-            notificationArea: document.getElementById('notificationArea'),
-            themeToggle: document.getElementById('themeToggle'),
-            themeIcon: document.getElementById('themeIcon'),
-            themeText: document.getElementById('themeText'),
-            installPWA: document.getElementById('installPWA'),
-            footerVersion: document.getElementById('footerVersion'),
-            lengthIndicator: document.getElementById('lengthIndicator')
-        };
-
-        let notificationTimeout = null;
-        let deferredPrompt = null;
-        let isAppInstalled = false;
-
-        function initAppVersion() {
-            elements.footerVersion.textContent = APP_VERSION;
-        }
-
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            const theme = savedTheme || systemTheme;
-            applyTheme(theme);
-        }
-
-        function applyTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            updateThemeUI(theme);
-            localStorage.setItem('theme', theme);
-        }
-
-        function updateThemeUI(theme) {
-            const isDark = theme === 'dark';
-            elements.themeIcon.textContent = isDark ? '☀️' : '🌙';
-            elements.themeText.textContent = isDark ? 'Светлая' : 'Темная';
-            elements.themeToggle.setAttribute('aria-label', 
-                isDark ? 'Переключить на светлую тему' : 'Переключить на тёмную тему');
-        }
-
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            applyTheme(newTheme);
-        }
-
-        function generatePassword() {
-            const length = parseInt(elements.length.value);
-            const charPool = [];
-            
-            if (document.getElementById('lowercase').checked) charPool.push(charSets.lowercase);
-            if (document.getElementById('uppercase').checked) charPool.push(charSets.uppercase);
-            if (document.getElementById('numbers').checked) charPool.push(charSets.numbers);
-            if (document.getElementById('special').checked) charPool.push(charSets.special);
-
-            if (charPool.length === 0) {
-                showNotification('⚠️ Выберите хотя бы один тип символов', 'error');
-                return '';
-            }
-
-            try {
-                const array = new Uint32Array(length);
-                window.crypto.getRandomValues(array);
-                const pool = charPool.join('');
-                const selectedSets = charPool;
-                let password = '';
-                let attempts = 0;
-                const maxAttempts = 100;
-                
-                while (attempts < maxAttempts) {
-                    password = '';
-                    for (let i = 0; i < length; i++) {
-                        password += pool[array[i] % pool.length];
-                    }
-                    
-                    const hasAllTypes = selectedSets.every(chars => 
-                        password.split('').some(c => chars.includes(c))
-                    );
-                    
-                    if (hasAllTypes) {
-                        return password;
-                    }
-                    
-                    window.crypto.getRandomValues(array);
-                    attempts++;
-                }
-                
-                return password;
-                
-            } catch {
-                const pool = charPool.join('');
-                let password = '';
-                for (let i = 0; i < length; i++) {
-                    password += pool[Math.floor(Math.random() * pool.length)];
-                }
-                return password;
-            }
-        }
-
-        function generateAndShow() {
-            const password = generatePassword();
-            if (!password) return;
-            
-            elements.password.value = password;
-            elements.copyBtn.classList.remove('copied');
-            clearNotification();
-            updatePasswordStrength();
-        }
-
-        async function copyToClipboard() {
-            if (!elements.password.value) {
-                showNotification('⚠️ Сначала создайте пароль', 'error');
-                return;
-            }
-            
-            triggerHapticFeedback();
-            
-            try {
-                await navigator.clipboard.writeText(elements.password.value);
-                elements.copyBtn.classList.add('copied');
-                showNotification('✅ Пароль скопирован в буфер обмена', 'success');
-            } catch (err) {
-                console.error('Clipboard API failed:', err);
-                showNotification('❌ Не удалось скопировать', 'error');
-            }
-        }
-
-        async function generateAndCopy() {
-            const generateBtn = elements.generateBtn;
-            const originalText = generateBtn.textContent;
-            
-            generateBtn.disabled = true;
-            generateBtn.textContent = '⌛ Создание...';
-            generateBtn.style.opacity = '0.8';
-            
-            triggerHapticFeedback();
-            
-            try {
-                const password = generatePassword();
-                if (!password) return;
-                
-                elements.password.value = password;
-                
-                await navigator.clipboard.writeText(password);
-                elements.copyBtn.classList.add('copied');
-                showNotification('✅ Пароль создан и скопирован', 'success');
-                
-                generateBtn.style.backgroundColor = 'var(--success-color)';
-                setTimeout(() => {
-                    generateBtn.style.backgroundColor = '';
-                }, 300);
-                
-                updatePasswordStrength();
-                
-            } catch (err) {
-                console.error('Ошибка при генерации:', err);
-                showNotification('⚠️ Пароль создан, но не скопирован', 'warning');
-            } finally {
-                generateBtn.disabled = false;
-                generateBtn.textContent = originalText;
-                generateBtn.style.opacity = '';
-            }
-        }
-
-        function showNotification(message, type = 'success') {
-            clearNotification();
-            
-            elements.notificationArea.textContent = message;
-            elements.notificationArea.className = `notification-area show notification-${type}`;
-            
-            notificationTimeout = setTimeout(() => {
-                clearNotification();
-            }, 3000);
-        }
-
-        function clearNotification() {
-            if (notificationTimeout) {
-                clearTimeout(notificationTimeout);
-                notificationTimeout = null;
-            }
-            elements.notificationArea.className = 'notification-area';
-            elements.notificationArea.textContent = '';
-        }
-
-        function updateLengthValue() {
-            const value = elements.length.value;
-            elements.lengthValue.textContent = value;
-            updateLengthIndicator();
-        }
-
-        function updateLengthIndicator() {
-            const value = parseInt(elements.length.value);
-            if (elements.lengthIndicator) {
-                elements.lengthIndicator.querySelectorAll('span').forEach(span => {
-                    const length = parseInt(span.dataset.length);
-                    span.classList.toggle('active', value >= length);
-                });
-            }
-        }
-
-        function updatePasswordStrength() {
-            const length = parseInt(elements.length.value);
-            const complexity = document.querySelectorAll('.switch input:checked').length;
-            const strength = length * complexity;
-            
-            let strengthText = '';
-            if (strength >= 96) strengthText = 'очень надежный';
-            else if (strength >= 64) strengthText = 'надежный';
-            else if (strength >= 32) strengthText = 'средний';
-            else strengthText = 'слабый';
-            
-            elements.password.setAttribute('aria-label', 
-                `Сгенерированный пароль длиной ${length} символов, ${strengthText} уровень защиты`);
-        }
-
-        function handleSettingChange() {
-            generateAndShow();
-            clearNotification();
-        }
-
-        function checkPWAInstallStatus() {
-            return window.matchMedia('(display-mode: standalone)').matches || 
-                   window.navigator.standalone === true;
-        }
-
-        function initPWAInstall() {
-            if (checkPWAInstallStatus()) {
-                elements.installPWA.classList.remove('show');
-                return;
-            }
-            
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-                elements.installPWA.classList.add('show');
-            });
-            
-            window.addEventListener('appinstalled', () => {
-                deferredPrompt = null;
-                isAppInstalled = true;
-                elements.installPWA.classList.remove('show');
-                showNotification('✅ Приложение установлено!', 'success');
-            });
-        }
-
-        async function installPWA() {
-            if (!deferredPrompt || isAppInstalled) {
-                showNotification('ℹ️ Приложение уже установлено', 'warning');
-                elements.installPWA.classList.remove('show');
-                return;
-            }
-            
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            
-            deferredPrompt = null;
-            
-            if (outcome === 'accepted') {
-                isAppInstalled = true;
-                elements.installPWA.classList.remove('show');
-            } else {
-                showNotification('❌ Установка отменена', 'error');
-            }
-        }
-
-        function triggerHapticFeedback() {
-            if ('vibrate' in navigator) {
-                navigator.vibrate(50);
-            }
-        }
-
-        function addPasswordVisibilityToggle() {
-            const toggleBtn = document.createElement('button');
-            toggleBtn.className = 'visibility-toggle';
-            toggleBtn.innerHTML = '👁️';
-            toggleBtn.setAttribute('aria-label', 'Показать/скрыть пароль');
-            toggleBtn.setAttribute('type', 'button');
-            
-            toggleBtn.addEventListener('click', () => {
-                const isPassword = elements.password.type === 'password';
-                elements.password.type = isPassword ? 'text' : 'password';
-                toggleBtn.innerHTML = isPassword ? '👁️‍🗨️' : '👁️';
-                toggleBtn.setAttribute('aria-label', 
-                    isPassword ? 'Скрыть пароль' : 'Показать пароль');
-                triggerHapticFeedback();
-            });
-            
-            elements.password.parentNode.appendChild(toggleBtn);
-        }
-
-        function initServiceWorker() {
-            if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(registration => {
-                        console.log('ServiceWorker зарегистрирован:', registration.scope);
-                        
-                        registration.addEventListener('updatefound', () => {
-                            const newWorker = registration.installing;
-                            newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    showNotification('🔄 Доступно обновление приложения', 'warning');
-                                }
-                            });
-                        });
-                    })
-                    .catch(err => {
-                        console.log('ServiceWorker регистрация не удалась:', err);
-                    });
-            }
-        }
-
-        function initApp() {
-            initAppVersion();
-            initTheme();
-            generateAndShow();
-            initPWAInstall();
-            initServiceWorker();
-            addPasswordVisibilityToggle();
-            
-            elements.length.addEventListener('input', () => {
-                updateLengthValue();
-                handleSettingChange();
-            });
-            
-            elements.generateBtn.addEventListener('click', generateAndCopy);
-            elements.copyBtn.addEventListener('click', copyToClipboard);
-            elements.themeToggle.addEventListener('click', toggleTheme);
-            elements.installPWA.addEventListener('click', installPWA);
-            
-            document.querySelectorAll('.switch input').forEach(switchInput => {
-                switchInput.addEventListener('change', handleSettingChange);
-            });
-            
-            updateLengthValue();
-            updatePasswordStrength();
-            
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-                if (!localStorage.getItem('theme')) {
-                    applyTheme(e.matches ? 'dark' : 'light');
-                }
-            });
-            
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    clearNotification();
-                }
-                if (e.key === ' ' && e.target === document.body) {
-                    e.preventDefault();
-                    generateAndCopy();
-                }
-            });
-            
-            window.addEventListener('beforeunload', () => {
-                clearNotification();
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', initApp);
-    </script>
+    <script src="./script.js"></script>
 </body>
 </html>

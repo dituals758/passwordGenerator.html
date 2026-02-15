@@ -1,10 +1,11 @@
-const APP_VERSION = "4.0";
+const APP_VERSION = "20260215";
 const CACHE_NAME = `password-generator-v${APP_VERSION}`;
 
 const STATIC_ASSETS = [
   './',
   './index.html',
   './manifest.json',
+  './script.js',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png'
 ];
