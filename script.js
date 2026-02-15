@@ -1,4 +1,4 @@
-const APP_VERSION = "20260215_hotfix3";
+const APP_VERSION = "20260215_hotfix4";
 const APP_NAME = "Генератор паролей";
 
 const charSets = {
@@ -377,8 +377,14 @@ function addPasswordVisibilityToggle() {
         <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="2" fill="none"/>
     </svg>`;
     
-    toggleBtn.innerHTML = eyeClosedSvg + '<span class="tooltip">Скрыть пароль</span>';
-    toggleBtn.setAttribute('aria-label', 'Скрыть пароль');
+    const savedVisible = localStorage.getItem('passwordVisible') === 'true';
+    const initialSvg = savedVisible ? eyeOpenSvg : eyeClosedSvg;
+    const initialLabel = savedVisible ? 'Скрыть пароль' : 'Показать пароль';
+    toggleBtn.innerHTML = initialSvg + '<span class="tooltip">' + initialLabel + '</span>';
+    toggleBtn.setAttribute('aria-label', initialLabel);
+    if (savedVisible) {
+        elements.password.type = 'text';
+    }
     
     toggleBtn.addEventListener('click', () => {
         const isPassword = elements.password.type === 'password';
@@ -386,6 +392,7 @@ function addPasswordVisibilityToggle() {
         const newLabel = isPassword ? 'Скрыть пароль' : 'Показать пароль';
         toggleBtn.innerHTML = (isPassword ? eyeClosedSvg : eyeOpenSvg) + '<span class="tooltip">' + newLabel + '</span>';
         toggleBtn.setAttribute('aria-label', newLabel);
+        localStorage.setItem('passwordVisible', String(!isPassword));
         triggerHapticFeedback();
     });
     
