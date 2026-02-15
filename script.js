@@ -1,4 +1,4 @@
-const APP_VERSION = "20260215_hotfix4";
+const APP_VERSION = "20260215_hotfix5";
 const APP_NAME = "Генератор паролей";
 
 const charSets = {
@@ -73,10 +73,10 @@ function toggleTheme() {
 function loadSettings() {
     const settings = JSON.parse(localStorage.getItem('passwordSettings')) || {};
     if (elements.length) elements.length.value = settings.length || 16;
-    if (elements.lowercase) elements.lowercase.checked = settings.lowercase !== undefined ? settings.lowercase : true;
-    if (elements.uppercase) elements.uppercase.checked = settings.uppercase !== undefined ? settings.uppercase : true;
-    if (elements.numbers) elements.numbers.checked = settings.numbers !== undefined ? settings.numbers : true;
-    if (elements.special) elements.special.checked = settings.special !== undefined ? settings.special : true;
+    if (elements.lowercase) elements.lowercase.checked = settings.lowercase ?? true;
+    if (elements.uppercase) elements.uppercase.checked = settings.uppercase ?? true;
+    if (elements.numbers) elements.numbers.checked = settings.numbers ?? true;
+    if (elements.special) elements.special.checked = settings.special ?? true;
     if (elements.excludeSimilar) elements.excludeSimilar.checked = settings.excludeSimilar || false;
     if (elements.excludeRepeating) elements.excludeRepeating.checked = settings.excludeRepeating || false;
     updateLengthValue();
@@ -84,13 +84,13 @@ function loadSettings() {
 
 function saveSettings() {
     const settings = {
-        length: elements.length ? parseInt(elements.length.value) : 16,
-        lowercase: elements.lowercase ? elements.lowercase.checked : true,
-        uppercase: elements.uppercase ? elements.uppercase.checked : true,
-        numbers: elements.numbers ? elements.numbers.checked : true,
-        special: elements.special ? elements.special.checked : true,
-        excludeSimilar: elements.excludeSimilar ? elements.excludeSimilar.checked : false,
-        excludeRepeating: elements.excludeRepeating ? elements.excludeRepeating.checked : false
+        length: elements.length ? parseInt(elements.length.value, 10) : 16,
+        lowercase: elements.lowercase?.checked ?? true,
+        uppercase: elements.uppercase?.checked ?? true,
+        numbers: elements.numbers?.checked ?? true,
+        special: elements.special?.checked ?? true,
+        excludeSimilar: elements.excludeSimilar?.checked || false,
+        excludeRepeating: elements.excludeRepeating?.checked || false
     };
     localStorage.setItem('passwordSettings', JSON.stringify(settings));
 }
@@ -111,33 +111,38 @@ function resetSettingsToDefault() {
 
 function filterCharSet(charSet, excludeSimilar) {
     if (!excludeSimilar) return charSet;
-    return charSet.split('').filter(c => !SIMILAR_CHARS.includes(c)).join('');
+    return [...charSet].filter(c => !SIMILAR_CHARS.includes(c)).join('');
+}
+
+function getCharPool() {
+    const excludeSimilar = elements.excludeSimilar?.checked || false;
+    const pool = [];
+    if (elements.lowercase?.checked) pool.push(filterCharSet(charSets.lowercase, excludeSimilar));
+    if (elements.uppercase?.checked) pool.push(filterCharSet(charSets.uppercase, excludeSimilar));
+    if (elements.numbers?.checked) pool.push(filterCharSet(charSets.numbers, excludeSimilar));
+    if (elements.special?.checked) pool.push(filterCharSet(charSets.special, excludeSimilar));
+    return pool;
 }
 
 function generatePassword() {
-    const length = elements.length ? parseInt(elements.length.value) : 16;
-    const excludeSimilar = elements.excludeSimilar ? elements.excludeSimilar.checked : false;
-    const excludeRepeating = elements.excludeRepeating ? elements.excludeRepeating.checked : false;
-
-    const charPool = [];
-    if (elements.lowercase && elements.lowercase.checked) charPool.push(filterCharSet(charSets.lowercase, excludeSimilar));
-    if (elements.uppercase && elements.uppercase.checked) charPool.push(filterCharSet(charSets.uppercase, excludeSimilar));
-    if (elements.numbers && elements.numbers.checked) charPool.push(filterCharSet(charSets.numbers, excludeSimilar));
-    if (elements.special && elements.special.checked) charPool.push(filterCharSet(charSets.special, excludeSimilar));
+    const length = elements.length ? parseInt(elements.length.value, 10) : 16;
+    const excludeRepeating = elements.excludeRepeating?.checked || false;
+    const charPool = getCharPool();
 
     if (charPool.length === 0) {
         showNotification('Выберите хотя бы один тип символов', 'error');
         return '';
     }
 
+    const pool = charPool.join('');
+    const selectedSets = charPool;
+
     try {
         const array = new Uint32Array(length);
         window.crypto.getRandomValues(array);
-        const pool = charPool.join('');
-        const selectedSets = charPool;
         let attempts = 0;
         const maxAttempts = 100;
-        
+
         while (attempts < maxAttempts) {
             let password = '';
             let lastChar = '';
@@ -158,23 +163,20 @@ function generatePassword() {
                 password += chosenChar;
                 lastChar = chosenChar;
             }
-            
+
             const hasAllTypes = selectedSets.every(chars => 
-                password.split('').some(c => chars.includes(c))
+                [...password].some(c => chars.includes(c))
             );
-            
+
             if (hasAllTypes) {
                 return password;
             }
-            
+
             window.crypto.getRandomValues(array);
             attempts++;
         }
-        
         return password;
-        
     } catch {
-        const pool = charPool.join('');
         let password = '';
         let lastChar = '';
         for (let i = 0; i < length; i++) {
@@ -199,7 +201,7 @@ function generatePassword() {
 function generateAndShow() {
     const password = generatePassword();
     if (!password) return;
-    
+
     if (elements.password) elements.password.value = password;
     clearNotification();
     updatePasswordStrength();
@@ -207,67 +209,62 @@ function generateAndShow() {
 }
 
 async function copyToClipboard() {
-    if (!elements.password || !elements.password.value) {
+    if (!elements.password?.value) {
         showNotification('Сначала создайте пароль', 'error');
         return;
     }
-    
+
     triggerHapticFeedback();
-    
+
     try {
         await navigator.clipboard.writeText(elements.password.value);
         showNotification('Пароль скопирован', 'success');
-    } catch (err) {
-        console.error('Clipboard API failed:', err);
+    } catch {
         showNotification('Не удалось скопировать', 'error');
     }
 }
 
 async function generateAndCopy() {
-    const generateBtn = elements.generateBtn;
-    if (!generateBtn) return;
-    
-    const originalText = generateBtn.textContent;
-    
-    generateBtn.disabled = true;
-    generateBtn.textContent = '⌛ Создание...';
-    generateBtn.style.opacity = '0.8';
-    
+    const btn = elements.generateBtn;
+    if (!btn) return;
+
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '⌛ Создание...';
+    btn.style.opacity = '0.8';
+
     triggerHapticFeedback();
-    
+
     try {
         const password = generatePassword();
         if (!password) return;
-        
+
         if (elements.password) elements.password.value = password;
-        
+
         await navigator.clipboard.writeText(password);
         showNotification('Пароль создан и скопирован в буфер обмена', 'success');
-        
+
         updatePasswordStrength();
         saveSettings();
-        
-    } catch (err) {
-        console.error('Ошибка при генерации:', err);
+    } catch {
         showNotification('Пароль создан, но не скопирован', 'warning');
     } finally {
-        generateBtn.disabled = false;
-        generateBtn.textContent = originalText;
-        generateBtn.style.opacity = '';
+        btn.disabled = false;
+        btn.textContent = originalText;
+        btn.style.opacity = '';
     }
 }
 
 function showNotification(message, type = 'success') {
     clearNotification();
-    
-    if (!elements.notificationArea) return;
-    
-    elements.notificationArea.textContent = message;
-    elements.notificationArea.className = `toast-notification show notification-${type}`;
-    
-    notificationTimeout = setTimeout(() => {
-        clearNotification();
-    }, 3000);
+
+    const area = elements.notificationArea;
+    if (!area) return;
+
+    area.textContent = message;
+    area.className = `toast-notification show notification-${type}`;
+
+    notificationTimeout = setTimeout(clearNotification, 3000);
 }
 
 function clearNotification() {
@@ -275,31 +272,31 @@ function clearNotification() {
         clearTimeout(notificationTimeout);
         notificationTimeout = null;
     }
-    if (elements.notificationArea) {
-        elements.notificationArea.className = 'toast-notification';
-        elements.notificationArea.textContent = '';
+    const area = elements.notificationArea;
+    if (area) {
+        area.className = 'toast-notification';
+        area.textContent = '';
     }
 }
 
 function updateLengthValue() {
     if (elements.length && elements.lengthValue) {
-        const value = elements.length.value;
-        elements.lengthValue.textContent = value;
+        elements.lengthValue.textContent = elements.length.value;
     }
 }
 
 function updatePasswordStrength() {
     if (!elements.password) return;
-    const length = elements.length ? parseInt(elements.length.value) : 16;
+    const length = elements.length ? parseInt(elements.length.value, 10) : 16;
     const complexity = document.querySelectorAll('.switch input:checked').length;
     const strength = length * complexity;
-    
+
     let strengthText = '';
     if (strength >= 96) strengthText = 'очень надёжный';
     else if (strength >= 64) strengthText = 'надёжный';
     else if (strength >= 32) strengthText = 'средний';
     else strengthText = 'слабый';
-    
+
     elements.password.setAttribute('aria-label', 
         `Сгенерированный пароль длиной ${length} символов, ${strengthText} уровень защиты`);
 }
@@ -310,26 +307,25 @@ function handleSettingChange() {
 }
 
 function checkPWAInstallStatus() {
-    return window.matchMedia('(display-mode: standalone)').matches || 
-           window.navigator.standalone === true;
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 }
 
 function initPWAInstall() {
     if (checkPWAInstallStatus()) {
-        if (elements.installPWA) elements.installPWA.classList.add('hide');
+        elements.installPWA?.classList.add('hide');
         return;
     }
-    
+
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        if (elements.installPWA) elements.installPWA.classList.remove('hide');
+        elements.installPWA?.classList.remove('hide');
     });
-    
+
     window.addEventListener('appinstalled', () => {
         deferredPrompt = null;
         isAppInstalled = true;
-        if (elements.installPWA) elements.installPWA.classList.add('hide');
+        elements.installPWA?.classList.add('hide');
         showNotification('✅ Приложение установлено!', 'success');
     });
 }
@@ -337,18 +333,18 @@ function initPWAInstall() {
 async function installPWA() {
     if (!deferredPrompt || isAppInstalled) {
         showNotification('ℹ️ Приложение уже установлено', 'warning');
-        if (elements.installPWA) elements.installPWA.classList.add('hide');
+        elements.installPWA?.classList.add('hide');
         return;
     }
-    
+
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    
+
     deferredPrompt = null;
-    
+
     if (outcome === 'accepted') {
         isAppInstalled = true;
-        if (elements.installPWA) elements.installPWA.classList.add('hide');
+        elements.installPWA?.classList.add('hide');
     } else {
         showNotification('❌ Установка отменена', 'error');
     }
@@ -361,62 +357,48 @@ function triggerHapticFeedback() {
 }
 
 function addPasswordVisibilityToggle() {
-    if (!elements.password || !elements.password.parentNode) return;
-    
+    const passwordField = elements.password;
+    if (!passwordField?.parentNode) return;
+
     const toggleBtn = document.createElement('button');
     toggleBtn.className = 'visibility-toggle';
-    toggleBtn.setAttribute('type', 'button');
-    
+    toggleBtn.type = 'button';
+
     const eyeClosedSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M3 3L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         <path d="M12 5C19 5 22 12 22 12C22 12 20.5 15 17 17M8 8C4 10 2 12 2 12C2 12 5 19 12 19C14 19 16 18 18 16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
     </svg>`;
-    
+
     const eyeOpenSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
         <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="2" fill="none"/>
     </svg>`;
-    
+
     const savedVisible = localStorage.getItem('passwordVisible') === 'true';
     const initialSvg = savedVisible ? eyeOpenSvg : eyeClosedSvg;
     const initialLabel = savedVisible ? 'Скрыть пароль' : 'Показать пароль';
     toggleBtn.innerHTML = initialSvg + '<span class="tooltip">' + initialLabel + '</span>';
     toggleBtn.setAttribute('aria-label', initialLabel);
     if (savedVisible) {
-        elements.password.type = 'text';
+        passwordField.type = 'text';
     }
-    
+
     toggleBtn.addEventListener('click', () => {
-        const isPassword = elements.password.type === 'password';
-        elements.password.type = isPassword ? 'text' : 'password';
+        const isPassword = passwordField.type === 'password';
+        passwordField.type = isPassword ? 'text' : 'password';
         const newLabel = isPassword ? 'Скрыть пароль' : 'Показать пароль';
         toggleBtn.innerHTML = (isPassword ? eyeClosedSvg : eyeOpenSvg) + '<span class="tooltip">' + newLabel + '</span>';
         toggleBtn.setAttribute('aria-label', newLabel);
         localStorage.setItem('passwordVisible', String(!isPassword));
         triggerHapticFeedback();
     });
-    
-    elements.password.parentNode.appendChild(toggleBtn);
+
+    passwordField.parentNode.appendChild(toggleBtn);
 }
 
 function initServiceWorker() {
-    if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
-        navigator.serviceWorker.register('./sw.js')
-            .then(registration => {
-                console.log('ServiceWorker зарегистрирован:', registration.scope);
-                
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            showNotification('🔄 Доступно обновление приложения', 'warning');
-                        }
-                    });
-                });
-            })
-            .catch(err => {
-                console.log('ServiceWorker регистрация не удалась:', err);
-            });
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
     }
 }
 
@@ -428,33 +410,31 @@ function initApp() {
     initPWAInstall();
     initServiceWorker();
     addPasswordVisibilityToggle();
-    
-    if (elements.length) {
-        elements.length.addEventListener('input', () => {
-            updateLengthValue();
-            handleSettingChange();
-        });
-    }
-    
-    if (elements.generateBtn) elements.generateBtn.addEventListener('click', generateAndCopy);
-    if (elements.copyBtn) elements.copyBtn.addEventListener('click', copyToClipboard);
-    if (elements.themeToggle) elements.themeToggle.addEventListener('click', toggleTheme);
-    if (elements.installPWA) elements.installPWA.addEventListener('click', installPWA);
-    if (elements.resetSettingsBtn) elements.resetSettingsBtn.addEventListener('click', resetSettingsToDefault);
-    
-    document.querySelectorAll('.switch input').forEach(switchInput => {
-        switchInput.addEventListener('change', handleSettingChange);
+
+    elements.length?.addEventListener('input', () => {
+        updateLengthValue();
+        handleSettingChange();
     });
-    
+
+    elements.generateBtn?.addEventListener('click', generateAndCopy);
+    elements.copyBtn?.addEventListener('click', copyToClipboard);
+    elements.themeToggle?.addEventListener('click', toggleTheme);
+    elements.installPWA?.addEventListener('click', installPWA);
+    elements.resetSettingsBtn?.addEventListener('click', resetSettingsToDefault);
+
+    document.querySelectorAll('.switch input').forEach(input => {
+        input.addEventListener('change', handleSettingChange);
+    });
+
     updateLengthValue();
     updatePasswordStrength();
-    
+
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
         if (!localStorage.getItem('theme')) {
             applyTheme(e.matches ? 'dark' : 'light');
         }
     });
-    
+
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             clearNotification();
@@ -464,10 +444,8 @@ function initApp() {
             generateAndCopy();
         }
     });
-    
-    window.addEventListener('beforeunload', () => {
-        clearNotification();
-    });
+
+    window.addEventListener('beforeunload', clearNotification);
 }
 
 document.addEventListener('DOMContentLoaded', initApp);
