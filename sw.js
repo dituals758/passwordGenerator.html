@@ -1,4 +1,4 @@
-const APP_VERSION = "20260215_upd2";
+const APP_VERSION = "20260215_hotfix3";
 const CACHE_NAME = `password-generator-v${APP_VERSION}`;
 
 const STATIC_ASSETS = [

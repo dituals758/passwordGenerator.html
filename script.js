@@ -1,4 +1,4 @@
-const APP_VERSION = "20260215_upd2";
+const APP_VERSION = "20260215_hotfix3";
 const APP_NAME = "Генератор паролей";
 
 const charSets = {
@@ -37,7 +37,9 @@ let deferredPrompt = null;
 let isAppInstalled = false;
 
 function initAppVersion() {
-    elements.footerVersion.textContent = APP_VERSION;
+    if (elements.footerVersion) {
+        elements.footerVersion.textContent = APP_VERSION;
+    }
 }
 
 function initTheme() {
@@ -54,6 +56,7 @@ function applyTheme(theme) {
 }
 
 function updateThemeUI(theme) {
+    if (!elements.themeToggle) return;
     const isDark = theme === 'dark';
     const svg = isDark ? sunSvg : moonSvg;
     const tooltipText = isDark ? 'Светлая тема' : 'Тёмная тема';
@@ -69,37 +72,37 @@ function toggleTheme() {
 
 function loadSettings() {
     const settings = JSON.parse(localStorage.getItem('passwordSettings')) || {};
-    elements.length.value = settings.length || 16;
-    elements.lowercase.checked = settings.lowercase !== undefined ? settings.lowercase : true;
-    elements.uppercase.checked = settings.uppercase !== undefined ? settings.uppercase : true;
-    elements.numbers.checked = settings.numbers !== undefined ? settings.numbers : true;
-    elements.special.checked = settings.special !== undefined ? settings.special : true;
-    elements.excludeSimilar.checked = settings.excludeSimilar || false;
-    elements.excludeRepeating.checked = settings.excludeRepeating || false;
+    if (elements.length) elements.length.value = settings.length || 16;
+    if (elements.lowercase) elements.lowercase.checked = settings.lowercase !== undefined ? settings.lowercase : true;
+    if (elements.uppercase) elements.uppercase.checked = settings.uppercase !== undefined ? settings.uppercase : true;
+    if (elements.numbers) elements.numbers.checked = settings.numbers !== undefined ? settings.numbers : true;
+    if (elements.special) elements.special.checked = settings.special !== undefined ? settings.special : true;
+    if (elements.excludeSimilar) elements.excludeSimilar.checked = settings.excludeSimilar || false;
+    if (elements.excludeRepeating) elements.excludeRepeating.checked = settings.excludeRepeating || false;
     updateLengthValue();
 }
 
 function saveSettings() {
     const settings = {
-        length: parseInt(elements.length.value),
-        lowercase: elements.lowercase.checked,
-        uppercase: elements.uppercase.checked,
-        numbers: elements.numbers.checked,
-        special: elements.special.checked,
-        excludeSimilar: elements.excludeSimilar.checked,
-        excludeRepeating: elements.excludeRepeating.checked
+        length: elements.length ? parseInt(elements.length.value) : 16,
+        lowercase: elements.lowercase ? elements.lowercase.checked : true,
+        uppercase: elements.uppercase ? elements.uppercase.checked : true,
+        numbers: elements.numbers ? elements.numbers.checked : true,
+        special: elements.special ? elements.special.checked : true,
+        excludeSimilar: elements.excludeSimilar ? elements.excludeSimilar.checked : false,
+        excludeRepeating: elements.excludeRepeating ? elements.excludeRepeating.checked : false
     };
     localStorage.setItem('passwordSettings', JSON.stringify(settings));
 }
 
 function resetSettingsToDefault() {
-    elements.length.value = 16;
-    elements.lowercase.checked = true;
-    elements.uppercase.checked = true;
-    elements.numbers.checked = true;
-    elements.special.checked = true;
-    elements.excludeSimilar.checked = false;
-    elements.excludeRepeating.checked = false;
+    if (elements.length) elements.length.value = 16;
+    if (elements.lowercase) elements.lowercase.checked = true;
+    if (elements.uppercase) elements.uppercase.checked = true;
+    if (elements.numbers) elements.numbers.checked = true;
+    if (elements.special) elements.special.checked = true;
+    if (elements.excludeSimilar) elements.excludeSimilar.checked = false;
+    if (elements.excludeRepeating) elements.excludeRepeating.checked = false;
     updateLengthValue();
     saveSettings();
     generateAndShow();
@@ -112,15 +115,15 @@ function filterCharSet(charSet, excludeSimilar) {
 }
 
 function generatePassword() {
-    const length = parseInt(elements.length.value);
-    const excludeSimilar = elements.excludeSimilar.checked;
-    const excludeRepeating = elements.excludeRepeating.checked;
+    const length = elements.length ? parseInt(elements.length.value) : 16;
+    const excludeSimilar = elements.excludeSimilar ? elements.excludeSimilar.checked : false;
+    const excludeRepeating = elements.excludeRepeating ? elements.excludeRepeating.checked : false;
 
     const charPool = [];
-    if (elements.lowercase.checked) charPool.push(filterCharSet(charSets.lowercase, excludeSimilar));
-    if (elements.uppercase.checked) charPool.push(filterCharSet(charSets.uppercase, excludeSimilar));
-    if (elements.numbers.checked) charPool.push(filterCharSet(charSets.numbers, excludeSimilar));
-    if (elements.special.checked) charPool.push(filterCharSet(charSets.special, excludeSimilar));
+    if (elements.lowercase && elements.lowercase.checked) charPool.push(filterCharSet(charSets.lowercase, excludeSimilar));
+    if (elements.uppercase && elements.uppercase.checked) charPool.push(filterCharSet(charSets.uppercase, excludeSimilar));
+    if (elements.numbers && elements.numbers.checked) charPool.push(filterCharSet(charSets.numbers, excludeSimilar));
+    if (elements.special && elements.special.checked) charPool.push(filterCharSet(charSets.special, excludeSimilar));
 
     if (charPool.length === 0) {
         showNotification('Выберите хотя бы один тип символов', 'error');
@@ -197,14 +200,14 @@ function generateAndShow() {
     const password = generatePassword();
     if (!password) return;
     
-    elements.password.value = password;
+    if (elements.password) elements.password.value = password;
     clearNotification();
     updatePasswordStrength();
     saveSettings();
 }
 
 async function copyToClipboard() {
-    if (!elements.password.value) {
+    if (!elements.password || !elements.password.value) {
         showNotification('Сначала создайте пароль', 'error');
         return;
     }
@@ -222,6 +225,8 @@ async function copyToClipboard() {
 
 async function generateAndCopy() {
     const generateBtn = elements.generateBtn;
+    if (!generateBtn) return;
+    
     const originalText = generateBtn.textContent;
     
     generateBtn.disabled = true;
@@ -234,7 +239,7 @@ async function generateAndCopy() {
         const password = generatePassword();
         if (!password) return;
         
-        elements.password.value = password;
+        if (elements.password) elements.password.value = password;
         
         await navigator.clipboard.writeText(password);
         showNotification('Пароль создан и скопирован в буфер обмена', 'success');
@@ -255,6 +260,8 @@ async function generateAndCopy() {
 function showNotification(message, type = 'success') {
     clearNotification();
     
+    if (!elements.notificationArea) return;
+    
     elements.notificationArea.textContent = message;
     elements.notificationArea.className = `toast-notification show notification-${type}`;
     
@@ -268,17 +275,22 @@ function clearNotification() {
         clearTimeout(notificationTimeout);
         notificationTimeout = null;
     }
-    elements.notificationArea.className = 'toast-notification';
-    elements.notificationArea.textContent = '';
+    if (elements.notificationArea) {
+        elements.notificationArea.className = 'toast-notification';
+        elements.notificationArea.textContent = '';
+    }
 }
 
 function updateLengthValue() {
-    const value = elements.length.value;
-    elements.lengthValue.textContent = value;
+    if (elements.length && elements.lengthValue) {
+        const value = elements.length.value;
+        elements.lengthValue.textContent = value;
+    }
 }
 
 function updatePasswordStrength() {
-    const length = parseInt(elements.length.value);
+    if (!elements.password) return;
+    const length = elements.length ? parseInt(elements.length.value) : 16;
     const complexity = document.querySelectorAll('.switch input:checked').length;
     const strength = length * complexity;
     
@@ -304,20 +316,20 @@ function checkPWAInstallStatus() {
 
 function initPWAInstall() {
     if (checkPWAInstallStatus()) {
-        elements.installPWA.classList.add('hide');
+        if (elements.installPWA) elements.installPWA.classList.add('hide');
         return;
     }
     
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        elements.installPWA.classList.remove('hide');
+        if (elements.installPWA) elements.installPWA.classList.remove('hide');
     });
     
     window.addEventListener('appinstalled', () => {
         deferredPrompt = null;
         isAppInstalled = true;
-        elements.installPWA.classList.add('hide');
+        if (elements.installPWA) elements.installPWA.classList.add('hide');
         showNotification('✅ Приложение установлено!', 'success');
     });
 }
@@ -325,7 +337,7 @@ function initPWAInstall() {
 async function installPWA() {
     if (!deferredPrompt || isAppInstalled) {
         showNotification('ℹ️ Приложение уже установлено', 'warning');
-        elements.installPWA.classList.add('hide');
+        if (elements.installPWA) elements.installPWA.classList.add('hide');
         return;
     }
     
@@ -336,7 +348,7 @@ async function installPWA() {
     
     if (outcome === 'accepted') {
         isAppInstalled = true;
-        elements.installPWA.classList.add('hide');
+        if (elements.installPWA) elements.installPWA.classList.add('hide');
     } else {
         showNotification('❌ Установка отменена', 'error');
     }
@@ -349,6 +361,8 @@ function triggerHapticFeedback() {
 }
 
 function addPasswordVisibilityToggle() {
+    if (!elements.password || !elements.password.parentNode) return;
+    
     const toggleBtn = document.createElement('button');
     toggleBtn.className = 'visibility-toggle';
     toggleBtn.setAttribute('type', 'button');
@@ -408,16 +422,18 @@ function initApp() {
     initServiceWorker();
     addPasswordVisibilityToggle();
     
-    elements.length.addEventListener('input', () => {
-        updateLengthValue();
-        handleSettingChange();
-    });
+    if (elements.length) {
+        elements.length.addEventListener('input', () => {
+            updateLengthValue();
+            handleSettingChange();
+        });
+    }
     
-    elements.generateBtn.addEventListener('click', generateAndCopy);
-    elements.copyBtn.addEventListener('click', copyToClipboard);
-    elements.themeToggle.addEventListener('click', toggleTheme);
-    elements.installPWA.addEventListener('click', installPWA);
-    elements.resetSettingsBtn.addEventListener('click', resetSettingsToDefault);
+    if (elements.generateBtn) elements.generateBtn.addEventListener('click', generateAndCopy);
+    if (elements.copyBtn) elements.copyBtn.addEventListener('click', copyToClipboard);
+    if (elements.themeToggle) elements.themeToggle.addEventListener('click', toggleTheme);
+    if (elements.installPWA) elements.installPWA.addEventListener('click', installPWA);
+    if (elements.resetSettingsBtn) elements.resetSettingsBtn.addEventListener('click', resetSettingsToDefault);
     
     document.querySelectorAll('.switch input').forEach(switchInput => {
         switchInput.addEventListener('change', handleSettingChange);

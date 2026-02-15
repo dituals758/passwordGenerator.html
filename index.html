@@ -134,6 +134,17 @@
             -webkit-overflow-scrolling: touch;
         }
 
+        /* Уменьшаем отступы на узких экранах */
+        @media (max-width: 480px) {
+            body {
+                padding: 12px;
+                padding-top: max(12px, env(safe-area-inset-top));
+                padding-bottom: max(12px, env(safe-area-inset-bottom));
+                padding-left: max(12px, env(safe-area-inset-left));
+                padding-right: max(12px, env(safe-area-inset-right));
+            }
+        }
+
         .container {
             background-color: color-mix(in srgb, var(--container-bg) 70%, transparent);
             backdrop-filter: blur(20px) saturate(180%);
@@ -146,6 +157,12 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.02);
             margin: 0 auto;
             overflow: visible;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 16px;
+            }
         }
 
         .header-row {
@@ -349,6 +366,12 @@
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02);
         }
 
+        @media (max-width: 480px) {
+            .section-container {
+                padding: 16px;
+            }
+        }
+
         .section-title {
             font-weight: 700;
             color: var(--text-color);
@@ -405,6 +428,8 @@
             will-change: background-color;
             cursor: default;
             margin-bottom: 12px;
+            position: relative;
+            touch-action: pan-y; /* разрешаем вертикальную прокрутку, но предотвращаем горизонтальную жестами */
         }
 
         .setting-item:hover {
@@ -416,6 +441,34 @@
             box-shadow: var(--focus-shadow);
         }
 
+        .setting-item .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: color-mix(in srgb, var(--container-bg) 70%, transparent);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s;
+            z-index: 40;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+            color: var(--text-color);
+            margin-bottom: 8px;
+        }
+
+        .setting-item:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
         .setting-item label {
             font-weight: 500;
             min-width: 150px;
@@ -424,41 +477,28 @@
             font-size: 1rem;
         }
 
-        .setting-item label .tooltip {
-            position: absolute;
-            bottom: 100%;
-            left: 0;
-            background-color: color-mix(in srgb, var(--container-bg) 70%, transparent);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
-            border-radius: 12px;
-            padding: 10px 16px;
-            font-size: 0.9rem;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.2s;
-            z-index: 10;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            pointer-events: none;
-            color: var(--text-color);
-        }
-
-        .setting-item label:hover .tooltip {
-            opacity: 1;
-            visibility: visible;
+        /* На узких экранах переносим настройки длины на новую строку */
+        @media (max-width: 400px) {
+            .setting-item {
+                flex-wrap: wrap;
+            }
+            .setting-item label {
+                min-width: 100%;
+                margin-bottom: 8px;
+            }
         }
 
         .setting-item input[type=range] {
             -webkit-appearance: none;
             appearance: none;
             flex: 1;
+            min-width: 0;
             height: 6px;
             border-radius: 3px;
             background: var(--input-bg);
             outline: none;
             cursor: pointer;
+            touch-action: manipulation; /* предотвращаем зум и прокрутку при касании */
         }
 
         .setting-item input[type=range]:focus-visible {
@@ -476,6 +516,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             transition: transform 0.1s;
             will-change: transform;
+            touch-action: manipulation;
         }
 
         .setting-item input[type=range]::-webkit-slider-thumb:hover {
@@ -491,6 +532,7 @@
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             transition: transform 0.1s;
+            touch-action: manipulation;
         }
 
         .setting-item .length-value {
@@ -523,6 +565,7 @@
             -webkit-backdrop-filter: blur(10px) saturate(180%);
             border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
             will-change: background-color;
+            touch-action: pan-y;
         }
 
         .switch-label:hover {
@@ -698,6 +741,12 @@
             font-size: 0.95rem;
         }
 
+        @media (max-width: 480px) {
+            footer {
+                padding: 14px 16px;
+            }
+        }
+
         .footer-content {
             display: flex;
             align-items: center;
@@ -746,6 +795,7 @@
             outline: none;
             position: relative;
             -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
 
         .footer-btn:hover {
@@ -812,12 +862,6 @@
             }
         }
 
-        @media (max-width: 480px) {
-            footer {
-                padding: 14px 16px;
-            }
-        }
-
         .visually-hidden {
             position: absolute;
             width: 1px;
@@ -870,10 +914,8 @@
             
             <div class="sub-section-title">Основные:</div>
             <div class="setting-item">
-                <label for="length">
-                    Длина пароля:
-                    <span class="tooltip">Количество символов в пароле (от 8 до 32)</span>
-                </label>
+                <span class="tooltip">Количество символов в пароле (от 8 до 32)</span>
+                <label for="length">Длина пароля:</label>
                 <input type="range" id="length" min="8" max="32" value="16">
                 <span class="length-value" id="lengthValue">16</span>
             </div>

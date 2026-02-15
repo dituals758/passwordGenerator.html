@@ -52,7 +52,7 @@
       "label": "Главный экран приложения на десктопе"
     },
     {
-      "src": "./assets/assets/screenshots/mobile.png",
+      "src": "./assets/screenshots/mobile.png",
       "sizes": "750x1334",
       "type": "image/png",
       "form_factor": "narrow",
