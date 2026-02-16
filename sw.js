@@ -1,10 +1,12 @@
-const APP_VERSION = "20260215_hotfix5";
+importScripts('./version.js');
+
 const CACHE_NAME = `password-generator-v${APP_VERSION}`;
 
 const STATIC_ASSETS = [
   './',
   './index.html',
   './manifest.json',
+  './version.js',
   './script.js',
   './assets/icons/icon-16.png',
   './assets/icons/icon-32.png',

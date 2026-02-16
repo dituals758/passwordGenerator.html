@@ -1,4 +1,3 @@
-const APP_VERSION = "20260215_hotfix5";
 const APP_NAME = "Генератор паролей";
 
 const charSets = {
@@ -10,8 +9,14 @@ const charSets = {
 
 const SIMILAR_CHARS = "0O1lI|";
 
-const sunSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/><path d="M12 2V4M12 20V22M4 12H2M22 12H20M6 6L4 4M20 20L18 18M6 18L4 20M20 4L18 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
-const moonSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const sunSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/>
+    <path d="M12 3V5M12 19V21M5 12H3M21 12H19M7.05 7.05L5.64 5.64M18.36 18.36L16.95 16.95M7.05 16.95L5.64 18.36M18.36 5.64L16.95 7.05" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+</svg>`;
+
+const moonSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
 
 const elements = {
     password: document.getElementById('password'),
@@ -20,6 +25,7 @@ const elements = {
     generateBtn: document.getElementById('generateBtn'),
     copyBtn: document.getElementById('copyBtn'),
     notificationArea: document.getElementById('notificationArea'),
+    subtitle: document.getElementById('subtitle'),
     themeToggle: document.getElementById('themeToggle'),
     installPWA: document.getElementById('installPWA'),
     footerVersion: document.getElementById('footerVersion'),
@@ -106,7 +112,7 @@ function resetSettingsToDefault() {
     updateLengthValue();
     saveSettings();
     generateAndShow();
-    showNotification('↻ Настройки сброшены', 'success');
+    showNotification('Настройки сброшены', 'success');
 }
 
 function filterCharSet(charSet, excludeSimilar) {
@@ -259,10 +265,12 @@ function showNotification(message, type = 'success') {
     clearNotification();
 
     const area = elements.notificationArea;
-    if (!area) return;
+    const subtitle = elements.subtitle;
+    if (!area || !subtitle) return;
 
     area.textContent = message;
     area.className = `toast-notification show notification-${type}`;
+    subtitle.classList.add('hidden');
 
     notificationTimeout = setTimeout(clearNotification, 3000);
 }
@@ -273,9 +281,11 @@ function clearNotification() {
         notificationTimeout = null;
     }
     const area = elements.notificationArea;
-    if (area) {
+    const subtitle = elements.subtitle;
+    if (area && subtitle) {
         area.className = 'toast-notification';
         area.textContent = '';
+        subtitle.classList.remove('hidden');
     }
 }
 
@@ -326,13 +336,13 @@ function initPWAInstall() {
         deferredPrompt = null;
         isAppInstalled = true;
         elements.installPWA?.classList.add('hide');
-        showNotification('✅ Приложение установлено!', 'success');
+        showNotification('Приложение установлено!', 'success');
     });
 }
 
 async function installPWA() {
     if (!deferredPrompt || isAppInstalled) {
-        showNotification('ℹ️ Приложение уже установлено', 'warning');
+        showNotification('Приложение уже установлено', 'warning');
         elements.installPWA?.classList.add('hide');
         return;
     }
@@ -346,7 +356,7 @@ async function installPWA() {
         isAppInstalled = true;
         elements.installPWA?.classList.add('hide');
     } else {
-        showNotification('❌ Установка отменена', 'error');
+        showNotification('Установка отменена', 'error');
     }
 }
 
@@ -365,13 +375,13 @@ function addPasswordVisibilityToggle() {
     toggleBtn.type = 'button';
 
     const eyeClosedSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M3 3L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M12 5C19 5 22 12 22 12C22 12 20.5 15 17 17M8 8C4 10 2 12 2 12C2 12 5 19 12 19C14 19 16 18 18 16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="5" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
     </svg>`;
 
     const eyeOpenSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
-        <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="2" fill="none"/>
+        <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.8" fill="none"/>
     </svg>`;
 
     const savedVisible = localStorage.getItem('passwordVisible') === 'true';

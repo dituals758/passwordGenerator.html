@@ -7,7 +7,7 @@
     <meta name="description" content="Простое приложение для создания безопасных паролей. Работает без интернета, данные остаются на вашем устройстве.">
     <meta name="keywords" content="генератор паролей, создать пароль, безопасный пароль, пароли офлайн, бесплатный генератор, pwa">
     <meta name="author" content="Password Generator">
-    <meta property="og:title" content="Генератор паролей | Быстро и безопасно">
+    <meta property="og:title" content="Генератор паролей. Быстро и безопасно">
     <meta property="og:description" content="Создавайте надёжные пароли без интернета. Просто, бесплатно, безопасно.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dituals758.github.io/passwordGenerator.html">
@@ -23,8 +23,8 @@
     <meta name="referrer" content="no-referrer">
     <link rel="canonical" href="https://dituals758.github.io/passwordGenerator.html">
     <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="./assets/icons/icon-16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="./assets/icons/icon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./assets/icons/icon-16.png">
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -172,6 +172,7 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.02);
             margin: 0 auto;
             overflow: visible;
+            position: relative;
         }
 
         .header-row {
@@ -192,13 +193,87 @@
             letter-spacing: -0.02em;
         }
 
+        .subtitle-wrapper {
+            position: relative;
+            margin-bottom: var(--vertical-spacing);
+        }
+
         .subtitle {
             color: var(--secondary-color);
             font-size: clamp(0.9rem, 3vw, 1rem);
             line-height: 1.4;
-            margin-bottom: var(--vertical-spacing);
             text-align: left;
             width: 100%;
+            transition: opacity var(--transition-default);
+        }
+
+        .subtitle.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .toast-notification {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            font-weight: 500;
+            border-radius: 12px;
+            padding: 10px 16px;
+            gap: 8px;
+            background-color: color-mix(in srgb, var(--container-bg) 80%, transparent);
+            backdrop-filter: blur(var(--blur-amount)) saturate(var(--blur-saturate));
+            -webkit-backdrop-filter: blur(var(--blur-amount)) saturate(var(--blur-saturate));
+            border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            color: var(--text-color);
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .toast-notification.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .toast-notification.notification-success {
+            color: var(--success-color);
+        }
+
+        .toast-notification.notification-success::before {
+            content: "✓";
+            margin-right: 8px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .toast-notification.notification-error {
+            color: var(--error-color);
+        }
+
+        .toast-notification.notification-error::before {
+            content: "✗";
+            margin-right: 8px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .toast-notification.notification-warning {
+            color: var(--warning-color);
+        }
+
+        .toast-notification.notification-warning::before {
+            content: "⚠";
+            margin-right: 8px;
+            font-weight: bold;
+            font-size: 1.2rem;
         }
 
         .password-display {
@@ -318,11 +393,16 @@
             pointer-events: none;
             color: var(--text-color);
             margin-bottom: 8px;
+            max-width: min(300px, calc(100vw - 40px));
+            word-break: break-word;
+            text-align: center;
         }
 
-        .copy-btn:hover .tooltip, .visibility-toggle:hover .tooltip, .reset-btn:hover .tooltip {
-            opacity: 1;
-            visibility: visible;
+        @media (min-width: 768px) {
+            .copy-btn .tooltip, .visibility-toggle .tooltip, .reset-btn .tooltip {
+                white-space: nowrap;
+                max-width: none;
+            }
         }
 
         .main-btn {
@@ -394,7 +474,7 @@
         .section-title .title-text {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             flex: 1;
         }
 
@@ -408,6 +488,7 @@
 
         .section-title .title-text span {
             padding: 0 12px;
+            white-space: nowrap;
         }
 
         .sub-section-title {
@@ -470,11 +551,16 @@
             pointer-events: none;
             color: var(--text-color);
             margin-bottom: 8px;
+            max-width: min(300px, calc(100vw - 40px));
+            word-break: break-word;
+            text-align: center;
         }
 
-        .setting-item:hover .tooltip {
-            opacity: 1;
-            visibility: visible;
+        @media (min-width: 768px) {
+            .setting-item .tooltip {
+                white-space: nowrap;
+                max-width: none;
+            }
         }
 
         .setting-item label {
@@ -667,73 +753,6 @@
             font-size: 1.3rem;
         }
 
-        .toast-notification {
-            position: fixed;
-            top: max(20px, env(safe-area-inset-top));
-            left: 20px;
-            right: 20px;
-            margin: 0 auto;
-            max-width: 500px;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transform: translateY(-100%) scale(0.95);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            font-weight: 500;
-            border-radius: 12px;
-            padding: 8px 16px;
-            gap: 8px;
-            will-change: opacity, transform;
-            background-color: color-mix(in srgb, var(--container-bg) 80%, transparent);
-            backdrop-filter: blur(var(--blur-amount)) saturate(var(--blur-saturate));
-            -webkit-backdrop-filter: blur(var(--blur-amount)) saturate(var(--blur-saturate));
-            border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-            pointer-events: none;
-            z-index: 100;
-            color: var(--text-color);
-        }
-
-        .toast-notification.show {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-
-        .toast-notification.notification-success {
-            color: var(--success-color);
-        }
-
-        .toast-notification.notification-success::before {
-            content: "✓";
-            margin-right: 8px;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        .toast-notification.notification-error {
-            color: var(--error-color);
-        }
-
-        .toast-notification.notification-error::before {
-            content: "✗";
-            margin-right: 8px;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        .toast-notification.notification-warning {
-            color: var(--warning-color);
-        }
-
-        .toast-notification.notification-warning::before {
-            content: "⚠";
-            margin-right: 8px;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
         footer {
             margin-top: 32px;
             width: 100%;
@@ -835,11 +854,16 @@
             pointer-events: none;
             color: var(--text-color);
             margin-bottom: 8px;
+            max-width: min(300px, calc(100vw - 40px));
+            word-break: break-word;
+            text-align: center;
         }
 
-        .footer-btn:hover .tooltip {
-            opacity: 1;
-            visibility: visible;
+        @media (min-width: 768px) {
+            .footer-btn .tooltip {
+                white-space: nowrap;
+                max-width: none;
+            }
         }
 
         .footer-btn svg {
@@ -888,15 +912,18 @@
             <h1>Генератор паролей</h1>
         </header>
         
-        <p class="subtitle">Простое приложение для создания безопасных паролей. Работает без интернета, данные создаются и хранятся только на вашем устройстве</p>
+        <div class="subtitle-wrapper">
+            <p class="subtitle" id="subtitle">Приложение для создания безопасных паролей. Работает без интернета, пароли создаются и хранятся только на вашем устройстве</p>
+            <div class="toast-notification" id="notificationArea" role="status" aria-live="polite"></div>
+        </div>
         
         <div class="password-display">
             <div class="password-field">
                 <input type="text" id="password" readonly aria-label="Сгенерированный пароль" inputmode="none">
                 <button class="copy-btn" id="copyBtn" type="button" aria-label="Копировать пароль">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="4" y="4" width="14" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
-                        <rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+                        <rect x="5" y="5" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                        <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/>
                     </svg>
                     <span class="tooltip">Копировать пароль в буфер обмена</span>
                 </button>
@@ -911,15 +938,14 @@
                 </div>
                 <button class="reset-btn" id="resetSettingsBtn" type="button" aria-label="Сбросить настройки">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M1 4V10H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M23 20V14H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M20.49 9.00001C19.9828 7.56678 19.1209 6.2854 17.9845 5.27543C16.8482 4.26545 15.4745 3.56576 13.9917 3.24752C12.5089 2.92928 10.9692 3.00454 9.52556 3.46585C8.08195 3.92716 6.78561 4.7563 5.76 5.87001L1 10M23 14L18.24 18.13C17.2144 19.2437 15.9181 20.0729 14.4745 20.5342C13.0309 20.9955 11.4912 21.0707 10.0084 20.7525C8.52556 20.4343 7.15186 19.7346 6.01551 18.7246C4.87917 17.7146 4.01727 16.4332 3.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M21 12C21 16.97 16.97 21 12 21C7.03 21 3 16.97 3 12C3 7.03 7.03 3 12 3C14.39 3 16.53 3.99 18.07 5.64" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M19 2L19 6L15 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    <span class="tooltip">Сбросить настройки по умолчанию</span>
+                    <span class="tooltip">Сбросить настройки пароля</span>
                 </button>
             </div>
             
-            <h2 class="sub-section-title">Основные:</h2>
+            <h2 class="sub-section-title">Основные</h2>
             <div class="setting-item">
                 <span class="tooltip">Количество символов в пароле (от 8 до 32)</span>
                 <label for="length">Длина пароля:</label>
@@ -980,7 +1006,7 @@
         <section class="section-container app-features" aria-labelledby="features-title">
             <div class="section-title">
                 <div class="title-text">
-                    <span id="features-title">Преимущества приложения:</span>
+                    <span id="features-title">Преимущества приложения</span>
                 </div>
             </div>
             <div class="app-features">
@@ -1000,8 +1026,6 @@
         </section>
     </main>
 
-    <div class="toast-notification" id="notificationArea" role="status" aria-live="polite"></div>
-
     <footer>
         <div class="footer-content">
             <div class="footer-info">
@@ -1009,7 +1033,7 @@
                 <span class="footer-version">Версия <span id="footerVersion"></span></span>
             </div>
             <div class="footer-actions">
-                <a href="https://github.com/dituals758/passwordGenerator" target="_blank" rel="noopener noreferrer" class="footer-btn github-icon" aria-label="GitHub">
+                <a href="https://github.com/dituals758/passwordGenerator.html" target="_blank" rel="noopener noreferrer" class="footer-btn github-icon" aria-label="GitHub">
                     <svg viewBox="0 0 24 24" width="24" height="24">
                         <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.03-2.682-.103-.253-.447-1.27.098-2.646 0 0 .84-.269 2.75 1.025.8-.223 1.65-.334 2.5-.334.85 0 1.7.111 2.5.334 1.91-1.294 2.75-1.025 2.75-1.025.545 1.376.201 2.393.099 2.646.64.698 1.03 1.591 1.03 2.682 0 3.841-2.337 4.687-4.565 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
                     </svg>
@@ -1020,8 +1044,8 @@
                 </button>
                 <button class="footer-btn" id="installPWA" type="button" aria-label="Установить приложение">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 16V4M8 12L12 16L16 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <rect x="4" y="18" width="16" height="2" rx="1" fill="currentColor"/>
+                        <rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.8"/>
+                        <path d="M12 8V16M8 12L12 16L16 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <span class="tooltip">Установить как PWA-приложение</span>
                 </button>
@@ -1029,6 +1053,7 @@
         </div>
     </footer>
 
+    <script src="./version.js"></script>
     <script src="./script.js"></script>
 </body>
 </html>
