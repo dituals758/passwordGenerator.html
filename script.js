@@ -35,16 +35,25 @@ const elements = {
     special: document.getElementById('special'),
     excludeSimilar: document.getElementById('excludeSimilar'),
     excludeRepeating: document.getElementById('excludeRepeating'),
-    resetSettingsBtn: document.getElementById('resetSettingsBtn')
+    resetSettingsBtn: document.getElementById('resetSettingsBtn'),
+    aboutBtn: document.getElementById('aboutBtn'),
+    aboutModal: document.getElementById('aboutModal'),
+    closeAboutModal: document.getElementById('closeAboutModal'),
+    aboutVersion: document.getElementById('aboutVersion')
 };
 
 let notificationTimeout = null;
 let deferredPrompt = null;
 let isAppInstalled = false;
+let touchStartY = 0;
+let touchCurrentY = 0;
 
 function initAppVersion() {
     if (elements.footerVersion) {
         elements.footerVersion.textContent = APP_VERSION;
+    }
+    if (elements.aboutVersion) {
+        elements.aboutVersion.textContent = APP_VERSION;
     }
 }
 
@@ -58,7 +67,9 @@ function initTheme() {
 function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     updateThemeUI(theme);
-    localStorage.setItem('theme', theme);
+    try {
+        localStorage.setItem('theme', theme);
+    } catch (e) {}
 }
 
 function updateThemeUI(theme) {
@@ -77,15 +88,17 @@ function toggleTheme() {
 }
 
 function loadSettings() {
-    const settings = JSON.parse(localStorage.getItem('passwordSettings')) || {};
-    if (elements.length) elements.length.value = settings.length || 16;
-    if (elements.lowercase) elements.lowercase.checked = settings.lowercase ?? true;
-    if (elements.uppercase) elements.uppercase.checked = settings.uppercase ?? true;
-    if (elements.numbers) elements.numbers.checked = settings.numbers ?? true;
-    if (elements.special) elements.special.checked = settings.special ?? true;
-    if (elements.excludeSimilar) elements.excludeSimilar.checked = settings.excludeSimilar || false;
-    if (elements.excludeRepeating) elements.excludeRepeating.checked = settings.excludeRepeating || false;
-    updateLengthValue();
+    try {
+        const settings = JSON.parse(localStorage.getItem('passwordSettings')) || {};
+        if (elements.length) elements.length.value = settings.length || 16;
+        if (elements.lowercase) elements.lowercase.checked = settings.lowercase ?? true;
+        if (elements.uppercase) elements.uppercase.checked = settings.uppercase ?? true;
+        if (elements.numbers) elements.numbers.checked = settings.numbers ?? true;
+        if (elements.special) elements.special.checked = settings.special ?? true;
+        if (elements.excludeSimilar) elements.excludeSimilar.checked = settings.excludeSimilar || false;
+        if (elements.excludeRepeating) elements.excludeRepeating.checked = settings.excludeRepeating || false;
+        updateLengthValue();
+    } catch (e) {}
 }
 
 function saveSettings() {
@@ -98,7 +111,9 @@ function saveSettings() {
         excludeSimilar: elements.excludeSimilar?.checked || false,
         excludeRepeating: elements.excludeRepeating?.checked || false
     };
-    localStorage.setItem('passwordSettings', JSON.stringify(settings));
+    try {
+        localStorage.setItem('passwordSettings', JSON.stringify(settings));
+    } catch (e) {}
 }
 
 function resetSettingsToDefault() {
@@ -123,10 +138,22 @@ function filterCharSet(charSet, excludeSimilar) {
 function getCharPool() {
     const excludeSimilar = elements.excludeSimilar?.checked || false;
     const pool = [];
-    if (elements.lowercase?.checked) pool.push(filterCharSet(charSets.lowercase, excludeSimilar));
-    if (elements.uppercase?.checked) pool.push(filterCharSet(charSets.uppercase, excludeSimilar));
-    if (elements.numbers?.checked) pool.push(filterCharSet(charSets.numbers, excludeSimilar));
-    if (elements.special?.checked) pool.push(filterCharSet(charSets.special, excludeSimilar));
+    if (elements.lowercase?.checked) {
+        const filtered = filterCharSet(charSets.lowercase, excludeSimilar);
+        if (filtered.length > 0) pool.push(filtered);
+    }
+    if (elements.uppercase?.checked) {
+        const filtered = filterCharSet(charSets.uppercase, excludeSimilar);
+        if (filtered.length > 0) pool.push(filtered);
+    }
+    if (elements.numbers?.checked) {
+        const filtered = filterCharSet(charSets.numbers, excludeSimilar);
+        if (filtered.length > 0) pool.push(filtered);
+    }
+    if (elements.special?.checked) {
+        const filtered = filterCharSet(charSets.special, excludeSimilar);
+        if (filtered.length > 0) pool.push(filtered);
+    }
     return pool;
 }
 
@@ -147,7 +174,7 @@ function generatePassword() {
         const array = new Uint32Array(length);
         window.crypto.getRandomValues(array);
         let attempts = 0;
-        const maxAttempts = 100;
+        const maxAttempts = 1000;
 
         while (attempts < maxAttempts) {
             let password = '';
@@ -399,7 +426,9 @@ function addPasswordVisibilityToggle() {
         const newLabel = isPassword ? 'Скрыть пароль' : 'Показать пароль';
         toggleBtn.innerHTML = (isPassword ? eyeClosedSvg : eyeOpenSvg) + '<span class="tooltip">' + newLabel + '</span>';
         toggleBtn.setAttribute('aria-label', newLabel);
-        localStorage.setItem('passwordVisible', String(!isPassword));
+        try {
+            localStorage.setItem('passwordVisible', String(!isPassword));
+        } catch (e) {}
         triggerHapticFeedback();
     });
 
@@ -412,6 +441,51 @@ function initServiceWorker() {
     }
 }
 
+// Закрытие модального окна по свайпу вниз (iOS-style)
+function initModalSwipe() {
+    const modal = elements.aboutModal;
+    const content = modal?.querySelector('.modal-content');
+    if (!content) return;
+
+    content.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    content.addEventListener('touchmove', (e) => {
+        touchCurrentY = e.touches[0].clientY;
+        const diff = touchCurrentY - touchStartY;
+        if (diff > 0) {
+            e.preventDefault();
+            content.style.transform = `translateY(${diff}px) scale(0.9)`;
+        }
+    }, { passive: false });
+
+    content.addEventListener('touchend', () => {
+        const diff = touchCurrentY - touchStartY;
+        if (diff > 100) {
+            modal.classList.remove('show');
+        }
+        content.style.transform = '';
+        touchStartY = 0;
+        touchCurrentY = 0;
+    });
+}
+
+function initAboutModal() {
+    elements.aboutBtn?.addEventListener('click', () => {
+        elements.aboutModal.classList.add('show');
+    });
+    elements.closeAboutModal?.addEventListener('click', () => {
+        elements.aboutModal.classList.remove('show');
+    });
+    window.addEventListener('click', (e) => {
+        if (e.target === elements.aboutModal) {
+            elements.aboutModal.classList.remove('show');
+        }
+    });
+    initModalSwipe();
+}
+
 function initApp() {
     initAppVersion();
     initTheme();
@@ -420,6 +494,7 @@ function initApp() {
     initPWAInstall();
     initServiceWorker();
     addPasswordVisibilityToggle();
+    initAboutModal();
 
     elements.length?.addEventListener('input', () => {
         updateLengthValue();
@@ -448,6 +523,7 @@ function initApp() {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             clearNotification();
+            elements.aboutModal.classList.remove('show');
         }
         if (e.key === ' ' && e.target === document.body) {
             e.preventDefault();
