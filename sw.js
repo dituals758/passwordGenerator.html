@@ -38,39 +38,39 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
-  
-  if (request.method !== 'GET' || url.origin !== self.location.origin) {
-    return;
-  }
-  
+
+  // Только GET-запросы и только из нашего origin
+  if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+
+  // Стратегия для HTML: network-first с fallback на кеш
   if (request.headers.get('Accept')?.includes('text/html')) {
     event.respondWith(
       fetch(request)
         .then(response => {
           if (response.ok) {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME)
-              .then(cache => cache.put(request, responseClone));
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
           }
           return response;
         })
-        .catch(() => caches.match('./'))
+        .catch(() => caches.match('./')) // корень приложения
     );
     return;
   }
-  
+
+  // Для всего остального: cache-first с обновлением
   event.respondWith(
-    caches.match(request).then(cachedResponse => {
-      const fetchPromise = fetch(request).then(networkResponse => {
-        if (networkResponse.ok) {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME)
-            .then(cache => cache.put(request, responseClone));
-        }
-        return networkResponse;
-      });
-      
-      return cachedResponse || fetchPromise;
+    caches.match(request).then(cached => {
+      const fetchPromise = fetch(request)
+        .then(networkResponse => {
+          if (networkResponse.ok) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+          }
+          return networkResponse;
+        })
+        .catch(() => null);
+      return cached || fetchPromise;
     })
   );
 });
