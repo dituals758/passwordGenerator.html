@@ -1,7 +1,4 @@
-// script.js (ES module)
-import './version.js';
-
-const APP_NAME = "Генератор паролей";
+import { APP_VERSION } from './version.js';
 
 const CHAR_SETS = {
     lowercase: "abcdefghijklmnopqrstuvwxyz",
@@ -47,14 +44,13 @@ const elements = {
 let notificationTimeout = null;
 let deferredPrompt = null;
 let isAppInstalled = false;
-let focusableElements = null;
+let modalFocusable = null;
 let previouslyFocused = null;
 
 function triggerHapticFeedback() {
     if ('vibrate' in navigator) navigator.vibrate(50);
 }
 
-// ---- Тема ----
 function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     try { localStorage.setItem('theme', theme); } catch {}
@@ -87,7 +83,6 @@ function initTheme() {
     });
 }
 
-// ---- Настройки ----
 function loadSettings() {
     try {
         const settings = JSON.parse(localStorage.getItem('passwordSettings')) || {};
@@ -125,7 +120,7 @@ function resetSettingsToDefault() {
     if (elements.excludeRepeating) elements.excludeRepeating.checked = false;
     updateLengthValue();
     saveSettings();
-    generateAndShow();
+    performGeneration();
     showNotification('Настройки сброшены', 'success');
 }
 
@@ -135,7 +130,6 @@ function updateLengthValue() {
     }
 }
 
-// ---- Генерация пароля ----
 function filterCharSet(charSet, excludeSimilar) {
     if (!excludeSimilar) return charSet;
     return [...charSet].filter(c => !SIMILAR_CHARS.includes(c)).join('');
@@ -163,19 +157,28 @@ function getActiveCharSets() {
     return sets;
 }
 
+function getRandomInt(max) {
+    if (max <= 0) return 0;
+    const maxUint32 = 0xFFFFFFFF;
+    const maxValid = maxUint32 - (maxUint32 % max);
+    const array = new Uint32Array(1);
+    let value;
+    do {
+        window.crypto.getRandomValues(array);
+        value = array[0];
+    } while (value >= maxValid);
+    return value % max;
+}
+
 function generatePassword(length, sets, excludeRepeating) {
     if (sets.length === 0) return '';
 
     const fullPool = sets.join('');
     if (fullPool.length === 0) return '';
 
-    if (length < sets.length) length = sets.length;
-
-    const getRandomInt = (max) => {
-        const array = new Uint32Array(1);
-        window.crypto.getRandomValues(array);
-        return array[0] % max;
-    };
+    if (length < sets.length) {
+        throw new Error('Длина пароля не может быть меньше количества выбранных типов символов');
+    }
 
     let passwordChars = [];
     for (const set of sets) {
@@ -195,7 +198,7 @@ function generatePassword(length, sets, excludeRepeating) {
 
     if (excludeRepeating && fullPool.length > 1) {
         let attempts = 0;
-        const maxAttempts = 100;
+        const maxAttempts = 1000;
         while (attempts < maxAttempts) {
             let ok = true;
             for (let i = 1; i < passwordChars.length; i++) {
@@ -216,12 +219,21 @@ function generatePassword(length, sets, excludeRepeating) {
     return passwordChars.join('');
 }
 
-function generateAndShow() {
+function performGeneration() {
     const length = elements.length ? parseInt(elements.length.value, 10) : 16;
     const sets = getActiveCharSets();
     if (sets.length === 0) {
         showNotification('Выберите хотя бы один тип символов', 'error');
-        return;
+        return false;
+    }
+    try {
+        if (length < sets.length) {
+            showNotification('Длина пароля должна быть не меньше количества выбранных типов', 'error');
+            return false;
+        }
+    } catch (e) {
+        showNotification(e.message, 'error');
+        return false;
     }
     const excludeRepeating = elements.excludeRepeating?.checked ?? false;
 
@@ -231,9 +243,13 @@ function generateAndShow() {
     clearNotification();
     updatePasswordStrength();
     saveSettings();
+    return true;
 }
 
-// ---- Копирование ----
+function generateAndShow() {
+    performGeneration();
+}
+
 async function copyToClipboard() {
     if (!elements.password?.value) {
         showNotification('Сначала создайте пароль', 'error');
@@ -260,22 +276,10 @@ async function generateAndCopy() {
     triggerHapticFeedback();
 
     try {
-        const length = elements.length ? parseInt(elements.length.value, 10) : 16;
-        const sets = getActiveCharSets();
-        if (sets.length === 0) {
-            showNotification('Выберите хотя бы один тип символов', 'error');
-            return;
-        }
-        const excludeRepeating = elements.excludeRepeating?.checked ?? false;
+        if (!performGeneration()) return;
 
-        const password = generatePassword(length, sets, excludeRepeating);
-        if (elements.password) elements.password.value = password;
-
-        await navigator.clipboard.writeText(password);
+        await navigator.clipboard.writeText(elements.password.value);
         showNotification('Пароль создан и скопирован', 'success');
-
-        updatePasswordStrength();
-        saveSettings();
     } catch {
         showNotification('Пароль создан, но не скопирован', 'warning');
     } finally {
@@ -285,7 +289,6 @@ async function generateAndCopy() {
     }
 }
 
-// ---- Уведомления ----
 function showNotification(message, type = 'success') {
     clearNotification();
 
@@ -314,7 +317,6 @@ function clearNotification() {
     }
 }
 
-// ---- Оценка сложности ----
 function updatePasswordStrength() {
     if (!elements.password) return;
     const length = elements.length ? parseInt(elements.length.value, 10) : 16;
@@ -331,7 +333,6 @@ function updatePasswordStrength() {
         `Сгенерированный пароль длиной ${length} символов, ${strengthText} уровень защиты`);
 }
 
-// ---- Кнопка видимости пароля ----
 function addPasswordVisibilityToggle() {
     if (document.querySelector('.visibility-toggle')) return;
 
@@ -362,7 +363,6 @@ function addPasswordVisibilityToggle() {
     passwordField.parentNode.appendChild(toggleBtn);
 }
 
-// ---- PWA установка ----
 function checkPWAInstallStatus() {
     return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 }
@@ -406,7 +406,6 @@ async function installPWA() {
     }
 }
 
-// ---- Модальное окно с управлением фокусом и inert ----
 function getFocusableElements(container) {
     if (!container) return [];
     return Array.from(
@@ -440,34 +439,28 @@ function openModal() {
     const mainContent = elements.mainContent;
     if (!modal || !mainContent) return;
 
-    // Сохранить текущий фокус
     previouslyFocused = document.activeElement;
 
-    // Показать модалку
+    document.body.classList.add('modal-open');
     modal.classList.add('show');
-    // Обновить aria-expanded на кнопке
     if (elements.aboutBtn) elements.aboutBtn.setAttribute('aria-expanded', 'true');
 
-    // Найти фокусируемые элементы внутри модалки
-    focusableElements = getFocusableElements(modal);
-    if (focusableElements.length) {
-        focusableElements[0].focus();
+    modalFocusable = getFocusableElements(modal);
+    if (modalFocusable.length) {
+        modalFocusable[0].focus();
     }
 
-    // Установить inert на основной контент
-    mainContent.inert = true;
+    if (!mainContent.hasAttribute('inert')) {
+        mainContent.inert = true;
+    }
 
-    // Добавить обработчик клавиш для ловушки фокуса
-    const keyHandler = (e) => trapFocus(e, focusableElements);
-    document.addEventListener('keydown', keyHandler);
-
-    // Обработчик закрытия по Escape
+    const keyHandler = (e) => trapFocus(e, modalFocusable);
     const escapeHandler = (e) => {
         if (e.key === 'Escape') closeModal();
     };
+    document.addEventListener('keydown', keyHandler);
     document.addEventListener('keydown', escapeHandler);
 
-    // Сохранить обработчики для последующего удаления
     modal._keyHandler = keyHandler;
     modal._escapeHandler = escapeHandler;
 }
@@ -478,12 +471,13 @@ function closeModal() {
     if (!modal || !mainContent) return;
 
     modal.classList.remove('show');
+    document.body.classList.remove('modal-open');
     if (elements.aboutBtn) elements.aboutBtn.setAttribute('aria-expanded', 'false');
 
-    // Снять inert
-    mainContent.inert = false;
+    if (mainContent.inert) {
+        mainContent.inert = false;
+    }
 
-    // Удалить обработчики
     if (modal._keyHandler) {
         document.removeEventListener('keydown', modal._keyHandler);
         delete modal._keyHandler;
@@ -493,7 +487,6 @@ function closeModal() {
         delete modal._escapeHandler;
     }
 
-    // Вернуть фокус
     if (previouslyFocused && previouslyFocused.focus) {
         previouslyFocused.focus();
     }
@@ -508,47 +501,61 @@ function initAboutModal() {
 
     elements.aboutBtn?.addEventListener('click', openModal);
     closeBtn.addEventListener('click', closeModal);
-    window.addEventListener('click', (e) => {
-        if (e.target === modal) closeModal();
-    });
+    modal.querySelector('.modal-overlay')?.addEventListener('click', closeModal);
 
-    // iOS-style swipe down to close (оставляем как есть)
-    let touchStartY = 0, touchCurrentY = 0;
+    let touchStartY = 0;
+    let touchCurrentY = 0;
+    let startTransform = 0;
+    let isDragging = false;
+
     content.addEventListener('touchstart', (e) => {
-        touchStartY = e.touches[0].clientY;
+        if (content.scrollTop === 0) {
+            touchStartY = e.touches[0].clientY;
+            startTransform = 0;
+            isDragging = true;
+        }
     }, { passive: true });
 
     content.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
         touchCurrentY = e.touches[0].clientY;
         const diff = touchCurrentY - touchStartY;
         if (diff > 0) {
             e.preventDefault();
-            content.style.transform = `translateY(${diff}px) scale(0.9)`;
+            content.style.transform = `translateY(${diff}px)`;
         }
     }, { passive: false });
 
-    content.addEventListener('touchend', () => {
+    content.addEventListener('touchend', (e) => {
+        if (!isDragging) return;
         const diff = touchCurrentY - touchStartY;
-        if (diff > 100) closeModal();
+        if (diff > 100) {
+            closeModal();
+        } else {
+            content.style.transform = '';
+        }
+        touchStartY = touchCurrentY = 0;
+        isDragging = false;
+    });
+
+    content.addEventListener('touchcancel', () => {
         content.style.transform = '';
         touchStartY = touchCurrentY = 0;
+        isDragging = false;
     });
 }
 
-// ---- Service Worker ----
 function initServiceWorker() {
     if ('serviceWorker' in navigator && location.protocol === 'https:') {
         navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
 }
 
-// ---- Версия ----
 function initVersion() {
     if (elements.footerVersion) elements.footerVersion.textContent = APP_VERSION;
     if (elements.aboutVersion) elements.aboutVersion.textContent = APP_VERSION;
 }
 
-// ---- Инициализация ----
 function initApp() {
     initVersion();
     initTheme();
@@ -579,7 +586,6 @@ function initApp() {
             e.preventDefault();
             generateAndCopy();
         }
-        // Escape уже обрабатывается в модалке отдельно
     });
 
     updatePasswordStrength();
