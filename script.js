@@ -1,5 +1,3 @@
-import { APP_VERSION } from './version.js';
-
 const CHAR_SETS = {
     lowercase: "abcdefghijklmnopqrstuvwxyz",
     uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -12,8 +10,8 @@ const SIMILAR_CHARS = "0O1lI|";
 const SVG_ICONS = {
     sun: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M12 3V5M12 19V21M5 12H3M21 12H19M7.05 7.05L5.64 5.64M18.36 18.36L16.95 16.95M7.05 16.95L5.64 18.36M18.36 5.64L16.95 7.05" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
     moon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-    eyeClosed: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="5" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-    eyeOpen: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.8" fill="none"/></svg>`
+    eyeClosed: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="5" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+    eyeOpen: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.8" fill="none"/></svg>`
 };
 
 const elements = {
@@ -22,7 +20,7 @@ const elements = {
     lengthValue: document.getElementById('lengthValue'),
     generateBtn: document.getElementById('generateBtn'),
     copyBtn: document.getElementById('copyBtn'),
-    notificationArea: document.getElementById('notificationArea'),
+    notificationContainer: document.getElementById('notificationContainer'),
     subtitle: document.getElementById('subtitle'),
     themeToggle: document.getElementById('themeToggle'),
     installPWA: document.getElementById('installPWA'),
@@ -41,14 +39,103 @@ const elements = {
     mainContent: document.getElementById('main-content')
 };
 
-let notificationTimeout = null;
 let deferredPrompt = null;
 let isAppInstalled = false;
 let modalFocusable = null;
 let previouslyFocused = null;
 
+class NotificationManager {
+    constructor(container) {
+        this.container = container;
+        this.queue = [];
+        this.isProcessing = false;
+        this.counter = 0;
+        this.bc = new BroadcastChannel('notifications');
+        
+        this.bc.onmessage = (event) => {
+            if (event.data.type === 'show') {
+                this.show(event.data.message, event.data.notificationType, event.data.duration);
+            }
+        };
+    }
+
+    show(message, type = 'success', duration = 3000) {
+        this.queue.push({ message, type, duration });
+        if (!this.isProcessing) {
+            this.processQueue();
+        }
+    }
+
+    async processQueue() {
+        if (this.queue.length === 0) {
+            this.isProcessing = false;
+            return;
+        }
+
+        this.isProcessing = true;
+        const notification = this.queue.shift();
+        await this.renderNotification(notification);
+        this.processQueue();
+    }
+
+    renderNotification({ message, type, duration }) {
+        return new Promise(resolve => {
+            const id = `notification-${Date.now()}-${this.counter++}`;
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.id = id;
+            notification.setAttribute('role', 'alert');
+            
+            notification.innerHTML = `
+                <div class="notification-icon" aria-hidden="true"></div>
+                <div class="notification-message">${message}</div>
+                <button class="notification-close" aria-label="Закрыть уведомление"></button>
+            `;
+
+            const closeBtn = notification.querySelector('.notification-close');
+            closeBtn.addEventListener('click', () => {
+                this.removeNotification(notification);
+                resolve();
+            });
+
+            this.container.appendChild(notification);
+            
+            requestAnimationFrame(() => {
+                notification.classList.add('show');
+            });
+
+            const timeout = setTimeout(() => {
+                this.removeNotification(notification);
+                resolve();
+            }, duration);
+
+            notification._timeout = timeout;
+        });
+    }
+
+    removeNotification(notification) {
+        if (notification._timeout) {
+            clearTimeout(notification._timeout);
+        }
+        
+        notification.classList.remove('show');
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }
+}
+
+let notificationManager;
+
 function triggerHapticFeedback() {
     if ('vibrate' in navigator) navigator.vibrate(50);
+}
+
+function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 }
 
 function applyTheme(theme) {
@@ -62,7 +149,8 @@ function updateThemeUI(theme) {
     const isDark = theme === 'dark';
     const svg = isDark ? SVG_ICONS.sun : SVG_ICONS.moon;
     const tooltipText = isDark ? 'Светлая тема' : 'Тёмная тема';
-    elements.themeToggle.innerHTML = svg + '<span class="tooltip">' + tooltipText + '</span>';
+    elements.themeToggle.innerHTML = svg;
+    elements.themeToggle.setAttribute('data-tooltip', tooltipText);
     elements.themeToggle.setAttribute('aria-label', isDark ? 'Переключить на светлую тему' : 'Переключить на тёмную тему');
 }
 
@@ -72,12 +160,12 @@ function toggleTheme() {
 }
 
 function initTheme() {
-    const saved = localStorage.getItem('theme');
+    const saved = (() => { try { return localStorage.getItem('theme'); } catch { return null; } })();
     const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     applyTheme(saved || (systemDark ? 'dark' : 'light'));
 
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-        if (!localStorage.getItem('theme')) {
+        if (!( () => { try { return localStorage.getItem('theme'); } catch { return null; } })()) {
             applyTheme(e.matches ? 'dark' : 'light');
         }
     });
@@ -176,10 +264,6 @@ function generatePassword(length, sets, excludeRepeating) {
     const fullPool = sets.join('');
     if (fullPool.length === 0) return '';
 
-    if (length < sets.length) {
-        throw new Error('Длина пароля не может быть меньше количества выбранных типов символов');
-    }
-
     let passwordChars = [];
     for (const set of sets) {
         const idx = getRandomInt(set.length);
@@ -198,7 +282,7 @@ function generatePassword(length, sets, excludeRepeating) {
 
     if (excludeRepeating && fullPool.length > 1) {
         let attempts = 0;
-        const maxAttempts = 1000;
+        const maxAttempts = 500;
         while (attempts < maxAttempts) {
             let ok = true;
             for (let i = 1; i < passwordChars.length; i++) {
@@ -226,13 +310,8 @@ function performGeneration() {
         showNotification('Выберите хотя бы один тип символов', 'error');
         return false;
     }
-    try {
-        if (length < sets.length) {
-            showNotification('Длина пароля должна быть не меньше количества выбранных типов', 'error');
-            return false;
-        }
-    } catch (e) {
-        showNotification(e.message, 'error');
+    if (length < sets.length) {
+        showNotification('Длина пароля должна быть не меньше количества выбранных типов', 'error');
         return false;
     }
     const excludeRepeating = elements.excludeRepeating?.checked ?? false;
@@ -240,14 +319,9 @@ function performGeneration() {
     const password = generatePassword(length, sets, excludeRepeating);
     if (elements.password) elements.password.value = password;
 
-    clearNotification();
     updatePasswordStrength();
     saveSettings();
     return true;
-}
-
-function generateAndShow() {
-    performGeneration();
 }
 
 async function copyToClipboard() {
@@ -271,7 +345,6 @@ async function generateAndCopy() {
     const originalText = btn.textContent;
     btn.disabled = true;
     btn.textContent = '⌛ Создание...';
-    btn.style.opacity = '0.8';
 
     triggerHapticFeedback();
 
@@ -285,52 +358,22 @@ async function generateAndCopy() {
     } finally {
         btn.disabled = false;
         btn.textContent = originalText;
-        btn.style.opacity = '';
     }
 }
 
-function showNotification(message, type = 'success') {
-    clearNotification();
-
-    const area = elements.notificationArea;
-    const subtitle = elements.subtitle;
-    if (!area || !subtitle) return;
-
-    area.textContent = message;
-    area.className = `toast-notification show notification-${type}`;
-    subtitle.classList.add('hidden');
-
-    notificationTimeout = setTimeout(clearNotification, 3000);
-}
-
-function clearNotification() {
-    if (notificationTimeout) {
-        clearTimeout(notificationTimeout);
-        notificationTimeout = null;
-    }
-    const area = elements.notificationArea;
-    const subtitle = elements.subtitle;
-    if (area && subtitle) {
-        area.className = 'toast-notification';
-        area.textContent = '';
-        subtitle.classList.remove('hidden');
-    }
-}
-
-function updatePasswordStrength() {
-    if (!elements.password) return;
-    const length = elements.length ? parseInt(elements.length.value, 10) : 16;
-    const complexity = [elements.lowercase, elements.uppercase, elements.numbers, elements.special].filter(c => c?.checked).length;
-    const strength = length * complexity;
-
-    let strengthText = '';
-    if (strength >= 96) strengthText = 'очень надёжный';
-    else if (strength >= 64) strengthText = 'надёжный';
-    else if (strength >= 32) strengthText = 'средний';
-    else strengthText = 'слабый';
-
-    elements.password.setAttribute('aria-label',
-        `Сгенерированный пароль длиной ${length} символов, ${strengthText} уровень защиты`);
+function showNotification(message, type = 'success', duration = 3000) {
+    if (!notificationManager) return;
+    
+    notificationManager.show(message, type, duration);
+    
+    try {
+        notificationManager.bc.postMessage({
+            type: 'show',
+            message,
+            notificationType: type,
+            duration
+        });
+    } catch {}
 }
 
 function addPasswordVisibilityToggle() {
@@ -343,10 +386,11 @@ function addPasswordVisibilityToggle() {
     toggleBtn.className = 'visibility-toggle';
     toggleBtn.type = 'button';
 
-    const savedVisible = localStorage.getItem('passwordVisible') === 'true';
+    const savedVisible = (() => { try { return localStorage.getItem('passwordVisible') === 'true'; } catch { return false; } })();
     const initialSvg = savedVisible ? SVG_ICONS.eyeOpen : SVG_ICONS.eyeClosed;
     const initialLabel = savedVisible ? 'Скрыть пароль' : 'Показать пароль';
-    toggleBtn.innerHTML = initialSvg + '<span class="tooltip">' + initialLabel + '</span>';
+    toggleBtn.innerHTML = initialSvg;
+    toggleBtn.setAttribute('data-tooltip', initialLabel);
     toggleBtn.setAttribute('aria-label', initialLabel);
     if (savedVisible) passwordField.type = 'text';
 
@@ -354,7 +398,8 @@ function addPasswordVisibilityToggle() {
         const isPassword = passwordField.type === 'password';
         passwordField.type = isPassword ? 'text' : 'password';
         const newLabel = isPassword ? 'Скрыть пароль' : 'Показать пароль';
-        toggleBtn.innerHTML = (isPassword ? SVG_ICONS.eyeClosed : SVG_ICONS.eyeOpen) + '<span class="tooltip">' + newLabel + '</span>';
+        toggleBtn.innerHTML = (isPassword ? SVG_ICONS.eyeClosed : SVG_ICONS.eyeOpen);
+        toggleBtn.setAttribute('data-tooltip', newLabel);
         toggleBtn.setAttribute('aria-label', newLabel);
         try { localStorage.setItem('passwordVisible', String(!isPassword)); } catch {}
         triggerHapticFeedback();
@@ -368,7 +413,7 @@ function checkPWAInstallStatus() {
 }
 
 function initPWAInstall() {
-    if (checkPWAInstallStatus()) {
+    if (checkPWAInstallStatus() || isIOS()) {
         elements.installPWA?.classList.add('hide');
         return;
     }
@@ -526,7 +571,7 @@ function initAboutModal() {
         }
     }, { passive: false });
 
-    content.addEventListener('touchend', (e) => {
+    content.addEventListener('touchend', () => {
         if (!isDragging) return;
         const diff = touchCurrentY - touchStartY;
         if (diff > 100) {
@@ -552,15 +597,20 @@ function initServiceWorker() {
 }
 
 function initVersion() {
-    if (elements.footerVersion) elements.footerVersion.textContent = APP_VERSION;
-    if (elements.aboutVersion) elements.aboutVersion.textContent = APP_VERSION;
+    const version = window.APP_VERSION || 'unknown';
+    if (elements.footerVersion) elements.footerVersion.textContent = version;
+    if (elements.aboutVersion) elements.aboutVersion.textContent = version;
 }
 
 function initApp() {
+    if (elements.notificationContainer) {
+        notificationManager = new NotificationManager(elements.notificationContainer);
+    }
+    
     initVersion();
     initTheme();
     loadSettings();
-    generateAndShow();
+    performGeneration();
     initPWAInstall();
     initServiceWorker();
     addPasswordVisibilityToggle();
@@ -568,7 +618,7 @@ function initApp() {
 
     elements.length?.addEventListener('input', () => {
         updateLengthValue();
-        generateAndShow();
+        performGeneration();
     });
 
     elements.generateBtn?.addEventListener('click', generateAndCopy);
@@ -578,7 +628,7 @@ function initApp() {
     elements.resetSettingsBtn?.addEventListener('click', resetSettingsToDefault);
 
     document.querySelectorAll('.switch input').forEach(input => {
-        input.addEventListener('change', generateAndShow);
+        input.addEventListener('change', performGeneration);
     });
 
     document.addEventListener('keydown', (e) => {
@@ -589,6 +639,22 @@ function initApp() {
     });
 
     updatePasswordStrength();
+}
+
+function updatePasswordStrength() {
+    if (!elements.password) return;
+    const length = elements.length ? parseInt(elements.length.value, 10) : 16;
+    const complexity = [elements.lowercase, elements.uppercase, elements.numbers, elements.special].filter(c => c?.checked).length;
+    const strength = length * complexity;
+
+    let strengthText = '';
+    if (strength >= 96) strengthText = 'очень надёжный';
+    else if (strength >= 64) strengthText = 'надёжный';
+    else if (strength >= 32) strengthText = 'средний';
+    else strengthText = 'слабый';
+
+    elements.password.setAttribute('aria-label',
+        `Сгенерированный пароль длиной ${length} символов, ${strengthText} уровень защиты`);
 }
 
 document.addEventListener('DOMContentLoaded', initApp);

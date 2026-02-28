@@ -1,32 +1,13 @@
 importScripts('./version.js');
+importScripts('./assets-config.js');
 
 const CACHE_NAME = `password-generator-v${APP_VERSION}`;
-
-const STATIC_ASSETS = [
-  './',
-  './index.html',
-  './styles.css',
-  './manifest.json',
-  './version.js',
-  './theme-init.js',
-  './script.js',
-  './assets/icons/icon-16.png',
-  './assets/icons/icon-32.png',
-  './assets/icons/icon-48.png',
-  './assets/icons/icon-72.png',
-  './assets/icons/icon-96.png',
-  './assets/icons/icon-144.png',
-  './assets/icons/icon-192.png',
-  './assets/icons/icon-256.png',
-  './assets/icons/icon-384.png',
-  './assets/icons/icon-512.png',
-  './assets/icons/apple-touch-icon.png'
-];
+const ASSETS = self.APP_ASSETS || [];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     Promise.allSettled(
-      STATIC_ASSETS.map(asset =>
+      ASSETS.map(asset =>
         caches.open(CACHE_NAME).then(cache => cache.add(asset).catch(() => {}))
       )
     ).then(() => self.skipWaiting())

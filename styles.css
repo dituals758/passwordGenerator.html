@@ -59,6 +59,8 @@
 
         --surface-mix: color-mix(in srgb, var(--container-bg) 70%, transparent);
         --border-mix: color-mix(in srgb, var(--border-color) 50%, transparent);
+        
+        --notification-z-index: 1000;
     }
 
     [data-theme="dark"] {
@@ -143,7 +145,7 @@
 }
 
 @layer components {
-    .container, .section-container, footer, .toast-notification, .tooltip {
+    .container, .section-container, footer {
         background-color: var(--surface-mix);
         backdrop-filter: blur(var(--blur-amount)) saturate(var(--blur-saturate));
         -webkit-backdrop-filter: blur(var(--blur-amount)) saturate(var(--blur-saturate));
@@ -202,66 +204,188 @@
         pointer-events: none;
     }
 
-    .toast-notification {
-        position: absolute;
-        inset-block-start: 0;
-        inset-inline-start: 0;
-        inset-inline-end: 0;
-        font-size: 0.95rem;
+    .notification-container {
+        position: fixed;
+        top: max(20px, env(safe-area-inset-top));
+        right: max(20px, env(safe-area-inset-right));
+        z-index: var(--notification-z-index);
         display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-20px);
-        transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.1);
-        font-weight: 500;
-        border-radius: 12px;
-        padding: 10px 16px;
+        flex-direction: column;
         gap: 8px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        color: var(--text-color);
-        z-index: 10;
+        width: min(360px, calc(100vw - 40px));
         pointer-events: none;
     }
 
-    .toast-notification.show {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
+    .notification {
+        background-color: var(--surface-mix);
+        backdrop-filter: blur(var(--blur-amount)) saturate(var(--blur-saturate));
+        -webkit-backdrop-filter: blur(var(--blur-amount)) saturate(var(--blur-saturate));
+        border: 1px solid var(--border-mix);
+        border-radius: var(--border-radius-md);
+        padding: 12px 16px;
+        color: var(--text-color);
+        font-size: 0.95rem;
+        font-weight: 500;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        transform: translateX(120%);
+        opacity: 0;
+        transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.1), opacity 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        pointer-events: auto;
+        position: relative;
+        counter-increment: notification;
     }
 
-    .toast-notification.notification-success {
+    .notification::before {
+        content: counter(notification);
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .notification.show {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    .notification-icon {
+        flex-shrink: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    .notification-success .notification-icon {
         color: var(--success-color);
     }
 
-    .toast-notification.notification-success::before {
+    .notification-success .notification-icon::before {
         content: "✓";
-        margin-inline-end: 8px;
-        font-weight: bold;
         font-size: 1.2rem;
+        font-weight: bold;
     }
 
-    .toast-notification.notification-error {
+    .notification-error .notification-icon {
         color: var(--error-color);
     }
 
-    .toast-notification.notification-error::before {
+    .notification-error .notification-icon::before {
         content: "✗";
-        margin-inline-end: 8px;
-        font-weight: bold;
         font-size: 1.2rem;
+        font-weight: bold;
     }
 
-    .toast-notification.notification-warning {
+    .notification-warning .notification-icon {
         color: var(--warning-color);
     }
 
-    .toast-notification.notification-warning::before {
+    .notification-warning .notification-icon::before {
         content: "⚠";
-        margin-inline-end: 8px;
-        font-weight: bold;
         font-size: 1.2rem;
+        font-weight: bold;
+    }
+
+    .notification-message {
+        flex: 1;
+        word-break: break-word;
+    }
+
+    .notification-close {
+        background: none;
+        border: none;
+        color: var(--secondary-color);
+        cursor: pointer;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color var(--transition-default);
+        flex-shrink: 0;
+    }
+
+    .notification-close:hover {
+        background-color: color-mix(in srgb, var(--border-color) 70%, transparent);
+        color: var(--text-color);
+    }
+
+    .notification-close:focus-visible {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+    }
+
+    .notification-close::before {
+        content: "×";
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+
+    @media (max-width: 480px) {
+        .notification-container {
+            top: max(12px, env(safe-area-inset-top));
+            right: max(12px, env(safe-area-inset-right));
+            width: calc(100vw - 24px);
+        }
+    }
+
+    [data-tooltip] {
+        position: relative;
+        cursor: help;
+    }
+
+    [data-tooltip]::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-4px);
+        background-color: var(--surface-mix);
+        backdrop-filter: blur(var(--blur-amount)) saturate(var(--blur-saturate));
+        -webkit-backdrop-filter: blur(var(--blur-amount)) saturate(var(--blur-saturate));
+        border: 1px solid var(--border-mix);
+        border-radius: 8px;
+        padding: 6px 10px;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        color: var(--text-color);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+        z-index: 20;
+        pointer-events: none;
+        font-weight: normal;
+        line-height: 1.4;
+    }
+
+    [data-tooltip]:hover::after,
+    [data-tooltip]:focus-visible::after {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(-8px);
+    }
+
+    footer [data-tooltip]::after {
+        bottom: auto;
+        top: 100%;
+        transform: translateX(-50%) translateY(4px);
+    }
+
+    footer [data-tooltip]:hover::after,
+    footer [data-tooltip]:focus-visible::after {
+        transform: translateX(-50%) translateY(8px);
     }
 
     .password-display {
@@ -271,22 +395,34 @@
 
     .password-field {
         position: relative;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        background-color: var(--input-bg);
+        padding: 0 2px 0 18px;
+        transition: border-color var(--transition-default);
         margin-bottom: 12px;
     }
 
+    .password-field:focus-within {
+        border-color: var(--primary-color);
+        box-shadow: var(--focus-shadow);
+    }
+
     #password {
-        width: 100%;
-        padding: 18px 120px 18px 18px;
-        border: 1px solid var(--border-color);
-        border-radius: var(--border-radius-md);
+        flex: 1;
+        min-width: 0;
+        border: none;
+        background: transparent;
+        padding: 18px 0;
         font-size: 1.1rem;
-        background-color: var(--input-bg);
         color: var(--text-color);
         font-family: 'SF Mono', 'Courier New', monospace;
         font-weight: 600;
         letter-spacing: 1px;
         outline: none;
-        transition: border-color var(--transition-default);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -294,125 +430,46 @@
         appearance: none;
     }
 
-    #password:focus-visible {
-        border-color: var(--primary-color);
-        box-shadow: var(--focus-shadow);
-    }
-
-    .copy-btn, .visibility-toggle, .reset-btn {
+    .copy-btn, .visibility-toggle {
         background: none;
         border: none;
         cursor: pointer;
         color: var(--secondary-color);
-        padding: 10px;
+        padding: 8px;
         border-radius: var(--border-radius-sm);
         display: flex;
         align-items: center;
         justify-content: center;
         transition: all var(--transition-default);
         outline: none;
-        min-width: 44px;
-        min-height: 44px;
+        min-width: 36px;
+        min-height: 36px;
+        flex-shrink: 0;
         -webkit-tap-highlight-color: transparent;
     }
 
-    .copy-btn:hover, .visibility-toggle:hover, .reset-btn:hover {
+    .copy-btn:hover, .visibility-toggle:hover {
         background-color: color-mix(in srgb, var(--border-color) 70%, transparent);
         color: var(--text-color);
     }
 
-    .copy-btn:active, .visibility-toggle:active, .reset-btn:active {
+    .copy-btn:active, .visibility-toggle:active {
         opacity: 0.7;
         transform: scale(0.96);
     }
 
-    .copy-btn:focus-visible, .visibility-toggle:focus-visible, .reset-btn:focus-visible {
+    .copy-btn:focus-visible, .visibility-toggle:focus-visible {
         outline: 2px solid var(--primary-color);
         outline-offset: 2px;
         background-color: color-mix(in srgb, var(--border-color) 70%, transparent);
     }
 
-    .copy-btn svg, .visibility-toggle svg, .reset-btn svg {
-        width: 24px;
-        height: 24px;
+    .copy-btn svg, .visibility-toggle svg {
+        width: 20px;
+        height: 20px;
         display: block;
         stroke: currentColor;
         fill: none;
-    }
-
-    .reset-btn svg {
-        stroke: currentColor;
-    }
-
-    .copy-btn {
-        position: absolute;
-        inset-block-start: 50%;
-        transform: translateY(-50%);
-        inset-inline-end: 8px;
-    }
-
-    .visibility-toggle {
-        position: absolute;
-        inset-block-start: 50%;
-        transform: translateY(-50%);
-        inset-inline-end: 58px;
-    }
-
-    .reset-btn {
-        position: relative;
-        margin-inline-start: 12px;
-        flex-shrink: 0;
-    }
-
-    .tooltip {
-        position: absolute;
-        bottom: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: var(--surface-mix);
-        backdrop-filter: blur(var(--blur-amount)) saturate(var(--blur-saturate));
-        -webkit-backdrop-filter: blur(var(--blur-amount)) saturate(var(--blur-saturate));
-        border: 1px solid var(--border-mix);
-        border-radius: 12px;
-        padding: 8px 12px;
-        font-size: 0.85rem;
-        white-space: nowrap;
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity var(--transition-default);
-        z-index: 30;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        pointer-events: none;
-        color: var(--text-color);
-        margin-bottom: 8px;
-        max-width: min(300px, calc(100vw - 40px));
-        word-break: break-word;
-        text-align: center;
-    }
-
-    @media (min-width: 768px) {
-        .tooltip {
-            white-space: nowrap;
-            max-width: none;
-        }
-    }
-
-    .copy-btn:hover .tooltip,
-    .visibility-toggle:hover .tooltip,
-    .reset-btn:hover .tooltip,
-    .footer-btn:hover .tooltip,
-    .setting-item:hover .tooltip {
-        opacity: 1;
-        visibility: visible;
-    }
-
-    .copy-btn:focus-visible .tooltip,
-    .visibility-toggle:focus-visible .tooltip,
-    .reset-btn:focus-visible .tooltip,
-    .footer-btn:focus-visible .tooltip,
-    .setting-item:focus-within .tooltip {
-        opacity: 1;
-        visibility: visible;
     }
 
     .main-btn {
@@ -425,6 +482,11 @@
         font-size: 1.1rem;
         font-weight: 600;
         width: 100%;
+        box-sizing: border-box;
+        white-space: normal;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        text-align: center;
         transition: background-color var(--transition-default), transform 0.1s, opacity 0.1s;
         outline: none;
         min-height: 56px;
@@ -460,49 +522,75 @@
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02);
     }
 
+    .section-title-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
     .section-title {
         font-weight: 700;
         color: var(--text-color);
-        margin-bottom: 20px;
         font-size: 1.3rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
         letter-spacing: -0.01em;
-    }
-
-    .section-title .title-text {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex: 1;
-    }
-
-    .section-title .title-text::before,
-    .section-title .title-text::after {
-        content: "";
-        flex: 1;
-        height: 1px;
-        background-color: color-mix(in srgb, var(--border-color) 70%, transparent);
-    }
-
-    .section-title .title-text span {
-        padding: 0 12px;
-        white-space: nowrap;
-        text-wrap: balance;
+        margin: 0;
     }
 
     .sub-section-title {
         font-weight: 600;
         color: var(--secondary-color);
-        margin: 16px 0 8px 8px;
-        font-size: 1.1rem;
+        margin: 12px 0 8px 8px;
+        font-size: 1rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
     .sub-section-title:first-of-type {
         margin-top: 0;
+    }
+
+    .reset-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--secondary-color);
+        padding: 10px;
+        border-radius: var(--border-radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all var(--transition-default);
+        outline: none;
+        min-width: 44px;
+        min-height: 44px;
+        flex-shrink: 0;
+        -webkit-tap-highlight-color: transparent;
+        position: relative;
+    }
+
+    .reset-btn:hover {
+        background-color: color-mix(in srgb, var(--border-color) 70%, transparent);
+        color: var(--text-color);
+    }
+
+    .reset-btn:active {
+        opacity: 0.7;
+        transform: scale(0.96);
+    }
+
+    .reset-btn:focus-visible {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+        background-color: color-mix(in srgb, var(--border-color) 70%, transparent);
+    }
+
+    .reset-btn svg {
+        width: 24px;
+        height: 24px;
+        display: block;
+        stroke: currentColor;
+        fill: none;
     }
 
     .ios-list {
@@ -541,7 +629,6 @@
     .setting-item label {
         font-weight: 500;
         min-width: 110px;
-        cursor: help;
         font-size: 1rem;
         color: var(--text-color);
     }
@@ -551,14 +638,12 @@
         appearance: none;
         flex: 1;
         min-width: 0;
-        height: 6px;
-        border-radius: 3px;
+        height: 4px;
+        border-radius: 2px;
         background: var(--ios-gray4);
         outline: none;
         cursor: pointer;
         touch-action: manipulation;
-        padding-block: 10px;
-        margin-block: -10px;
     }
 
     .setting-item input[type=range]:focus-visible {
@@ -567,8 +652,8 @@
 
     .setting-item input[type=range]::-webkit-slider-thumb {
         -webkit-appearance: none;
-        width: 26px;
-        height: 26px;
+        width: 22px;
+        height: 22px;
         border-radius: 50%;
         background: white;
         border: 2px solid var(--primary-color);
@@ -583,8 +668,8 @@
     }
 
     .setting-item input[type=range]::-moz-range-thumb {
-        width: 26px;
-        height: 26px;
+        width: 22px;
+        height: 22px;
         border-radius: 50%;
         background: white;
         border: 2px solid var(--primary-color);
@@ -672,7 +757,7 @@
         box-shadow: 0 0 0 2px var(--bg-color), 0 0 0 4px var(--primary-color);
     }
 
-    .app-features {
+    .features-list {
         display: flex;
         flex-direction: column;
         gap: 16px;
@@ -726,6 +811,18 @@
     .footer-version {
         color: var(--secondary-color);
         font-size: 0.85rem;
+    }
+
+    .footer-license a {
+        color: var(--secondary-color);
+        font-size: 0.85rem;
+        text-decoration: none;
+        border-bottom: 1px dotted transparent;
+        transition: border-color var(--transition-default);
+    }
+
+    .footer-license a:hover {
+        border-bottom-color: var(--primary-color);
     }
 
     .footer-actions {
@@ -784,7 +881,6 @@
         display: none;
     }
 
-    /* Modal styles as bottom sheet */
     .modal {
         display: none;
         position: fixed;
@@ -872,6 +968,7 @@
         justify-content: center;
         border-radius: 50%;
         transition: background-color var(--transition-default);
+        line-height: 1;
     }
 
     .modal-close:hover {
@@ -886,6 +983,7 @@
     .modal-close:focus-visible {
         outline: none;
         box-shadow: 0 0 0 2px var(--bg-color), 0 0 0 4px var(--primary-color);
+        border-radius: 50%;
     }
 
     .modal-body p {
@@ -908,7 +1006,6 @@
     }
 }
 
-/* Existing media queries */
 @media (max-width: 600px) {
     .footer-content {
         flex-direction: column;
@@ -946,6 +1043,18 @@
     }
 }
 
+@media (max-width: 380px) {
+    .copy-btn, .visibility-toggle {
+        min-width: 34px;
+        min-height: 34px;
+        padding: 6px;
+    }
+    .copy-btn svg, .visibility-toggle svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
 @media (max-width: 360px) {
     body {
         padding: 8px;
@@ -954,28 +1063,37 @@
         padding-left: max(8px, env(safe-area-inset-left));
         padding-right: max(8px, env(safe-area-inset-right));
     }
-
     .main-btn {
         font-size: 1rem;
         padding: 14px 16px;
     }
+    .copy-btn, .visibility-toggle {
+        min-width: 32px;
+        min-height: 32px;
+        padding: 4px;
+    }
+    .copy-btn svg, .visibility-toggle svg {
+        width: 16px;
+        height: 16px;
+    }
 }
 
-/* Additional optimization for very small screens: adjust password field padding and button sizes */
-@media (max-width: 380px) {
-    #password {
-        padding-right: 100px; /* slightly smaller padding to give more text space */
+@media (max-width: 320px) {
+    .container {
+        padding: 12px;
     }
     .copy-btn, .visibility-toggle {
-        min-width: 40px;
-        min-height: 40px;
+        min-width: 30px;
+        min-height: 30px;
+        padding: 4px;
     }
-    .copy-btn {
-        inset-inline-end: 4px; /* adjust position for smaller button */
+    .copy-btn svg, .visibility-toggle svg {
+        width: 14px;
+        height: 14px;
     }
-    .visibility-toggle {
-        inset-inline-end: 48px; /* 40px button + 4px gap? actually 40+4=44, but we need to place it correctly */
-        /* better to recalc based on actual sizes: if button width 40px, gap 8px, then right button at 4px, left button at 52px (40+8+4) */
-        inset-inline-end: 52px;
+    .main-btn {
+        font-size: 0.9rem;
+        padding: 10px 12px;
+        overflow-wrap: break-word;
     }
 }
