@@ -1,18 +1,11 @@
+// script.js
 const CHAR_SETS = {
     lowercase: "abcdefghijklmnopqrstuvwxyz",
     uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
     numbers: "0123456789",
     special: "!@#$%^&*"
 };
-
 const SIMILAR_CHARS = "0O1lI|";
-
-const SVG_ICONS = {
-    sun: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M12 3V5M12 19V21M5 12H3M21 12H19M7.05 7.05L5.64 5.64M18.36 18.36L16.95 16.95M7.05 16.95L5.64 18.36M18.36 5.64L16.95 7.05" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-    moon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-    eyeClosed: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="5" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-    eyeOpen: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.8" fill="none"/></svg>`
-};
 
 const elements = {
     password: document.getElementById('password'),
@@ -20,8 +13,6 @@ const elements = {
     lengthValue: document.getElementById('lengthValue'),
     generateBtn: document.getElementById('generateBtn'),
     copyBtn: document.getElementById('copyBtn'),
-    notificationContainer: document.getElementById('notificationContainer'),
-    subtitle: document.getElementById('subtitle'),
     themeToggle: document.getElementById('themeToggle'),
     installPWA: document.getElementById('installPWA'),
     footerVersion: document.getElementById('footerVersion'),
@@ -31,6 +22,7 @@ const elements = {
     special: document.getElementById('special'),
     excludeSimilar: document.getElementById('excludeSimilar'),
     excludeRepeating: document.getElementById('excludeRepeating'),
+    onlyUnique: document.getElementById('onlyUnique'),
     resetSettingsBtn: document.getElementById('resetSettingsBtn'),
     aboutBtn: document.getElementById('aboutBtn'),
     aboutModal: document.getElementById('aboutModal'),
@@ -44,99 +36,8 @@ let isAppInstalled = false;
 let modalFocusable = null;
 let previouslyFocused = null;
 
-class NotificationManager {
-    constructor(container) {
-        this.container = container;
-        this.queue = [];
-        this.isProcessing = false;
-        this.counter = 0;
-        this.bc = new BroadcastChannel('notifications');
-        
-        this.bc.onmessage = (event) => {
-            if (event.data.type === 'show') {
-                this.show(event.data.message, event.data.notificationType, event.data.duration);
-            }
-        };
-    }
-
-    show(message, type = 'success', duration = 3000) {
-        this.queue.push({ message, type, duration });
-        if (!this.isProcessing) {
-            this.processQueue();
-        }
-    }
-
-    async processQueue() {
-        if (this.queue.length === 0) {
-            this.isProcessing = false;
-            return;
-        }
-
-        this.isProcessing = true;
-        const notification = this.queue.shift();
-        await this.renderNotification(notification);
-        this.processQueue();
-    }
-
-    renderNotification({ message, type, duration }) {
-        return new Promise(resolve => {
-            const id = `notification-${Date.now()}-${this.counter++}`;
-            const notification = document.createElement('div');
-            notification.className = `notification notification-${type}`;
-            notification.id = id;
-            notification.setAttribute('role', 'alert');
-            
-            notification.innerHTML = `
-                <div class="notification-icon" aria-hidden="true"></div>
-                <div class="notification-message">${message}</div>
-                <button class="notification-close" aria-label="Закрыть уведомление"></button>
-            `;
-
-            const closeBtn = notification.querySelector('.notification-close');
-            closeBtn.addEventListener('click', () => {
-                this.removeNotification(notification);
-                resolve();
-            });
-
-            this.container.appendChild(notification);
-            
-            requestAnimationFrame(() => {
-                notification.classList.add('show');
-            });
-
-            const timeout = setTimeout(() => {
-                this.removeNotification(notification);
-                resolve();
-            }, duration);
-
-            notification._timeout = timeout;
-        });
-    }
-
-    removeNotification(notification) {
-        if (notification._timeout) {
-            clearTimeout(notification._timeout);
-        }
-        
-        notification.classList.remove('show');
-        
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 300);
-    }
-}
-
-let notificationManager;
-
-function triggerHapticFeedback() {
-    if ('vibrate' in navigator) navigator.vibrate(50);
-}
-
-function isIOS() {
-    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-}
+const triggerHapticFeedback = () => 'vibrate' in navigator && navigator.vibrate(50);
+const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
 function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
@@ -147,102 +48,87 @@ function applyTheme(theme) {
 function updateThemeUI(theme) {
     if (!elements.themeToggle) return;
     const isDark = theme === 'dark';
-    const svg = isDark ? SVG_ICONS.sun : SVG_ICONS.moon;
-    const tooltipText = isDark ? 'Светлая тема' : 'Тёмная тема';
-    elements.themeToggle.innerHTML = svg;
-    elements.themeToggle.setAttribute('data-tooltip', tooltipText);
+    elements.themeToggle.setAttribute('data-tooltip', isDark ? 'Светлая тема' : 'Тёмная тема');
     elements.themeToggle.setAttribute('aria-label', isDark ? 'Переключить на светлую тему' : 'Переключить на тёмную тему');
 }
 
 function toggleTheme() {
-    const current = document.documentElement.getAttribute('data-theme') || 'light';
-    applyTheme(current === 'light' ? 'dark' : 'light');
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    applyTheme(current === 'dark' ? 'light' : 'dark');
 }
 
 function initTheme() {
     const saved = (() => { try { return localStorage.getItem('theme'); } catch { return null; } })();
     const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     applyTheme(saved || (systemDark ? 'dark' : 'light'));
-
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-        if (!( () => { try { return localStorage.getItem('theme'); } catch { return null; } })()) {
-            applyTheme(e.matches ? 'dark' : 'light');
+        if (!localStorage.getItem('theme')) {
+            const newTheme = e.matches ? 'dark' : 'light';
+            applyTheme(newTheme);
         }
     });
 }
 
 function loadSettings() {
     try {
-        const settings = JSON.parse(localStorage.getItem('passwordSettings')) || {};
-        if (elements.length) elements.length.value = settings.length ?? 16;
-        if (elements.lowercase) elements.lowercase.checked = settings.lowercase ?? true;
-        if (elements.uppercase) elements.uppercase.checked = settings.uppercase ?? true;
-        if (elements.numbers) elements.numbers.checked = settings.numbers ?? true;
-        if (elements.special) elements.special.checked = settings.special ?? true;
-        if (elements.excludeSimilar) elements.excludeSimilar.checked = settings.excludeSimilar ?? false;
-        if (elements.excludeRepeating) elements.excludeRepeating.checked = settings.excludeRepeating ?? false;
+        const s = JSON.parse(localStorage.getItem('passwordSettings')) || {};
+        elements.length.value = s.length ?? 16;
+        elements.lowercase.checked = s.lowercase ?? true;
+        elements.uppercase.checked = s.uppercase ?? true;
+        elements.numbers.checked = s.numbers ?? true;
+        elements.special.checked = s.special ?? true;
+        elements.excludeSimilar.checked = s.excludeSimilar ?? false;
+        elements.excludeRepeating.checked = s.excludeRepeating ?? false;
+        elements.onlyUnique.checked = s.onlyUnique ?? true;
         updateLengthValue();
     } catch {}
 }
 
 function saveSettings() {
     const settings = {
-        length: elements.length ? parseInt(elements.length.value, 10) : 16,
-        lowercase: elements.lowercase?.checked ?? true,
-        uppercase: elements.uppercase?.checked ?? true,
-        numbers: elements.numbers?.checked ?? true,
-        special: elements.special?.checked ?? true,
-        excludeSimilar: elements.excludeSimilar?.checked ?? false,
-        excludeRepeating: elements.excludeRepeating?.checked ?? false
+        length: parseInt(elements.length.value, 10),
+        lowercase: elements.lowercase.checked,
+        uppercase: elements.uppercase.checked,
+        numbers: elements.numbers.checked,
+        special: elements.special.checked,
+        excludeSimilar: elements.excludeSimilar.checked,
+        excludeRepeating: elements.excludeRepeating.checked,
+        onlyUnique: elements.onlyUnique.checked
     };
     try { localStorage.setItem('passwordSettings', JSON.stringify(settings)); } catch {}
 }
 
 function resetSettingsToDefault() {
-    if (elements.length) elements.length.value = 16;
-    if (elements.lowercase) elements.lowercase.checked = true;
-    if (elements.uppercase) elements.uppercase.checked = true;
-    if (elements.numbers) elements.numbers.checked = true;
-    if (elements.special) elements.special.checked = true;
-    if (elements.excludeSimilar) elements.excludeSimilar.checked = false;
-    if (elements.excludeRepeating) elements.excludeRepeating.checked = false;
+    elements.length.value = 16;
+    elements.lowercase.checked = true;
+    elements.uppercase.checked = true;
+    elements.numbers.checked = true;
+    elements.special.checked = true;
+    elements.excludeSimilar.checked = false;
+    elements.excludeRepeating.checked = false;
+    elements.onlyUnique.checked = true;
     updateLengthValue();
     saveSettings();
     performGeneration();
-    showNotification('Настройки сброшены', 'success');
+    showNotification('Настройки сброшены');
 }
 
 function updateLengthValue() {
-    if (elements.length && elements.lengthValue) {
-        elements.lengthValue.textContent = elements.length.value;
-    }
+    elements.lengthValue.textContent = elements.length.value;
 }
 
 function filterCharSet(charSet, excludeSimilar) {
-    if (!excludeSimilar) return charSet;
-    return [...charSet].filter(c => !SIMILAR_CHARS.includes(c)).join('');
+    return excludeSimilar ? [...charSet].filter(c => !SIMILAR_CHARS.includes(c)).join('') : charSet;
 }
 
 function getActiveCharSets() {
-    const excludeSimilar = elements.excludeSimilar?.checked ?? false;
+    const excludeSimilar = elements.excludeSimilar.checked;
     const sets = [];
-    if (elements.lowercase?.checked) {
-        const filtered = filterCharSet(CHAR_SETS.lowercase, excludeSimilar);
-        if (filtered) sets.push(filtered);
-    }
-    if (elements.uppercase?.checked) {
-        const filtered = filterCharSet(CHAR_SETS.uppercase, excludeSimilar);
-        if (filtered) sets.push(filtered);
-    }
-    if (elements.numbers?.checked) {
-        const filtered = filterCharSet(CHAR_SETS.numbers, excludeSimilar);
-        if (filtered) sets.push(filtered);
-    }
-    if (elements.special?.checked) {
-        const filtered = filterCharSet(CHAR_SETS.special, excludeSimilar);
-        if (filtered) sets.push(filtered);
-    }
-    return sets;
+    if (elements.lowercase.checked) sets.push(filterCharSet(CHAR_SETS.lowercase, excludeSimilar));
+    if (elements.uppercase.checked) sets.push(filterCharSet(CHAR_SETS.uppercase, excludeSimilar));
+    if (elements.numbers.checked) sets.push(filterCharSet(CHAR_SETS.numbers, excludeSimilar));
+    if (elements.special.checked) sets.push(filterCharSet(CHAR_SETS.special, excludeSimilar));
+    return sets.filter(s => s.length > 0);
 }
 
 function getRandomInt(max) {
@@ -251,161 +137,143 @@ function getRandomInt(max) {
     const maxValid = maxUint32 - (maxUint32 % max);
     const array = new Uint32Array(1);
     let value;
-    do {
-        window.crypto.getRandomValues(array);
-        value = array[0];
-    } while (value >= maxValid);
+    do { crypto.getRandomValues(array); value = array[0]; } while (value >= maxValid);
     return value % max;
 }
 
-function generatePassword(length, sets, excludeRepeating) {
-    if (sets.length === 0) return '';
+function hasConsecutiveRepeats(password) {
+    for (let i = 0; i < password.length - 1; i++) {
+        if (password[i] === password[i+1]) return true;
+    }
+    return false;
+}
 
+function generatePassword(length, sets, excludeRepeating, onlyUnique) {
+    if (!sets.length) return '';
     const fullPool = sets.join('');
-    if (fullPool.length === 0) return '';
+    if (!fullPool.length) return '';
 
-    let passwordChars = [];
-    for (const set of sets) {
-        const idx = getRandomInt(set.length);
-        passwordChars.push(set[idx]);
-    }
-
-    while (passwordChars.length < length) {
-        const idx = getRandomInt(fullPool.length);
-        passwordChars.push(fullPool[idx]);
-    }
-
-    for (let i = passwordChars.length - 1; i > 0; i--) {
-        const j = getRandomInt(i + 1);
-        [passwordChars[i], passwordChars[j]] = [passwordChars[j], passwordChars[i]];
-    }
-
-    if (excludeRepeating && fullPool.length > 1) {
-        let attempts = 0;
-        const maxAttempts = 500;
-        while (attempts < maxAttempts) {
-            let ok = true;
-            for (let i = 1; i < passwordChars.length; i++) {
-                if (passwordChars[i] === passwordChars[i - 1]) {
-                    ok = false;
-                    break;
+    if (onlyUnique) {
+        const used = new Set();
+        const result = [];
+        for (const set of sets) {
+            const char = set[getRandomInt(set.length)];
+            if (!used.has(char)) {
+                used.add(char);
+                result.push(char);
+            } else {
+                let found = false;
+                for (let i = 0; i < set.length; i++) {
+                    const c = set[i];
+                    if (!used.has(c)) {
+                        used.add(c);
+                        result.push(c);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    result.push(char);
+                    used.add(char);
                 }
             }
-            if (ok) break;
-            for (let i = passwordChars.length - 1; i > 0; i--) {
-                const j = getRandomInt(i + 1);
-                [passwordChars[i], passwordChars[j]] = [passwordChars[j], passwordChars[i]];
-            }
-            attempts++;
         }
+        while (result.length < length) {
+            const char = fullPool[getRandomInt(fullPool.length)];
+            if (!used.has(char)) {
+                used.add(char);
+                result.push(char);
+            }
+        }
+        for (let i = result.length - 1; i > 0; i--) {
+            const j = getRandomInt(i + 1);
+            [result[i], result[j]] = [result[j], result[i]];
+        }
+        return result.join('');
+    } else {
+        let chars = sets.map(set => set[getRandomInt(set.length)]);
+        while (chars.length < length) chars.push(fullPool[getRandomInt(fullPool.length)]);
+        for (let i = chars.length - 1; i > 0; i--) {
+            const j = getRandomInt(i + 1);
+            [chars[i], chars[j]] = [chars[j], chars[i]];
+        }
+        if (excludeRepeating) {
+            let attempts = 0;
+            while (hasConsecutiveRepeats(chars.join('')) && attempts++ < 100) {
+                for (let i = chars.length - 1; i > 0; i--) {
+                    const j = getRandomInt(i + 1);
+                    [chars[i], chars[j]] = [chars[j], chars[i]];
+                }
+            }
+        }
+        return chars.join('');
     }
+}
 
-    return passwordChars.join('');
+let generateDebounceTimer;
+function debouncedPerformGeneration() {
+    clearTimeout(generateDebounceTimer);
+    generateDebounceTimer = setTimeout(() => { performGeneration(); generateDebounceTimer = null; }, 50);
 }
 
 function performGeneration() {
-    const length = elements.length ? parseInt(elements.length.value, 10) : 16;
+    const length = parseInt(elements.length.value, 10);
     const sets = getActiveCharSets();
-    if (sets.length === 0) {
-        showNotification('Выберите хотя бы один тип символов', 'error');
+    if (!sets.length) { showNotification('Выберите хотя бы один тип символов'); return false; }
+    const fullPool = sets.join('');
+    const onlyUnique = elements.onlyUnique.checked;
+    if (onlyUnique && fullPool.length < length) {
+        showNotification('Недостаточно уникальных символов для опции «Только уникальные». Уменьшите длину или отключите опцию.');
         return false;
     }
     if (length < sets.length) {
-        showNotification('Длина пароля должна быть не меньше количества выбранных типов', 'error');
+        showNotification('Длина пароля должна быть не меньше количества выбранных типов');
         return false;
     }
-    const excludeRepeating = elements.excludeRepeating?.checked ?? false;
-
-    const password = generatePassword(length, sets, excludeRepeating);
-    if (elements.password) elements.password.value = password;
-
+    elements.password.value = generatePassword(length, sets, elements.excludeRepeating.checked, onlyUnique);
     updatePasswordStrength();
     saveSettings();
     return true;
 }
 
 async function copyToClipboard() {
-    if (!elements.password?.value) {
-        showNotification('Сначала создайте пароль', 'error');
-        return;
-    }
+    if (!elements.password.value) { showNotification('Сначала создайте пароль'); return; }
     triggerHapticFeedback();
     try {
         await navigator.clipboard.writeText(elements.password.value);
-        showNotification('Пароль скопирован', 'success');
-    } catch {
-        showNotification('Не удалось скопировать', 'error');
-    }
+        showNotification('Пароль скопирован');
+    } catch { showNotification('Не удалось скопировать'); }
 }
 
 async function generateAndCopy() {
     const btn = elements.generateBtn;
-    if (!btn) return;
-
     const originalText = btn.textContent;
     btn.disabled = true;
     btn.textContent = '⌛ Создание...';
-
     triggerHapticFeedback();
-
     try {
         if (!performGeneration()) return;
-
         await navigator.clipboard.writeText(elements.password.value);
-        showNotification('Пароль создан и скопирован', 'success');
-    } catch {
-        showNotification('Пароль создан, но не скопирован', 'warning');
-    } finally {
+        showNotification('Пароль создан и скопирован');
+    } catch { showNotification('Пароль создан, но не скопирован'); }
+    finally {
         btn.disabled = false;
         btn.textContent = originalText;
     }
 }
 
-function showNotification(message, type = 'success', duration = 3000) {
-    if (!notificationManager) return;
-    
-    notificationManager.show(message, type, duration);
-    
-    try {
-        notificationManager.bc.postMessage({
-            type: 'show',
-            message,
-            notificationType: type,
-            duration
-        });
-    } catch {}
+function showNotification(message) {
+    if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+            new Notification('Генератор паролей', { body: message, icon: './assets/icons/icon-192.png' });
+        } catch(e) {}
+    }
 }
 
-function addPasswordVisibilityToggle() {
-    if (document.querySelector('.visibility-toggle')) return;
-
-    const passwordField = elements.password;
-    if (!passwordField?.parentNode) return;
-
-    const toggleBtn = document.createElement('button');
-    toggleBtn.className = 'visibility-toggle';
-    toggleBtn.type = 'button';
-
-    const savedVisible = (() => { try { return localStorage.getItem('passwordVisible') === 'true'; } catch { return false; } })();
-    const initialSvg = savedVisible ? SVG_ICONS.eyeOpen : SVG_ICONS.eyeClosed;
-    const initialLabel = savedVisible ? 'Скрыть пароль' : 'Показать пароль';
-    toggleBtn.innerHTML = initialSvg;
-    toggleBtn.setAttribute('data-tooltip', initialLabel);
-    toggleBtn.setAttribute('aria-label', initialLabel);
-    if (savedVisible) passwordField.type = 'text';
-
-    toggleBtn.addEventListener('click', () => {
-        const isPassword = passwordField.type === 'password';
-        passwordField.type = isPassword ? 'text' : 'password';
-        const newLabel = isPassword ? 'Скрыть пароль' : 'Показать пароль';
-        toggleBtn.innerHTML = (isPassword ? SVG_ICONS.eyeClosed : SVG_ICONS.eyeOpen);
-        toggleBtn.setAttribute('data-tooltip', newLabel);
-        toggleBtn.setAttribute('aria-label', newLabel);
-        try { localStorage.setItem('passwordVisible', String(!isPassword)); } catch {}
-        triggerHapticFeedback();
-    });
-
-    passwordField.parentNode.appendChild(toggleBtn);
+function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
 }
 
 function checkPWAInstallStatus() {
@@ -413,181 +281,100 @@ function checkPWAInstallStatus() {
 }
 
 function initPWAInstall() {
-    if (checkPWAInstallStatus() || isIOS()) {
-        elements.installPWA?.classList.add('hide');
-        return;
-    }
-
-    window.addEventListener('beforeinstallprompt', (e) => {
+    if (checkPWAInstallStatus() || isIOS()) { elements.installPWA.classList.add('hide'); return; }
+    window.addEventListener('beforeinstallprompt', e => {
         e.preventDefault();
         deferredPrompt = e;
-        elements.installPWA?.classList.remove('hide');
+        elements.installPWA.classList.remove('hide');
     });
-
     window.addEventListener('appinstalled', () => {
         deferredPrompt = null;
         isAppInstalled = true;
-        elements.installPWA?.classList.add('hide');
-        showNotification('Приложение установлено!', 'success');
+        elements.installPWA.classList.add('hide');
+        showNotification('Приложение установлено!');
     });
 }
 
 async function installPWA() {
     if (!deferredPrompt || isAppInstalled) {
-        showNotification('Приложение уже установлено', 'warning');
-        elements.installPWA?.classList.add('hide');
+        showNotification('Приложение уже установлено');
+        elements.installPWA.classList.add('hide');
         return;
     }
-
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     deferredPrompt = null;
-
     if (outcome === 'accepted') {
         isAppInstalled = true;
-        elements.installPWA?.classList.add('hide');
-    } else {
-        showNotification('Установка отменена', 'error');
-    }
+        elements.installPWA.classList.add('hide');
+    } else { showNotification('Установка отменена'); }
 }
 
 function getFocusableElements(container) {
-    if (!container) return [];
-    return Array.from(
-        container.querySelectorAll(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        )
-    ).filter(el => !el.hasAttribute('disabled') && el.getAttribute('tabindex') !== '-1');
+    return Array.from(container.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+        .filter(el => !el.hasAttribute('disabled') && el.getAttribute('tabindex') !== '-1');
 }
 
 function trapFocus(event, focusable) {
     if (!focusable.length) return;
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
+    const [first, last] = [focusable[0], focusable[focusable.length - 1]];
     if (event.key === 'Tab') {
-        if (event.shiftKey) {
-            if (document.activeElement === first) {
-                event.preventDefault();
-                last.focus();
-            }
-        } else {
-            if (document.activeElement === last) {
-                event.preventDefault();
-                first.focus();
-            }
-        }
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     }
 }
 
 function openModal() {
-    const modal = elements.aboutModal;
-    const mainContent = elements.mainContent;
+    const { aboutModal: modal, mainContent } = elements;
     if (!modal || !mainContent) return;
-
     previouslyFocused = document.activeElement;
-
     document.body.classList.add('modal-open');
     modal.classList.add('show');
-    if (elements.aboutBtn) elements.aboutBtn.setAttribute('aria-expanded', 'true');
-
+    elements.aboutBtn.setAttribute('aria-expanded', 'true');
     modalFocusable = getFocusableElements(modal);
-    if (modalFocusable.length) {
-        modalFocusable[0].focus();
-    }
-
-    if (!mainContent.hasAttribute('inert')) {
-        mainContent.inert = true;
-    }
-
-    const keyHandler = (e) => trapFocus(e, modalFocusable);
-    const escapeHandler = (e) => {
-        if (e.key === 'Escape') closeModal();
-    };
+    if (modalFocusable.length) modalFocusable[0].focus();
+    if (!mainContent.hasAttribute('inert')) mainContent.inert = true;
+    const keyHandler = e => trapFocus(e, modalFocusable);
+    const escapeHandler = e => e.key === 'Escape' && closeModal();
     document.addEventListener('keydown', keyHandler);
     document.addEventListener('keydown', escapeHandler);
-
     modal._keyHandler = keyHandler;
     modal._escapeHandler = escapeHandler;
 }
 
 function closeModal() {
-    const modal = elements.aboutModal;
-    const mainContent = elements.mainContent;
+    const { aboutModal: modal, mainContent } = elements;
     if (!modal || !mainContent) return;
-
     modal.classList.remove('show');
     document.body.classList.remove('modal-open');
-    if (elements.aboutBtn) elements.aboutBtn.setAttribute('aria-expanded', 'false');
-
-    if (mainContent.inert) {
-        mainContent.inert = false;
-    }
-
-    if (modal._keyHandler) {
-        document.removeEventListener('keydown', modal._keyHandler);
-        delete modal._keyHandler;
-    }
-    if (modal._escapeHandler) {
-        document.removeEventListener('keydown', modal._escapeHandler);
-        delete modal._escapeHandler;
-    }
-
-    if (previouslyFocused && previouslyFocused.focus) {
-        previouslyFocused.focus();
-    }
+    elements.aboutBtn.setAttribute('aria-expanded', 'false');
+    if (mainContent.inert) mainContent.inert = false;
+    if (modal._keyHandler) { document.removeEventListener('keydown', modal._keyHandler); delete modal._keyHandler; }
+    if (modal._escapeHandler) { document.removeEventListener('keydown', modal._escapeHandler); delete modal._escapeHandler; }
+    if (previouslyFocused?.focus) previouslyFocused.focus();
 }
 
 function initAboutModal() {
-    const modal = elements.aboutModal;
-    const closeBtn = elements.closeAboutModal;
+    const { aboutModal: modal, closeAboutModal: closeBtn } = elements;
     const content = modal?.querySelector('.modal-content');
-
     if (!modal || !closeBtn || !content) return;
-
-    elements.aboutBtn?.addEventListener('click', openModal);
+    elements.aboutBtn.addEventListener('click', openModal);
     closeBtn.addEventListener('click', closeModal);
-    modal.querySelector('.modal-overlay')?.addEventListener('click', closeModal);
-
-    let touchStartY = 0;
-    let touchCurrentY = 0;
-    let startTransform = 0;
-    let isDragging = false;
-
-    content.addEventListener('touchstart', (e) => {
-        if (content.scrollTop === 0) {
-            touchStartY = e.touches[0].clientY;
-            startTransform = 0;
-            isDragging = true;
-        }
-    }, { passive: true });
-
-    content.addEventListener('touchmove', (e) => {
+    modal.querySelector('.modal-overlay').addEventListener('click', closeModal);
+    let touchStartY = 0, touchCurrentY = 0, isDragging = false;
+    content.addEventListener('touchstart', e => { if (content.scrollTop === 0) { touchStartY = e.touches[0].clientY; isDragging = true; } }, { passive: true });
+    content.addEventListener('touchmove', e => {
         if (!isDragging) return;
         touchCurrentY = e.touches[0].clientY;
         const diff = touchCurrentY - touchStartY;
-        if (diff > 0) {
-            e.preventDefault();
-            content.style.transform = `translateY(${diff}px)`;
-        }
+        if (diff > 0) { e.preventDefault(); content.style.transform = `translateY(${diff}px)`; }
     }, { passive: false });
-
     content.addEventListener('touchend', () => {
         if (!isDragging) return;
-        const diff = touchCurrentY - touchStartY;
-        if (diff > 100) {
-            closeModal();
-        } else {
-            content.style.transform = '';
-        }
-        touchStartY = touchCurrentY = 0;
-        isDragging = false;
+        if (touchCurrentY - touchStartY > 100) closeModal(); else content.style.transform = '';
+        touchStartY = touchCurrentY = 0; isDragging = false;
     });
-
-    content.addEventListener('touchcancel', () => {
-        content.style.transform = '';
-        touchStartY = touchCurrentY = 0;
-        isDragging = false;
-    });
+    content.addEventListener('touchcancel', () => { content.style.transform = ''; touchStartY = touchCurrentY = 0; isDragging = false; });
 }
 
 function initServiceWorker() {
@@ -598,63 +385,39 @@ function initServiceWorker() {
 
 function initVersion() {
     const version = window.APP_VERSION || 'unknown';
-    if (elements.footerVersion) elements.footerVersion.textContent = version;
-    if (elements.aboutVersion) elements.aboutVersion.textContent = version;
-}
-
-function initApp() {
-    if (elements.notificationContainer) {
-        notificationManager = new NotificationManager(elements.notificationContainer);
-    }
-    
-    initVersion();
-    initTheme();
-    loadSettings();
-    performGeneration();
-    initPWAInstall();
-    initServiceWorker();
-    addPasswordVisibilityToggle();
-    initAboutModal();
-
-    elements.length?.addEventListener('input', () => {
-        updateLengthValue();
-        performGeneration();
-    });
-
-    elements.generateBtn?.addEventListener('click', generateAndCopy);
-    elements.copyBtn?.addEventListener('click', copyToClipboard);
-    elements.themeToggle?.addEventListener('click', toggleTheme);
-    elements.installPWA?.addEventListener('click', installPWA);
-    elements.resetSettingsBtn?.addEventListener('click', resetSettingsToDefault);
-
-    document.querySelectorAll('.switch input').forEach(input => {
-        input.addEventListener('change', performGeneration);
-    });
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === ' ' && e.target === document.body) {
-            e.preventDefault();
-            generateAndCopy();
-        }
-    });
-
-    updatePasswordStrength();
+    elements.footerVersion.textContent = version;
+    elements.aboutVersion.textContent = version;
 }
 
 function updatePasswordStrength() {
     if (!elements.password) return;
-    const length = elements.length ? parseInt(elements.length.value, 10) : 16;
-    const complexity = [elements.lowercase, elements.uppercase, elements.numbers, elements.special].filter(c => c?.checked).length;
+    const length = parseInt(elements.length.value, 10);
+    const complexity = [elements.lowercase, elements.uppercase, elements.numbers, elements.special].filter(c => c.checked).length;
     const strength = length * complexity;
+    const strengthText = strength >= 96 ? 'очень надёжный' : strength >= 64 ? 'надёжный' : strength >= 32 ? 'средний' : 'слабый';
+    elements.password.setAttribute('aria-label', `Сгенерированный пароль длиной ${length} символов, ${strengthText} уровень защиты`);
+}
 
-    let strengthText = '';
-    if (strength >= 96) strengthText = 'очень надёжный';
-    else if (strength >= 64) strengthText = 'надёжный';
-    else if (strength >= 32) strengthText = 'средний';
-    else strengthText = 'слабый';
+function initApp() {
+    initVersion();
+    initTheme();
+    loadSettings();
+    performGeneration();
+    document.documentElement.setAttribute('data-theme-init', '');
+    requestNotificationPermission();
+    initPWAInstall();
+    initServiceWorker();
+    initAboutModal();
 
-    elements.password.setAttribute('aria-label',
-        `Сгенерированный пароль длиной ${length} символов, ${strengthText} уровень защиты`);
+    elements.length.addEventListener('input', () => { updateLengthValue(); debouncedPerformGeneration(); });
+    elements.generateBtn.addEventListener('click', generateAndCopy);
+    elements.copyBtn.addEventListener('click', copyToClipboard);
+    elements.themeToggle.addEventListener('click', toggleTheme);
+    elements.installPWA.addEventListener('click', installPWA);
+    elements.resetSettingsBtn.addEventListener('click', resetSettingsToDefault);
+    document.querySelectorAll('.switch input').forEach(input => input.addEventListener('change', debouncedPerformGeneration));
+    document.addEventListener('keydown', e => { if (e.key === ' ' && e.target === document.body) { e.preventDefault(); generateAndCopy(); } });
+    updatePasswordStrength();
 }
 
 document.addEventListener('DOMContentLoaded', initApp);
