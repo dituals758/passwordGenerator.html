@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="ru" class="no-scrollbar">
 <head>
@@ -11,11 +10,11 @@
     <meta property="og:title" content="Генератор паролей. Быстро и безопасно">
     <meta property="og:description" content="Создавайте надёжные пароли без интернета. Просто, бесплатно, безопасно.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://dituals758.github.io/passwordGenerator.html">
+    <meta property="og:url" content="https://dituals758.github.io/passwordGenerator.html/">
     <meta http-equiv="Content-Security-Policy" 
           content="default-src 'self'; 
                    style-src 'self' 'sha256-biY+nuc1lT+0X5o5rltWmsBnJzCKynlLGsJA+W/Xr8s='; 
-                   script-src 'self' 'sha256-lsRZUhObTiLUmvuMfAAf5XkezWfq1COdz60ueXPjoSM=' 'sha256-vvt4KWwuNr51XfE5m+hzeNEGhiOfZzG97ccfqGsPwvE='; 
+                   script-src 'self'; 
                    img-src 'self' data:;
                    font-src 'self';
                    connect-src 'self';
@@ -23,7 +22,7 @@
                    base-uri 'self'">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta name="referrer" content="no-referrer">
-    <link rel="canonical" href="https://dituals758.github.io/passwordGenerator.html">
+    <link rel="canonical" href="https://dituals758.github.io/passwordGenerator.html/">
     <link rel="apple-touch-icon" sizes="152x152" href="./assets/icons/icon-152.png">
     <link rel="apple-touch-icon" sizes="167x167" href="./assets/icons/icon-167.png">
     <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/icon-180.png">
@@ -32,9 +31,13 @@
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#007AFF">
+    <meta name="theme-color" content="#007AFF" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0A84FF" media="(prefers-color-scheme: dark)">
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="stylesheet" href="./styles.css">
+    <script src="./no-transition.js"></script>
+    <script src="./theme-loader.js"></script>
+    <script src="./version.js"></script>
     <style>
         html {
             visibility: hidden;
@@ -51,19 +54,6 @@
             color-scheme: light;
         }
     </style>
-    <script>
-        (function() {
-            try {
-                const savedTheme = localStorage.getItem('theme');
-                const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const theme = savedTheme || (systemDark ? 'dark' : 'light');
-                document.documentElement.setAttribute('data-theme', theme);
-            } catch(e) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-            }
-        })();
-    </script>
-    <script src="./version.js"></script>
 </head>
 <body class="no-scrollbar">
     <main class="container" id="main-content">
@@ -79,10 +69,7 @@
             <div class="password-field">
                 <input type="text" id="password" readonly aria-label="Сгенерированный пароль" inputmode="none">
                 <button class="copy-btn" id="copyBtn" type="button" aria-label="Копировать пароль" data-tooltip="Копировать пароль в буфер обмена">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <rect x="8" y="8" width="12" height="12" rx="2" />
-                        <rect x="5" y="5" width="12" height="12" rx="2" />
-                    </svg>
+                    <span class="icon-emoji" aria-hidden="true">📋</span>
                 </button>
             </div>
             <button class="main-btn" id="generateBtn" type="button" aria-label="Создать и скопировать пароль">Создать и скопировать пароль</button>
@@ -92,11 +79,8 @@
             <section class="section-container password-settings" aria-labelledby="settings-title">
                 <div class="section-title-wrapper">
                     <h2 class="section-title" id="settings-title">Настройки пароля</h2>
-                    <button class="reset-btn" id="resetSettingsBtn" type="button" aria-label="Сбросить настройки" data-tooltip="Сбросить настройки пароля">
-                        <!-- Обновлённая иконка сброса (одна линия) -->
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <path d="M12 4c-4.4 0-8 3.6-8 8s3.6 8 8 8c3.7 0 6.8-2.6 7.7-6h-2.1c-.8 2.3-3 4-5.6 4-3.3 0-6-2.7-6-6s2.7-6 6-6c1.7 0 3.1.7 4.2 1.8L13 11h7V4l-2.4 2.4C16.2 4.5 14.2 4 12 4z"/>
-                        </svg>
+                    <button class="reset-btn" id="resetSettingsBtn" type="button" aria-label="Сбросить настройки" data-tooltip="Сбросить настройки">
+                        <span class="icon-emoji" aria-hidden="true">🔄</span>
                     </button>
                 </div>
                 
@@ -106,30 +90,31 @@
                         <label for="length">Длина пароля:</label>
                         <input type="range" id="length" min="8" max="32" value="16" aria-label="Длина пароля от 8 до 32 символов" data-tooltip="Количество символов (8–32)">
                         <span class="length-value" id="lengthValue" aria-live="polite">16</span>
+                        <span class="length-unit">симв.</span>
                     </div>
-                    <label class="switch-label" data-tooltip="Включить строчные латинские буквы (a-z)">
+                    <label class="switch-label" data-tooltip="Использовать строчные буквы (a-z)">
                         Строчные латинские буквы (a-z)
                         <div class="switch">
                             <input type="checkbox" id="lowercase" checked aria-label="Использовать строчные буквы">
                             <span class="slider"></span>
                         </div>
                     </label>
-                    <label class="switch-label" data-tooltip="Включить прописные латинские буквы (A-Z)">
+                    <label class="switch-label" data-tooltip="Использовать прописные буквы (A-Z)">
                         Прописные латинские буквы (A-Z)
                         <div class="switch">
                             <input type="checkbox" id="uppercase" checked aria-label="Использовать прописные буквы">
                             <span class="slider"></span>
                         </div>
                     </label>
-                    <label class="switch-label" data-tooltip="Включить арабские цифры (0-9)">
+                    <label class="switch-label" data-tooltip="Использовать цифры (0-9)">
                         Арабские цифры (0-9)
                         <div class="switch">
                             <input type="checkbox" id="numbers" checked aria-label="Использовать цифры">
                             <span class="slider"></span>
                         </div>
                     </label>
-                    <label class="switch-label" data-tooltip="Включить специальные символы (!@#$%^&*)">
-                        Специальные символы (!@#$%^&*)
+                    <label class="switch-label" data-tooltip="Расширенный набор из 32 специальных символов">
+                        Специальные символы
                         <div class="switch">
                             <input type="checkbox" id="special" checked aria-label="Использовать специальные символы">
                             <span class="slider"></span>
@@ -139,8 +124,8 @@
 
                 <h3 class="sub-section-title">Дополнительные</h3>
                 <div class="ios-list">
-                    <label class="switch-label" data-tooltip="Исключить похожие символы (0O, 1lI|)">
-                        Исключить похожие символы (0O, 1lI|)
+                    <label class="switch-label" data-tooltip="Исключить визуально похожие символы (0 O 1 l I |)">
+                        Исключить похожие символы (0 O 1 l I |)
                         <div class="switch">
                             <input type="checkbox" id="excludeSimilar" aria-label="Исключить визуально похожие символы">
                             <span class="slider"></span>
@@ -164,16 +149,16 @@
             </section>
 
             <section class="section-container app-features" aria-labelledby="features-title">
-                <h2 class="section-title" id="features-title">Преимущества приложения</h2>
+                <h2 class="section-title" id="features-title">Преимущества</h2>
                 <div class="features-list">
                     <p class="feature-text">
                         <span class="icon" aria-hidden="true">🔐</span> Все пароли генерируются локально на вашем устройстве без передачи данных в сеть.
                     </p>
                     <p class="feature-text">
-                        <span class="icon" aria-hidden="true">⚡</span> Мгновенное копирование созданных паролей в буфер обмена одним нажатием.
+                        <span class="icon" aria-hidden="true">⚡</span> Мгновенное копирование пароля в буфер обмена одним нажатием.
                     </p>
                     <p class="feature-text">
-                        <span class="icon" aria-hidden="true">📱</span> Приложение работает полностью офлайн и может быть установлено как PWA.
+                        <span class="icon" aria-hidden="true">📱</span> Приложение работает полностью офлайн и может быть установлено на устройство.
                     </p>
                     <p class="feature-text">
                         <span class="icon" aria-hidden="true">🌓</span> Автоматическое переключение между тёмной и светлой темой в зависимости от настроек системы.
@@ -191,30 +176,18 @@
                 <span class="footer-license"><a href="https://github.com/dituals758/passwordGenerator.html/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a></span>
             </div>
             <div class="footer-actions">
-                <a href="https://github.com/dituals758/passwordGenerator.html" target="_blank" rel="noopener noreferrer" class="footer-btn github-icon" aria-label="GitHub" data-tooltip="Исходный код на GitHub">
-                    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-                        <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.03-2.682-.103-.253-.447-1.27.098-2.646 0 0 .84-.269 2.75 1.025.8-.223 1.65-.334 2.5-.334.85 0 1.7.111 2.5.334 1.91-1.294 2.75-1.025 2.75-1.025.545 1.376.201 2.393.099 2.646.64.698 1.03 1.591 1.03 2.682 0 3.841-2.337 4.687-4.565 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
-                    </svg>
+                <a href="https://github.com/dituals758/passwordGenerator.html" target="_blank" rel="noopener noreferrer" class="footer-btn github-text-link" aria-label="Исходный код на GitHub" data-tooltip="Исходный код на GitHub">
+                    Исходный код на GitHub
                 </a>
                 <button class="footer-btn" id="themeToggle" type="button" aria-label="Переключить тему" data-tooltip="Тёмная тема">
-                    <span class="theme-icon icon-sun">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3V5M12 19V21M5 12H3M21 12H19M7.05 7.05L5.64 5.64M18.36 18.36L16.95 16.95M7.05 16.95L5.64 18.36M18.36 5.64L16.95 7.05"/></svg>
-                    </span>
-                    <span class="theme-icon icon-moon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-                    </span>
+                    <span class="theme-icon icon-sun" aria-hidden="true">☀️</span>
+                    <span class="theme-icon icon-moon" aria-hidden="true">🌙</span>
                 </button>
-                <button class="footer-btn" id="installPWA" type="button" aria-label="Установить приложение" data-tooltip="Установить как PWA-приложение">
-                    <!-- Обновлённая иконка установки (одна линия) -->
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path d="M12 2v10M5 19h14M8 12l4 4 4-4"/>
-                    </svg>
+                <button class="footer-btn" id="installPWA" type="button" aria-label="Установить приложение" data-tooltip="Установить как приложение (PWA)">
+                    <span class="icon-emoji" aria-hidden="true">📥</span>
                 </button>
-                <button class="footer-btn" id="aboutBtn" type="button" aria-label="О программе" aria-expanded="false" data-tooltip="О приложении">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <circle cx="12" cy="12" r="9"/>
-                        <path d="M12 16v-4M12 8h.01"/>
-                    </svg>
+                <button class="footer-btn" id="aboutBtn" type="button" aria-label="О приложении" aria-expanded="false" data-tooltip="О приложении">
+                    <span class="icon-emoji" aria-hidden="true">ℹ️</span>
                 </button>
             </div>
         </div>
@@ -229,12 +202,11 @@
                 <button class="modal-close" id="closeAboutModal" aria-label="Закрыть" data-tooltip="Закрыть"></button>
             </div>
             <div class="modal-body" id="aboutModalDesc">
-                <p><strong>Генератор паролей</strong> — бесплатное PWA-приложение для создания надёжных паролей.</p>
+                <p><strong>Генератор паролей</strong> — бесплатное веб-приложение (PWA) для создания надёжных паролей.</p>
                 <p><strong>Версия:</strong> <span id="aboutVersion"></span></p>
                 <p><strong>Лицензия:</strong> <a href="https://github.com/dituals758/passwordGenerator.html/blob/main/LICENSE" target="_blank">MIT</a></p>
                 <p><strong>Автор:</strong> dituals758</p>
-                <p><strong>Контакты:</strong> <a href="https://github.com/dituals758/passwordGenerator.html" target="_blank">GitHub</a></p>
-                <p><strong>Иконки:</strong> Все иконки выполнены в стиле iOS 26 (контурные, тонкие линии), созданы вручную.</p>
+                <p><strong>Контакты:</strong> <a href="https://github.com/dituals758/passwordGenerator.html/" target="_blank">GitHub</a></p>
             </div>
         </div>
     </div>

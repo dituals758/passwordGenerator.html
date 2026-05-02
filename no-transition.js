@@ -1,0 +1,1 @@
+document.documentElement.setAttribute('data-no-transition', '');

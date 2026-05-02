@@ -1,11 +1,25 @@
-// script.js
 const CHAR_SETS = {
     lowercase: "abcdefghijklmnopqrstuvwxyz",
     uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
     numbers: "0123456789",
-    special: "!@#$%^&*"
+    special: "!#$%&'()*+,-./:;<=>?@[\\]^_`{}~|\""
 };
 const SIMILAR_CHARS = "0O1lI|";
+
+const MESSAGES = {
+    noCharSet: 'Выберите хотя бы один набор символов',
+    notEnoughUnique: 'Не хватает уникальных символов для заданной длины. Уменьшите длину или отключите опцию «Только уникальные символы».',
+    lengthTooShort: 'Длина пароля должна быть не меньше числа выбранных наборов символов',
+    copied: 'Пароль скопирован',
+    createdAndCopied: 'Пароль создан и скопирован в буфер обмена',
+    copyFailed: 'Не удалось скопировать',
+    notGenerated: 'Сначала создайте пароль',
+    settingsReset: 'Настройки сброшены',
+    installed: 'Приложение установлено!',
+    alreadyInstalled: 'Приложение уже установлено',
+    installCancelled: 'Установка отменена',
+    creating: '⌛ Создание...'
+};
 
 const elements = {
     password: document.getElementById('password'),
@@ -28,13 +42,17 @@ const elements = {
     aboutModal: document.getElementById('aboutModal'),
     closeAboutModal: document.getElementById('closeAboutModal'),
     aboutVersion: document.getElementById('aboutVersion'),
-    mainContent: document.getElementById('main-content')
+    mainContent: document.getElementById('main-content'),
+    subtitle: document.getElementById('subtitle')
 };
 
 let deferredPrompt = null;
 let isAppInstalled = false;
 let modalFocusable = null;
 let previouslyFocused = null;
+let defaultSubtitleText = '';
+
+const randomArray = new Uint32Array(1);
 
 const triggerHapticFeedback = () => 'vibrate' in navigator && navigator.vibrate(50);
 const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -58,15 +76,14 @@ function toggleTheme() {
 }
 
 function initTheme() {
-    const saved = (() => { try { return localStorage.getItem('theme'); } catch { return null; } })();
-    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    applyTheme(saved || (systemDark ? 'dark' : 'light'));
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
         if (!localStorage.getItem('theme')) {
             const newTheme = e.matches ? 'dark' : 'light';
             applyTheme(newTheme);
         }
     });
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    updateThemeUI(current);
 }
 
 function loadSettings() {
@@ -110,7 +127,7 @@ function resetSettingsToDefault() {
     updateLengthValue();
     saveSettings();
     performGeneration();
-    showNotification('Настройки сброшены');
+    showMessage(MESSAGES.settingsReset);
 }
 
 function updateLengthValue() {
@@ -135,9 +152,8 @@ function getRandomInt(max) {
     if (max <= 0) return 0;
     const maxUint32 = 0xFFFFFFFF;
     const maxValid = maxUint32 - (maxUint32 % max);
-    const array = new Uint32Array(1);
     let value;
-    do { crypto.getRandomValues(array); value = array[0]; } while (value >= maxValid);
+    do { crypto.getRandomValues(randomArray); value = randomArray[0]; } while (value >= maxValid);
     return value % max;
 }
 
@@ -219,50 +235,68 @@ function debouncedPerformGeneration() {
 function performGeneration() {
     const length = parseInt(elements.length.value, 10);
     const sets = getActiveCharSets();
-    if (!sets.length) { showNotification('Выберите хотя бы один тип символов'); return false; }
+    if (!sets.length) { showMessage(MESSAGES.noCharSet); return false; }
     const fullPool = sets.join('');
     const onlyUnique = elements.onlyUnique.checked;
     if (onlyUnique && fullPool.length < length) {
-        showNotification('Недостаточно уникальных символов для опции «Только уникальные». Уменьшите длину или отключите опцию.');
+        showMessage(MESSAGES.notEnoughUnique);
         return false;
     }
     if (length < sets.length) {
-        showNotification('Длина пароля должна быть не меньше количества выбранных типов');
+        showMessage(MESSAGES.lengthTooShort);
         return false;
     }
     elements.password.value = generatePassword(length, sets, elements.excludeRepeating.checked, onlyUnique);
-    updatePasswordStrength();
     saveSettings();
     return true;
 }
 
 async function copyToClipboard() {
-    if (!elements.password.value) { showNotification('Сначала создайте пароль'); return; }
+    if (!elements.password.value) { showMessage(MESSAGES.notGenerated); return; }
     triggerHapticFeedback();
     try {
         await navigator.clipboard.writeText(elements.password.value);
-        showNotification('Пароль скопирован');
-    } catch { showNotification('Не удалось скопировать'); }
+        showMessage(MESSAGES.copied);
+    } catch { showMessage(MESSAGES.copyFailed); }
 }
 
 async function generateAndCopy() {
     const btn = elements.generateBtn;
     const originalText = btn.textContent;
     btn.disabled = true;
-    btn.textContent = '⌛ Создание...';
+    btn.textContent = MESSAGES.creating;
     triggerHapticFeedback();
     try {
         if (!performGeneration()) return;
         await navigator.clipboard.writeText(elements.password.value);
-        showNotification('Пароль создан и скопирован');
-    } catch { showNotification('Пароль создан, но не скопирован'); }
+        showMessage(MESSAGES.createdAndCopied);
+    } catch { showMessage(MESSAGES.copyFailed); }
     finally {
         btn.disabled = false;
         btn.textContent = originalText;
     }
 }
 
-function showNotification(message) {
+function showToast(message) {
+    const el = elements.subtitle;
+    if (!el) return;
+    clearTimeout(el._toastTimer);
+    clearTimeout(el._toastReturnTimer);
+
+    el.textContent = message;
+    el.classList.remove('hidden');
+
+    el._toastTimer = setTimeout(() => {
+        el.classList.add('hidden');
+        el._toastReturnTimer = setTimeout(() => {
+            el.textContent = defaultSubtitleText;
+            el.classList.remove('hidden');
+        }, 300);
+    }, 2500);
+}
+
+function showMessage(message) {
+    showToast(message);
     if ('Notification' in window && Notification.permission === 'granted') {
         try {
             new Notification('Генератор паролей', { body: message, icon: './assets/icons/icon-192.png' });
@@ -291,13 +325,13 @@ function initPWAInstall() {
         deferredPrompt = null;
         isAppInstalled = true;
         elements.installPWA.classList.add('hide');
-        showNotification('Приложение установлено!');
+        showMessage(MESSAGES.installed);
     });
 }
 
 async function installPWA() {
     if (!deferredPrompt || isAppInstalled) {
-        showNotification('Приложение уже установлено');
+        showMessage(MESSAGES.alreadyInstalled);
         elements.installPWA.classList.add('hide');
         return;
     }
@@ -307,7 +341,7 @@ async function installPWA() {
     if (outcome === 'accepted') {
         isAppInstalled = true;
         elements.installPWA.classList.add('hide');
-    } else { showNotification('Установка отменена'); }
+    } else { showMessage(MESSAGES.installCancelled); }
 }
 
 function getFocusableElements(container) {
@@ -389,19 +423,11 @@ function initVersion() {
     elements.aboutVersion.textContent = version;
 }
 
-function updatePasswordStrength() {
-    if (!elements.password) return;
-    const length = parseInt(elements.length.value, 10);
-    const complexity = [elements.lowercase, elements.uppercase, elements.numbers, elements.special].filter(c => c.checked).length;
-    const strength = length * complexity;
-    const strengthText = strength >= 96 ? 'очень надёжный' : strength >= 64 ? 'надёжный' : strength >= 32 ? 'средний' : 'слабый';
-    elements.password.setAttribute('aria-label', `Сгенерированный пароль длиной ${length} символов, ${strengthText} уровень защиты`);
-}
-
 function initApp() {
     initVersion();
     initTheme();
     loadSettings();
+    if (elements.subtitle) defaultSubtitleText = elements.subtitle.textContent;
     performGeneration();
     document.documentElement.setAttribute('data-theme-init', '');
     requestNotificationPermission();
@@ -417,7 +443,10 @@ function initApp() {
     elements.resetSettingsBtn.addEventListener('click', resetSettingsToDefault);
     document.querySelectorAll('.switch input').forEach(input => input.addEventListener('change', debouncedPerformGeneration));
     document.addEventListener('keydown', e => { if (e.key === ' ' && e.target === document.body) { e.preventDefault(); generateAndCopy(); } });
-    updatePasswordStrength();
+
+    requestAnimationFrame(() => {
+        document.documentElement.removeAttribute('data-no-transition');
+    });
 }
 
 document.addEventListener('DOMContentLoaded', initApp);

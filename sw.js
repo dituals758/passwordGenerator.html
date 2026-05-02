@@ -6,6 +6,8 @@ const CRITICAL_ASSETS = [
     './manifest.json',
     './styles.css',
     './script.js',
+    './theme-loader.js',
+    './no-transition.js',
     './version.js'
 ];
 
