@@ -1,59 +1,33 @@
 {
   "name": "Генератор паролей",
-  "short_name": "Ген.паролей",
-  "description": "Простое PWA‑приложение для создания надёжных паролей. Работает без интернета, все данные остаются на вашем устройстве.",
+  "short_name": "Пароли",
+  "description": "PWA для создания надёжных паролей",
   "id": "/password-generator/",
-  "lang": "ru",
-  "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone"],
   "orientation": "portrait",
   "theme_color": "#007AFF",
   "background_color": "#000000",
   "icons": [
     { "src": "./assets/icons/icon-48.png", "sizes": "48x48", "type": "image/png", "purpose": "any" },
-    { "src": "./assets/icons/icon-48.png", "sizes": "48x48", "type": "image/png", "purpose": "maskable" },
     { "src": "./assets/icons/icon-72.png", "sizes": "72x72", "type": "image/png", "purpose": "any" },
-    { "src": "./assets/icons/icon-72.png", "sizes": "72x72", "type": "image/png", "purpose": "maskable" },
     { "src": "./assets/icons/icon-96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" },
-    { "src": "./assets/icons/icon-96.png", "sizes": "96x96", "type": "image/png", "purpose": "maskable" },
-    { "src": "./assets/icons/icon-144.png", "sizes": "144x144", "type": "image/png", "purpose": "any" },
-    { "src": "./assets/icons/icon-144.png", "sizes": "144x144", "type": "image/png", "purpose": "maskable" },
+    { "src": "./assets/icons/icon-152.png", "sizes": "152x152", "type": "image/png", "purpose": "any" },
     { "src": "./assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "./assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
     { "src": "./assets/icons/icon-256.png", "sizes": "256x256", "type": "image/png", "purpose": "any" },
-    { "src": "./assets/icons/icon-256.png", "sizes": "256x256", "type": "image/png", "purpose": "maskable" },
     { "src": "./assets/icons/icon-384.png", "sizes": "384x384", "type": "image/png", "purpose": "any" },
-    { "src": "./assets/icons/icon-384.png", "sizes": "384x384", "type": "image/png", "purpose": "maskable" },
     { "src": "./assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "./assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
-  ],
-  "screenshots": [
-    {
-      "src": "./screenshots/desktop.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Главный экран приложения на десктопе"
-    },
-    {
-      "src": "./screenshots/mobile.png",
-      "sizes": "750x1334",
-      "type": "image/png",
-      "label": "Главный экран приложения на мобильном"
-    }
   ],
   "shortcuts": [
     {
       "name": "Создать пароль",
-      "short_name": "Новый пароль",
+      "short_name": "Новый",
       "description": "Быстро создать новый пароль",
       "url": "./?action=generate",
       "icons": [ { "src": "./assets/icons/icon-96.png", "sizes": "96x96", "type": "image/png" } ]
     }
   ],
-  "prefer_related_applications": false,
-  "related_applications": []
+  "prefer_related_applications": false
 }
